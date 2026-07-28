@@ -186,7 +186,7 @@ print("\n[STEP 10] Saving Models and Components as Pickle Files...")
 print("-" * 70)
 
 # Save main model
-main_model_path = MODELS_PATH / "agrosahyadri_gb_model.pkl"
+main_model_path = MODELS_PATH / "BhooDristi_gb_model.pkl"
 joblib.dump(final_model, main_model_path)
 print(f"✓ Main model: {main_model_path.name}")
 
@@ -196,7 +196,7 @@ joblib.dump(scaler, scaler_path)
 print(f"✓ Scaler: {scaler_path.name}")
 
 # Save features
-features_path = MODELS_PATH / "agrosahyadri_features.pkl"
+features_path = MODELS_PATH / "BhooDristi_features.pkl"
 joblib.dump(feature_columns, features_path)
 print(f"✓ Features list: {features_path.name}")
 
@@ -206,14 +206,14 @@ joblib.dump(label_encoder, encoder_path)
 print(f"✓ Label encoder: {encoder_path.name}")
 
 # Save classes
-classes_path = MODELS_PATH / "agrosahyadri_classes.pkl"
+classes_path = MODELS_PATH / "BhooDristi_classes.pkl"
 joblib.dump(label_encoder.classes_, classes_path)
 print(f"✓ Classes: {classes_path.name}")
 
 # Save all trained models
 for name, model in trained_models.items():
     model_name = name.lower().replace(" ", "_")
-    path = MODELS_PATH / f"agrosahyadri_{model_name}_model.pkl"
+    path = MODELS_PATH / f"BhooDristi_{model_name}_model.pkl"
     joblib.dump(model, path)
     print(f"✓ {name} model: {path.name}")
 

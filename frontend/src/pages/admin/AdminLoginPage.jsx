@@ -39,7 +39,7 @@ const AdminLoginPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-indigo-700 mb-2">AgroSahyadri</h1>
+          <h1 className="text-4xl font-bold text-indigo-700 mb-2">BhooDristi</h1>
           <p className="text-gray-600">Admin Panel</p>
         </div>
 
@@ -56,7 +56,7 @@ const AdminLoginPage = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@agrosahyadri.com"
+              placeholder="admin@BhooDristi.com"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
               required
             />

@@ -460,7 +460,7 @@ export default LoginPage;
           <div className="mb-12 animate-fadeInUp">
             <div className="flex items-center gap-3 mb-4">
               <span className="text-7xl">🌾</span>
-              <h1 className="text-6xl font-bold">AgroSahyadri</h1>
+              <h1 className="text-6xl font-bold">BhooDristi</h1>
             </div>
             <p className="text-2xl font-semibold text-green-100 mb-3">
               Your Digital Farmer's Assistant
@@ -502,7 +502,7 @@ export default LoginPage;
           </div>
         </div>
 
-        {/* Bottom Section - Why AgroSahyadri? */}
+        {/* Bottom Section - Why BhooDristi? */}
         <div className="relative z-10">
           {/* Key Features */}
           <div className="mb-8 space-y-3">
@@ -541,7 +541,7 @@ export default LoginPage;
         <div className="w-full max-w-sm animate-fadeInUp">
           {/* Mobile Hero Section */}
           <div className="lg:hidden bg-black/40 backdrop-blur-md rounded-2xl p-6 mb-6 text-white border border-white/20">
-            <h1 className="text-3xl font-bold mb-2">🌾 AgroSahyadri</h1>
+            <h1 className="text-3xl font-bold mb-2">🌾 BhooDristi</h1>
             <p className="text-base font-semibold text-green-100 mb-3">
               Your Smart Farming Assistant
             </p>

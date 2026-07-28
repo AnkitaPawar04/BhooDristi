@@ -2,13 +2,18 @@
 const translations = {
   en: {
     // App Name
-    appName: 'AgroSahyadri',
+    appName: 'BhooDristi',
     
     // Sidebar
     adminPanel: 'Admin Panel',
     dashboard: 'Dashboard',
     cropRecommendation: 'Crop Recommendation',
     weatherInformation: 'Weather Information',
+    fertilizerShops: 'Nearby Fertilizer Shops',
+    currentLocation: 'Current Location',
+    searchRadius: 'Search Radius',
+    viewDetails: 'View Details',
+    getDirections: 'Get Directions',
     profile: 'Profile',
     settings: 'Settings',
     logout: 'Logout',
@@ -322,8 +327,8 @@ const translations = {
     invalidEmailPassword: 'Invalid email or password',
     smartCropRecommendations: 'Smart Crop Recommendations',
     smartCropDescription: 'Smart crop recommendations, disease detection, and weather insights powered by artificial intelligence.',
-    joinFarmers: 'Join 5000+ Maharashtra farmers improving their yields with AgroSahyadri',
-    joinGetRecommendations: 'Join AgroSahyadri to get smart crop recommendations and farm insights',
+    joinFarmers: 'Join 5000+ Maharashtra farmers improving their yields with BhooDristi',
+    joinGetRecommendations: 'Join BhooDristi to get smart crop recommendations and farm insights',
     createAccount: 'Create Account',
     loginButton: 'Login',
     lightTheme: 'Light Theme',
@@ -761,8 +766,8 @@ const translations = {
     invalidEmailPassword: 'अमान्य ईमेल या पासवर्ड',
     smartCropRecommendations: 'स्मार्ट फसल सिफारिशें',
     smartCropDescription: 'कृत्रिम बुद्धिमत्ता द्वारा संचालित स्मार्ट फसल सिफारिशें, रोग पहचान और मौसम अंतर्दृष्टि।',
-    joinFarmers: 'AgroSahyadri के साथ 5000+ महाराष्ट्र किसानों से जुड़ें जो अपनी पैदावार में सुधार कर रहे हैं',
-    joinGetRecommendations: 'AgroSahyadri में शामिल हों और स्मार्ट फसल सिफारिशें और फार्म अंतर्दृष्टि प्राप्त करें',
+    joinFarmers: 'BhooDristi के साथ 5000+ महाराष्ट्र किसानों से जुड़ें जो अपनी पैदावार में सुधार कर रहे हैं',
+    joinGetRecommendations: 'BhooDristi में शामिल हों और स्मार्ट फसल सिफारिशें और फार्म अंतर्दृष्टि प्राप्त करें',
     createAccount: 'खाता बनाएँ',
     loginButton: 'लॉगिन',
     lightTheme: 'लाइट थीम',

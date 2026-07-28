@@ -1,21 +1,78 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Sidebar from '../../components/Sidebar';
 import { useApp } from '../../contexts/AppContext';
 import { getTranslation, getDistrictTranslation } from '../../utils/i18n';
+import { adminAPI } from '../../services/api';
 
 const AdminNotificationsPage = () => {
   const { language } = useApp();
-  const [notifications, setNotifications] = useState([
-    { id: 1, message: '🎯 20 new farmers registered', date: '2026-03-25', targetUsers: 'All Farmers', type: 'info' },
-    { id: 2, message: '⚠️ Heavy rainfall in Pune', date: '2026-03-24', targetUsers: 'Pune District', type: 'warning' },
-  ]);
+  const [notifications, setNotifications] = useState([]);
+  const [districts, setDistricts] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [notificationForm, setNotificationForm] = useState({
     message: '',
     targetType: 'all',
-    district: 'Pune'
+    district: ''
   });
+  const [districtSearch, setDistrictSearch] = useState('');
+  const [isDistrictDropdownOpen, setIsDistrictDropdownOpen] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '', visible: false });
+  const districtDropdownRef = useRef(null);
+
+  const filteredDistricts = districts.filter((district) => {
+    const query = districtSearch.trim().toLowerCase();
+    if (!query) return true;
+
+    const translatedDistrict = getDistrictTranslation(district, language).toLowerCase();
+    return district.toLowerCase().includes(query) || translatedDistrict.includes(query);
+  });
+
+  useEffect(() => {
+    const loadDistricts = async () => {
+      try {
+        const response = await adminAPI.getAllDistricts();
+        const districtList = response.data?.districts || [];
+        setDistricts(districtList);
+
+        if (districtList.length > 0) {
+          setNotificationForm(prev => ({
+            ...prev,
+            district: prev.district || districtList[0]
+          }));
+          setDistrictSearch(getDistrictTranslation(districtList[0], language));
+        }
+      } catch (error) {
+        console.error('Failed to load districts:', error);
+        setMessage({
+          type: 'error',
+          text: 'Unable to load districts from database',
+          visible: true
+        });
+        setTimeout(() => {
+          setMessage(prev => ({ ...prev, visible: false }));
+        }, 3000);
+      }
+    };
+
+    loadDistricts();
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (districtDropdownRef.current && !districtDropdownRef.current.contains(event.target)) {
+        setIsDistrictDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (notificationForm.district) {
+      setDistrictSearch(getDistrictTranslation(notificationForm.district, language));
+    }
+  }, [notificationForm.district, language]);
 
   const handleInputChange = (field, value) => {
     setNotificationForm(prev => ({ ...prev, [field]: value }));
@@ -26,7 +83,17 @@ const AdminNotificationsPage = () => {
     
     if (!notificationForm.message.trim()) {
       setMessage({ type: 'error', text: getTranslation(language, 'enterMessage'), visible: true });
-      setTimeout(() => setMessage({ ...message, visible: false }), 3000);
+      setTimeout(() => {
+        setMessage(prev => ({ ...prev, visible: false }));
+      }, 3000);
+      return;
+    }
+
+    if (notificationForm.targetType === 'district' && !notificationForm.district) {
+      setMessage({ type: 'error', text: 'Please select a district', visible: true });
+      setTimeout(() => {
+        setMessage(prev => ({ ...prev, visible: false }));
+      }, 3000);
       return;
     }
 
@@ -34,6 +101,7 @@ const AdminNotificationsPage = () => {
       id: Math.max(...notifications.map(n => n.id), 0) + 1,
       message: notificationForm.message,
       date: new Date().toISOString().split('T')[0],
+      targetType: notificationForm.targetType,
       targetUsers: notificationForm.targetType === 'all' 
         ? getTranslation(language, 'allFarmers')
         : `${notificationForm.district} District`,
@@ -41,20 +109,28 @@ const AdminNotificationsPage = () => {
     };
 
     setNotifications([newNotification, ...notifications]);
-    setNotificationForm({ message: '', targetType: 'all', district: 'Pune' });
+    setNotificationForm({
+      message: '',
+      targetType: 'all',
+      district: districts[0] || ''
+    });
     setShowForm(false);
     setMessage({ 
       type: 'success', 
       text: getTranslation(language, 'notificationSent') + ' ' + newNotification.targetUsers, 
       visible: true 
     });
-    setTimeout(() => setMessage({ ...message, visible: false }), 3000);
+    setTimeout(() => {
+      setMessage(prev => ({ ...prev, visible: false }));
+    }, 3000);
   };
 
   const handleDeleteNotification = (notificationId) => {
     setNotifications(notifications.filter(n => n.id !== notificationId));
     setMessage({ type: 'success', text: getTranslation(language, 'notificationDeleted'), visible: true });
-    setTimeout(() => setMessage({ ...message, visible: false }), 3000);
+    setTimeout(() => {
+      setMessage(prev => ({ ...prev, visible: false }));
+    }, 3000);
   };
 
   return (
@@ -125,17 +201,54 @@ const AdminNotificationsPage = () => {
                 {notificationForm.targetType === 'district' && (
                   <div>
                     <label className="block text-gray-700 font-semibold mb-2">Select District</label>
-                    <select
-                      value={notificationForm.district}
-                      onChange={(e) => handleInputChange('district', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    >
-                      <option value="Pune">{getDistrictTranslation('Pune', language)}</option>
-                      <option value="Nagpur">{getDistrictTranslation('Nagpur', language)}</option>
-                      <option value="Ahmednagar">{getDistrictTranslation('Ahmednagar', language)}</option>
-                      <option value="Solapur">{getDistrictTranslation('Solapur', language)}</option>
-                      <option value="Aurangabad">{getDistrictTranslation('Aurangabad', language)}</option>
-                    </select>
+                    <div className="relative" ref={districtDropdownRef}>
+                      <input
+                        type="text"
+                        value={districtSearch}
+                        onFocus={() => setIsDistrictDropdownOpen(true)}
+                        onChange={(e) => {
+                          const inputValue = e.target.value;
+                          setDistrictSearch(inputValue);
+                          setIsDistrictDropdownOpen(true);
+
+                          const exactMatch = districts.find(
+                            (district) =>
+                              district.toLowerCase() === inputValue.toLowerCase() ||
+                              getDistrictTranslation(district, language).toLowerCase() === inputValue.toLowerCase()
+                          );
+
+                          handleInputChange('district', exactMatch || '');
+                        }}
+                        placeholder="Search or select district..."
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+
+                      {isDistrictDropdownOpen && (
+                        <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-56 overflow-y-auto">
+                          {filteredDistricts.length === 0 ? (
+                            <div className="px-4 py-2 text-gray-500">No districts found</div>
+                          ) : (
+                            filteredDistricts.map((district) => (
+                              <button
+                                key={district}
+                                type="button"
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  handleInputChange('district', district);
+                                  setDistrictSearch(getDistrictTranslation(district, language));
+                                  setIsDistrictDropdownOpen(false);
+                                }}
+                                className={`w-full text-left px-4 py-2 hover:bg-purple-50 transition ${
+                                  notificationForm.district === district ? 'bg-purple-100 text-purple-800' : 'text-gray-800'
+                                }`}
+                              >
+                                {getDistrictTranslation(district, language)}
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
 
@@ -153,14 +266,15 @@ const AdminNotificationsPage = () => {
                 <div className="flex gap-3">
                   <button
                     type="submit"
-                    className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition"
+                    disabled={notificationForm.targetType === 'district' && !notificationForm.district}
+                    className="flex-1 !bg-purple-700 hover:!bg-purple-800 !text-white font-bold py-2 px-4 rounded-lg shadow-sm transition disabled:!bg-gray-400 disabled:!text-white disabled:cursor-not-allowed disabled:opacity-100"
                   >
                     📤 Send to {notificationForm.targetType === 'all' ? 'All Farmers' : notificationForm.district}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowForm(false)}
-                    className="flex-1 bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition"
+                    className="flex-1 !bg-slate-700 hover:!bg-slate-800 !text-white font-bold py-2 px-4 rounded-lg border !border-slate-700 shadow-sm transition"
                   >
                     Cancel
                   </button>
@@ -218,11 +332,11 @@ const AdminNotificationsPage = () => {
               </div>
               <div>
                 <p className="text-purple-700 dark:text-purple-100 text-sm">To All Farmers</p>
-                <p className="text-3xl font-bold">{notifications.filter(n => n.targetUsers === 'All Farmers').length}</p>
+                <p className="text-3xl font-bold">{notifications.filter(n => n.targetType === 'all').length}</p>
               </div>
               <div>
                 <p className="text-purple-700 dark:text-purple-100 text-sm">District-wise</p>
-                <p className="text-3xl font-bold">{notifications.filter(n => n.targetUsers !== 'All Farmers').length}</p>
+                <p className="text-3xl font-bold">{notifications.filter(n => n.targetType === 'district').length}</p>
               </div>
               <div>
                 <p className="text-purple-700 dark:text-purple-100 text-sm">This Month</p>

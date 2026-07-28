@@ -1,4 +1,4 @@
-def agrosahyadri_predict(district):
+def BhooDristi_predict(district):
 
     import pandas as pd
     import numpy as np

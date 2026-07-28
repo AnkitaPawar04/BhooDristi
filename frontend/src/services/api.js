@@ -114,6 +114,9 @@ export const adminAPI = {
   
   getDistrictAnalysis: () =>
     api.get('/admin/district-analysis'),
+
+  getAllDistricts: () =>
+    api.get('/admin/districts'),
   
   getStatistics: () =>
     api.get('/admin/statistics'),

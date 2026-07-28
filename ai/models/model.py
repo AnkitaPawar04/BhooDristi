@@ -131,16 +131,16 @@ best_crop_df = merged_df.loc[
 print("Final District Count:", best_crop_df.shape[0])
 
 # Save full cleaned dataset
-merged_df.to_csv("agrosahyadri_cleaned_full_dataset.csv", index=False)
+merged_df.to_csv("BhooDristi_cleaned_full_dataset.csv", index=False)
 
 # Save district-level dataset
-best_crop_df.to_csv("agrosahyadri_district_dataset.csv", index=False)
+best_crop_df.to_csv("BhooDristi_district_dataset.csv", index=False)
 
 print("Cleaned datasets saved successfully.")
 
 import pandas as pd
 
-best_crop_df = pd.read_csv("agrosahyadri_district_dataset.csv")
+best_crop_df = pd.read_csv("BhooDristi_district_dataset.csv")
 
 print(best_crop_df.shape)
 best_crop_df.head()
@@ -238,45 +238,45 @@ gb_model.fit(X, y)
 
 print("Final Gradient Boosting model trained successfully.")
 
-joblib.dump(gb_model, "agrosahyadri_gb_model.pkl")
+joblib.dump(gb_model, "BhooDristi_gb_model.pkl")
 print("Model saved successfully.")
 
-joblib.dump(features, "agrosahyadri_features.pkl")
+joblib.dump(features, "BhooDristi_features.pkl")
 print("Feature list saved successfully.")
 
-joblib.dump(gb_model.classes_, "agrosahyadri_classes.pkl")
+joblib.dump(gb_model.classes_, "BhooDristi_classes.pkl")
 
 from google.colab import files
 
-files.download("agrosahyadri_gb_model.pkl")
-files.download("agrosahyadri_features.pkl")
-files.download("agrosahyadri_classes.pkl")
+files.download("BhooDristi_gb_model.pkl")
+files.download("BhooDristi_features.pkl")
+files.download("BhooDristi_classes.pkl")
 
 import joblib
 import pandas as pd
 
 # Load saved model
-model = joblib.load("agrosahyadri_gb_model.pkl")
+model = joblib.load("BhooDristi_gb_model.pkl")
 
 # Load feature list
-feature_columns = joblib.load("agrosahyadri_features.pkl")
+feature_columns = joblib.load("BhooDristi_features.pkl")
 
 # Load cleaned district dataset
-best_crop_df = pd.read_csv("agrosahyadri_district_dataset.csv")
+best_crop_df = pd.read_csv("BhooDristi_district_dataset.csv")
 
 # Create district lookup table
 district_features = best_crop_df.set_index("District")
 
 print("Production environment ready.")
 
-def agrosahyadri_predict(district_name):
+def BhooDristi_predict(district_name):
 
     district_name = district_name.lower().strip()
 
     # Check district existence
     if district_name not in district_features.index:
         return {
-            "Error": "District not found in AgroSahyadri database."
+            "Error": "District not found in BhooDristi database."
         }
 
     # Extract district row
@@ -320,11 +320,11 @@ def agrosahyadri_predict(district_name):
         "Top 3 Recommendations": top3
     }
 
-agrosahyadri_predict("akola")
+BhooDristi_predict("akola")
 
 import pandas as pd
 
-merged_df = pd.read_csv("agrosahyadri_cleaned_full_dataset.csv")
+merged_df = pd.read_csv("BhooDristi_cleaned_full_dataset.csv")
 
 print("Dataset Shape:", merged_df.shape)
 merged_df.head()
@@ -573,7 +573,7 @@ print("Test Accuracy:", accuracy_score(y_test, y_pred))
 
 import numpy as np
 
-def agrosahyadri_recommend(N, P, K, temperature, humidity, ph, rainfall):
+def BhooDristi_recommend(N, P, K, temperature, humidity, ph, rainfall):
 
     input_data = pd.DataFrame([[
         N, P, K, temperature, humidity, ph, rainfall
@@ -593,7 +593,7 @@ def agrosahyadri_recommend(N, P, K, temperature, humidity, ph, rainfall):
 
     return recommendations
 
-agrosahyadri_recommend(
+BhooDristi_recommend(
     N=90,
     P=42,
     K=43,
@@ -606,17 +606,17 @@ agrosahyadri_recommend(
 import joblib
 
 # Save model
-joblib.dump(rf_model, "agrosahyadri_model_final.pkl")
+joblib.dump(rf_model, "BhooDristi_model_final.pkl")
 
 # Save feature list
-joblib.dump(features, "agrosahyadri_features_final.pkl")
+joblib.dump(features, "BhooDristi_features_final.pkl")
 
 print("Model saved successfully.")
 
 from google.colab import files
 
-files.download("agrosahyadri_model_final.pkl")
-files.download("agrosahyadri_features_final.pkl")
+files.download("BhooDristi_model_final.pkl")
+files.download("BhooDristi_features_final.pkl")
 
 ## EXECUTE FROM HERE
 
@@ -625,17 +625,17 @@ import pandas as pd
 import numpy as np
 
 # Load model
-rf_model = joblib.load("agrosahyadri_model_final.pkl")
+rf_model = joblib.load("BhooDristi_model_final.pkl")
 
 # Load feature list
-features = joblib.load("agrosahyadri_features_final.pkl")
+features = joblib.load("BhooDristi_features_final.pkl")
 
 print("Model loaded successfully.")
 
 import joblib
 
-rf_model = joblib.load("agrosahyadri_model_final.pkl")
-features = joblib.load("agrosahyadri_features_final.pkl")
+rf_model = joblib.load("BhooDristi_model_final.pkl")
+features = joblib.load("BhooDristi_features_final.pkl")
 
 import shap
 
@@ -944,7 +944,7 @@ def get_soil(district):
 
     return N, P, K, ph
 
-def agrosahyadri_predict(district):
+def BhooDristi_predict(district):
 
     # Get coordinates
     lat, lon = get_coordinates(district)
@@ -1023,13 +1023,13 @@ get_coordinates("akola")
 
 get_soil("akola")
 
-agrosahyadri_predict("ratnagiri")
+BhooDristi_predict("ratnagiri")
 
 ## Fully automatic function
 
 from datetime import datetime
 
-def agrosahyadri_predict(district):
+def BhooDristi_predict(district):
 
     import pandas as pd
     import numpy as np
@@ -1180,7 +1180,7 @@ def agrosahyadri_predict(district):
 
 def display_prediction(result):
 
-    print("\n🌾 AgroSahyadri Crop Recommendation\n")
+    print("\n🌾 BhooDristi Crop Recommendation\n")
 
     print(f"District: {result['District']}")
     print(f"Season: {result['Detected Season']}\n")
@@ -1217,9 +1217,9 @@ def display_prediction(result):
 
     print(insights.get(crop, "This crop is suitable under the detected soil and weather conditions."))
 
-result = agrosahyadri_predict("akola")
+result = BhooDristi_predict("akola")
 
 display_prediction(result)
 
-agrosahyadri_predict("akola")
+BhooDristi_predict("akola")
 

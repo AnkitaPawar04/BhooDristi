@@ -39,7 +39,7 @@ def send_sms_otp(phone_number: str, otp: str) -> bool:
         
         # Send SMS
         message = client.messages.create(
-            body=f"Your AgroSahyadri OTP is: {otp}. Valid for 10 minutes. Do not share with anyone.",
+            body=f"Your BhooDristi OTP is: {otp}. Valid for 10 minutes. Do not share with anyone.",
             from_=TWILIO_PHONE_NUMBER,
             to=full_phone
         )

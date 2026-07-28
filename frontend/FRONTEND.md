@@ -2,7 +2,7 @@
 
 ## Overview
 
-AgroSahyadri Frontend is a React-based web application built with Vite, providing farmers with an intuitive interface for crop recommendations, weather data, and soil analysis.
+BhooDristi Frontend is a React-based web application built with Vite, providing farmers with an intuitive interface for crop recommendations, weather data, and soil analysis.
 
 **Tech Stack:**
 - React 18.2.0

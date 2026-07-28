@@ -10,7 +10,7 @@ const AdminProfilePage = () => {
     lastName: 'User',
     email: 'admin.agro@gmail.com',
     phone: '+91 98765 43210',
-    organization: 'AgroSahyadri Admin',
+    organization: 'BhooDristi Admin',
     profilePhoto: 'https://ui-avatars.com/api/?name=Admin+User&background=16a34a&color=fff&size=160',
   });
 
@@ -147,7 +147,7 @@ const AdminProfilePage = () => {
 
                 <div className="mt-8 text-center space-y-2">
                   <p className="text-gray-800 font-bold text-lg">{getTranslation(language, 'administrator')}</p>
-                  <p className="text-green-600 font-semibold">AgroSahyadri System</p>
+                  <p className="text-green-600 font-semibold">BhooDristi System</p>
                   <p className="text-gray-500 text-sm">Status: 🟢 Active</p>
                 </div>
               </div>

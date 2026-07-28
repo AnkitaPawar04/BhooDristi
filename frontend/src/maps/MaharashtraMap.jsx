@@ -20,12 +20,17 @@ const MapClickHandler = ({ onMapClick }) => {
   return null;
 };
 
-const MaharashtraMap = ({ onLocationSelect, selectedLocation }) => {
+const MaharashtraMap = ({
+  onLocationSelect,
+  selectedLocation,
+  markers = [],
+  className = 'w-full h-96 rounded-lg overflow-hidden border-2 border-gray-300'
+}) => {
   const MAHARASHTRA_CENTER = [19.7515, 75.7139];
   const ZOOM_LEVEL = 7;
 
   return (
-    <div className="w-full h-96 rounded-lg overflow-hidden border-2 border-gray-300">
+    <div className={className}>
       <MapContainer center={MAHARASHTRA_CENTER} zoom={ZOOM_LEVEL} style={{ height: '100%', width: '100%' }}>
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -43,6 +48,17 @@ const MaharashtraMap = ({ onLocationSelect, selectedLocation }) => {
             </Popup>
           </Marker>
         )}
+        {markers.map((marker) => (
+          <Marker key={marker.id || `${marker.latitude}-${marker.longitude}`} position={[marker.latitude, marker.longitude]}>
+            <Popup>
+              <div className="text-sm space-y-1">
+                <p className="font-bold">{marker.title || 'Location'}</p>
+                {marker.description && <p>{marker.description}</p>}
+                {typeof marker.distance === 'number' && <p>Distance: {marker.distance.toFixed(1)} km</p>}
+              </div>
+            </Popup>
+          </Marker>
+        ))}
       </MapContainer>
     </div>
   );

@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from ..database.config import get_db
 from ..models.farmer import Farmer, Prediction
 from ..utils.auth import create_access_token
+from ..utils.soil_database import MAHARASHTRA_ZONES
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -109,6 +110,28 @@ async def get_district_analysis(db: Session = Depends(get_db)):
     return {
         "total_districts": len(district_data),
         "districts": list(district_data.values())
+    }
+
+@router.get("/districts")
+async def get_all_districts(db: Session = Depends(get_db)):
+    """Get all districts from dataset and database"""
+    farmer_district_rows = (
+        db.query(Farmer.district)
+        .filter(Farmer.district.isnot(None))
+        .filter(func.trim(Farmer.district) != "")
+        .distinct()
+        .order_by(Farmer.district.asc())
+        .all()
+    )
+
+    farmer_districts = [d[0].strip() for d in farmer_district_rows if d and d[0]]
+    dataset_districts = list(MAHARASHTRA_ZONES.keys())
+
+    district_list = sorted(set(dataset_districts + farmer_districts), key=str.lower)
+
+    return {
+        "total_districts": len(district_list),
+        "districts": district_list
     }
 
 @router.get("/statistics")

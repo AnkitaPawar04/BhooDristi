@@ -1,8 +1,8 @@
-# 🌾 AgroSahyadri - Intelligent Crop Recommendation System
+# 🌾 BhooDristi - Intelligent Crop Recommendation System
 
 ## 📖 Overview
 
-**AgroSahyadri** is an intelligent agricultural decision support system for Maharashtra farmers. It combines machine learning, geolocation services, and real-time weather data to provide personalized crop recommendations based on soil conditions and local climate.
+**BhooDristi** is an intelligent agricultural decision support system for Maharashtra farmers. It combines machine learning, geolocation services, and real-time weather data to provide personalized crop recommendations based on soil conditions and local climate.
 
 Built with React + FastAPI + Scikit-learn, it delivers 99% accurate crop predictions to help farmers optimize their harvests.
 
@@ -115,7 +115,7 @@ venv\Scripts\activate          # Windows
 # Install dependencies
 pip install -r requirements.txt
 
-# Run server
+# Run server 
 python app/main.py
 # Server runs on http://localhost:8000
 # API docs: http://localhost:8000/docs
@@ -200,7 +200,7 @@ docker-compose up --build
 ## 📁 Project Structure
 
 ```
-AgroSahyadri/
+BhooDristi/
 ├── backend/
 │   ├── app/
 │   │   ├── main.py              # FastAPI app
@@ -244,7 +244,7 @@ AgroSahyadri/
 │   │       ├── CropDataset-Enhanced.csv
 │   │       └── *.pkl           # Trained models
 │   ├── models/                 # Model artifacts
-│   │   ├── agrosahyadri_gb_model.pkl
+│   │   ├── BhooDristi_gb_model.pkl
 │   │   ├── scaler.pkl
 │   │   └── label_encoder.pkl
 │   └── README.md
@@ -334,12 +334,12 @@ This starts:
 ### Individual Containers
 ```bash
 # Backend
-docker build -t agrosahyadri-backend ./backend
-docker run -p 8000:8000 agrosahyadri-backend
+docker build -t BhooDristi-backend ./backend
+docker run -p 8000:8000 BhooDristi-backend
 
 # Frontend
-docker build -t agrosahyadri-frontend ./frontend
-docker run -p 3000:3000 agrosahyadri-frontend
+docker build -t BhooDristi-frontend ./frontend
+docker run -p 3000:3000 BhooDristi-frontend
 ```
 
 ---
@@ -348,7 +348,7 @@ docker run -p 3000:3000 agrosahyadri-frontend
 
 ### Backend (.env)
 ```
-DATABASE_URL=postgresql://user:password@localhost/agrosahyadri
+DATABASE_URL=postgresql://user:password@localhost/BhooDristi
 WEATHER_API_KEY=your_openweathermap_key
 JWT_SECRET=your_jwt_secret
 FIREBASE_CONFIG=your_firebase_config
@@ -456,7 +456,7 @@ python --version          # Should be 3.10+
 pip list | grep scikit-learn
 
 # Verify database
-psql -U postgres -d agrosahyadri
+psql -U postgres -d BhooDristi
 ```
 
 ### Frontend Issues
@@ -478,7 +478,7 @@ node --version            # Should be v18+
 ls -la ai/models/*.pkl
 
 # Test model loading
-python -c "import joblib; m = joblib.load('ai/models/agrosahyadri_gb_model.pkl')"
+python -c "import joblib; m = joblib.load('ai/models/BhooDristi_gb_model.pkl')"
 ```
 
 See detailed troubleshooting in [FRONTEND.md](FRONTEND.md), [BACKEND.md](BACKEND.md), [AI.md](AI.md).

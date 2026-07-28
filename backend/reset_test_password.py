@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Reset test user password to properly hashed version"""
 import sys
-sys.path.insert(0, 'E:\\AgroSahyadri\\backend')
+sys.path.insert(0, 'E:\\BhooDristi\\backend')
 
 from app.database.config import SessionLocal
 from app.models.farmer import Farmer

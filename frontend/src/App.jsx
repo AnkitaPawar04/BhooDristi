@@ -7,6 +7,7 @@ import LoginPage from './pages/farmers/LoginPage';
 import DashboardPage from './pages/farmers/DashboardPage';
 import CropRecommendationPage from './pages/farmers/CropRecommendationPage';
 import IrrigationPage from './pages/farmers/IrrigationPage';
+import FertilizerShopsPage from './pages/farmers/FertilizerShopsPage';
 import SoilManagementPage from './pages/farmers/SoilManagementPage';
 import WeatherPage from './pages/farmers/WeatherPage';
 import ProfilePage from './pages/farmers/ProfilePage';
@@ -64,6 +65,7 @@ function BackgroundWrappedApp({ handleNavigate }) {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isLoginRoute = location.pathname === '/login' || location.pathname === '/admin/login';
+  const isDashboardRoute = location.pathname === '/dashboard';
 
   const content = (
     <Routes>
@@ -93,6 +95,14 @@ function BackgroundWrappedApp({ handleNavigate }) {
         element={
           <ProtectedRoute>
             <IrrigationPage onNavigate={handleNavigate} />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/fertilizer"
+        element={
+          <ProtectedRoute>
+            <FertilizerShopsPage onNavigate={handleNavigate} />
           </ProtectedRoute>
         }
       />
@@ -201,6 +211,10 @@ function BackgroundWrappedApp({ handleNavigate }) {
   );
 
   if (isLoginRoute) {
+    return content;
+  }
+
+  if (isDashboardRoute) {
     return content;
   }
 

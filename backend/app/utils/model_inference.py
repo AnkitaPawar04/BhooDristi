@@ -6,6 +6,7 @@ Loads trained models and provides prediction interface
 import joblib
 from pathlib import Path
 import numpy as np
+import pandas as pd
 from typing import Dict, List, Tuple
 
 class CropRecommendationModel:
@@ -17,7 +18,7 @@ class CropRecommendationModel:
         # Models are at: ai/models/
         current_file = Path(__file__)
         backend_dir = current_file.parent.parent.parent  # go to backend folder
-        project_root = backend_dir.parent  # go to project root (AgroSahyadri)
+        project_root = backend_dir.parent  # go to project root (BhooDristi)
         self.model_path = project_root / "ai" / "models"
         
         self.model = None
@@ -30,7 +31,7 @@ class CropRecommendationModel:
         """Load all necessary models and components"""
         try:
             # Load the trained Gradient Boosting model
-            self.model = joblib.load(self.model_path / "agrosahyadri_gb_model.pkl")
+            self.model = joblib.load(self.model_path / "BhooDristi_gb_model.pkl")
             
             # Load scaler for feature normalization
             self.scaler = joblib.load(self.model_path / "scaler.pkl")
@@ -39,7 +40,7 @@ class CropRecommendationModel:
             self.label_encoder = joblib.load(self.model_path / "label_encoder.pkl")
             
             # Load features list
-            self.features = joblib.load(self.model_path / "agrosahyadri_features.pkl")
+            self.features = joblib.load(self.model_path / "BhooDristi_features.pkl")
             
             print("✓ Models loaded successfully")
             print(f"  Features: {self.features}")
@@ -74,8 +75,12 @@ class CropRecommendationModel:
             Dictionary with recommended crop and confidence
         """
         
-        # Create feature array in the same order as training
-        features = np.array([[nitrogen, phosphorus, potassium, temperature, humidity, ph, rainfall]])
+        # Create a feature frame with the same column names used during training
+        feature_names = self.features or ['N', 'P', 'K', 'temperature', 'humidity', 'ph', 'rainfall']
+        features = pd.DataFrame(
+            [[nitrogen, phosphorus, potassium, temperature, humidity, ph, rainfall]],
+            columns=feature_names
+        )
         
         # Scale features using the trained scaler
         features_scaled = self.scaler.transform(features)

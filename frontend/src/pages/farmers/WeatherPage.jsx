@@ -8,17 +8,22 @@ import dashboardBgVideo from './videos/dashboard.mp4';
 
 const WeatherPage = ({ onNavigate }) => {
   const { language } = useApp();
-  const { location, getLocation, loading: locationLoading } = useGeolocation();
+  const { location, error: locationError, getLocation, loading: locationLoading } = useGeolocation();
   const [weather, setWeather] = useState(null);
   const [forecast, setForecast] = useState(null);
   const [soilData, setSoilData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [district, setDistrict] = useState('Pune');
+  const [district, setDistrict] = useState('');
 
   useEffect(() => {
-    // Auto-fetch weather for default location (Pune) on page load
-    fetchWeatherData(18.5204, 73.8567); // Pune coordinates
+    getLocation();
   }, []);
+
+  useEffect(() => {
+    if (location) {
+      fetchWeatherData(location.latitude, location.longitude);
+    }
+  }, [location]);
 
   const fetchWeatherData = async (lat, lon) => {
     setLoading(true);
@@ -123,10 +128,16 @@ const WeatherPage = ({ onNavigate }) => {
                     disabled={locationLoading}
                     className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-xl mb-6 transition disabled:opacity-50 shadow-lg text-lg"
                   >
-                    {locationLoading ? '📡 Detecting Location...' : '🔄 Refresh Data'}
+                    {locationLoading ? '📡 Detecting Location...' : '🔄 Refresh Current Location'}
                   </button>
                 </div>
               </div>
+
+              {locationError && (
+                <div className="bg-red-100 dark:bg-red-900/30 border-l-4 border-red-500 p-4 rounded-lg text-red-700 dark:text-red-200 text-sm mb-6">
+                  ⚠️ {locationError}
+                </div>
+              )}
 
               {weather ? (
                 <div className="bg-gradient-to-br from-blue-50 dark:from-gray-700 to-white dark:to-gray-800 rounded-2xl p-8 text-center border-2 border-blue-100 dark:border-blue-600">
@@ -146,13 +157,13 @@ const WeatherPage = ({ onNavigate }) => {
                     </div>
                     <div className="bg-indigo-100 dark:bg-indigo-900/30 rounded-xl p-4 border-l-4 border-indigo-600">
                       <p className="text-indigo-700 dark:text-indigo-300 text-sm font-semibold">📍 Location</p>
-                      <p className="text-3xl font-bold text-indigo-800 dark:text-indigo-200 mt-2">{district}</p>
+                      <p className="text-3xl font-bold text-indigo-800 dark:text-indigo-200 mt-2">{district || 'Current Location'}</p>
                     </div>
                   </div>
                 </div>
               ) : (
                 <div className="text-center py-12 bg-gray-50 dark:bg-gray-700 rounded-2xl">
-                  <p className="text-gray-700 dark:text-gray-300 text-lg font-semibold">📍 Click 'Refresh Data' to fetch weather information</p>
+                  <p className="text-gray-700 dark:text-gray-300 text-lg font-semibold">📍 Loading weather for your current location...</p>
                 </div>
               )}
             </div>

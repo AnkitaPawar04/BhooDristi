@@ -250,7 +250,7 @@ const LoginPage = () => {
           <div className="w-full max-w-sm animate-fadeInUp">
             {/* Mobile Hero Section */}
             <div className="lg:hidden bg-black/40 backdrop-blur-md rounded-2xl p-6 mb-6 text-white border border-white/20">
-              <h1 className="text-3xl font-bold mb-2">🌾 AgroSahyadri</h1>
+              <h1 className="text-3xl font-bold mb-2">🌾 BhooDristi</h1>
               <p className="text-base font-semibold text-green-100 mb-3">
                 Your Smart Farming Assistant
               </p>
@@ -532,7 +532,7 @@ const LoginPage = () => {
             <div className="text-center animate-fadeInUp">
               <div className="flex items-center justify-center gap-2 mb-4">
                 <span className="text-6xl">🌾</span>
-                <h1 className="text-5xl xl:text-6xl font-bold">AgroSahyadri</h1>
+                <h1 className="text-5xl xl:text-6xl font-bold">BhooDristi</h1>
               </div>
               <p className="text-xl xl:text-2xl font-semibold text-green-100 mb-2">
                 Your Digital Farmer's Assistant
