@@ -2,23 +2,26 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar';
 import MaharashtraMap from '../../maps/MaharashtraMap';
 import { useApp } from '../../contexts/AppContext';
-import { getTranslation, getCropTranslation, getDistrictTranslation } from '../../utils/i18n';
-import { cropAPI, weatherAPI, soilAPI } from '../../services/api';
-import { CropPerformanceChart } from '../../charts/Charts';
+import { getCropTranslation, getDistrictTranslation } from '../../utils/i18n';
+import { cropAPI } from '../../services/api';
+import LandCoverValidationCard from '../../components/LandCoverValidationCard';
 import useGeolocation from '../../hooks/useGeolocation';
 import dashboardBgVideo from './videos/dashboard.mp4';
 
 const CropRecommendationPage = ({ onNavigate }) => {
   const { language } = useApp();
-  const { location, getLocation } = useGeolocation();
+  const { location } = useGeolocation();
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [season, setSeason] = useState('Kharif');
   const [recommendation, setRecommendation] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [district, setDistrict] = useState('');
+  // district inference removed — backend is the single source of truth
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [seasonalCrops, setSeasonalCrops] = useState([]);
+  // seasonal crops rendered directly from backend recommendation.top_crops
+  const [validation, setValidation] = useState(null);
+  const [serviceUnavailable, setServiceUnavailable] = useState('');
+  // removed soilEdited; frontend will not auto-fetch soil by guessed district
   
   // Soil and weather parameters
   const [soilParams, setSoilParams] = useState({
@@ -34,85 +37,27 @@ const CropRecommendationPage = ({ onNavigate }) => {
   // Clear recommendation when season changes
   useEffect(() => {
     setRecommendation(null);
-    setSeasonalCrops([]);
     setError('');
   }, [season]);
 
-  const handleMapClick = (lat, lon) => {
-    setSelectedLocation({ latitude: lat, longitude: lon });
-    setRecommendation(null); // Clear previous recommendation when location changes
-    setSeasonalCrops([]); // Clear seasonal crops
-    determineDistrict(lat, lon);
-  };
+  const handleMapClick = (lat, lon, district) => {
+  setSelectedLocation({
+    latitude: lat,
+    longitude: lon,
+    district: district || null,
+  });
 
-  const determineDistrict = (lat, lon) => {
-    // All Maharashtra districts with coordinates
-    const districts = [
-      // Western Maharashtra
-      { name: 'Pune', lat: 18.516, lon: 73.856 },
-      { name: 'Satara', lat: 17.665, lon: 73.912 },
-      { name: 'Kolhapur', lat: 16.702, lon: 73.735 },
-      { name: 'Solapur', lat: 17.656, lon: 75.905 },
-      
-      // Northern Maharashtra
-      { name: 'Nashik', lat: 19.997, lon: 73.791 },
-      { name: 'Jalgaon', lat: 21.160, lon: 75.569 },
-      { name: 'Dhule', lat: 21.196, lon: 74.774 },
-      { name: 'Nandurbar', lat: 21.374, lon: 74.226 },
-      
-      // Eastern Maharashtra
-      { name: 'Amravati', lat: 20.844, lon: 77.804 },
-      { name: 'Akola', lat: 20.714, lon: 76.995 },
-      { name: 'Buldhana', lat: 20.503, lon: 76.177 },
-      { name: 'Washim', lat: 20.109, lon: 76.778 },
-      { name: 'Yavatmal', lat: 20.384, lon: 77.775 },
-      
-      // Central Maharashtra
-      { name: 'Aurangabad', lat: 19.876, lon: 75.343 },
-      { name: 'Parbhani', lat: 19.268, lon: 76.774 },
-      { name: 'Latur', lat: 18.379, lon: 76.508 },
-      { name: 'Hingoli', lat: 19.717, lon: 77.154 },
-      
-      // Vidarbha
-      { name: 'Nagpur', lat: 21.146, lon: 79.089 },
-      { name: 'Wardha', lat: 20.763, lon: 78.609 },
-      { name: 'Bhandara', lat: 21.305, lon: 79.263 },
-      { name: 'Chandrapur', lat: 19.278, lon: 79.294 },
-      { name: 'Gondia', lat: 21.443, lon: 80.189 },
-    ];
+  // Clear previous recommendation and validation results
+  // when the user selects a new location.
+  setRecommendation(null);
+  setValidation(null);
+  setServiceUnavailable('');
+  setError('');
+};
 
-    let closestDistrict = 'Pune';
-    let minDistance = Infinity;
+  // district inference removed - backend will determine district
 
-    districts.forEach((d) => {
-      const distance = Math.sqrt((lat - d.lat) ** 2 + (lon - d.lon) ** 2);
-      if (distance < minDistance) {
-        minDistance = distance;
-        closestDistrict = d.name;
-      }
-    });
-
-    setDistrict(closestDistrict);
-    // Auto-fetch soil parameters for the determined district
-    fetchSoilParametersForDistrict(closestDistrict);
-  };
-
-  const fetchSoilParametersForDistrict = async (districtName) => {
-    try {
-      const response = await soilAPI.getSoilData(districtName);
-      if (response.data) {
-        setSoilParams(prev => ({
-          ...prev,
-          nitrogen: response.data.nitrogen || 50,
-          phosphorus: response.data.phosphorus || 50,
-          potassium: response.data.potassium || 50,
-          ph: response.data.ph || 6.5
-        }));
-      }
-    } catch (err) {
-      console.log('Using default soil parameters for ' + districtName);
-    }
-  };
+  // automatic soil fetching removed — keep manual soil sliders only
 
   const handleParameterChange = (param, value) => {
     setSoilParams(prev => ({
@@ -131,47 +76,51 @@ const CropRecommendationPage = ({ onNavigate }) => {
     setError('');
 
     try {
-      // First, get district-specific crops for more accurate recommendations
-      const districtCropsResponse = await cropAPI.getDistrictCrops(district);
-      
-      // Get the appropriate crops based on selected season
-      const seasonCropKey = season.toLowerCase() === 'kharif' ? 'kharif_crops' : 'rabi_crops';
-      const seasonTopCropKey = season.toLowerCase() === 'kharif' ? 'kharif_top_crop' : 'rabi_top_crop';
-      
-      // Get soil data for the district
-      const soilResponse = await soilAPI.getSoilData(district);
-      const freshSoilParams = {
-        nitrogen: soilResponse.data?.nitrogen || soilParams.nitrogen,
-        phosphorus: soilResponse.data?.phosphorus || soilParams.phosphorus,
-        potassium: soilResponse.data?.potassium || soilParams.potassium,
-        ph: soilResponse.data?.ph || soilParams.ph,
-        temperature: soilParams.temperature,
-        humidity: soilParams.humidity,
-        rainfall: soilParams.rainfall
-      };
-      
-      setSoilParams(freshSoilParams);
+      // Call backend ML pipeline — backend is the source of truth for district, soil, weather, validation and prediction
+      const farmerId = localStorage.getItem('farmer_id') || 1;
 
-      // Create recommendation object using district-specific data
-      const recommendationData = {
-        recommended_crop: districtCropsResponse.data[seasonTopCropKey] || 'Wheat',
-        top_crops: districtCropsResponse.data[seasonCropKey] || ['Wheat', 'Barley', 'Chickpea'],
-        confidence: 92,
-        district: district,
-        season: season
-      };
-
-      setRecommendation(recommendationData);
-      
-      // Set seasonal crops from district data
-      const cropsToShow = districtCropsResponse.data[seasonCropKey] || [];
-      setSeasonalCrops(
-        cropsToShow.map((crop, idx) => ({
-          crop: crop,
-          suitability: 95 - (idx * 5),
-          rainfall: season.toLowerCase() === 'kharif' ? `${800 - (idx * 100)}mm` : `${50 - (idx * 10)}mm`
-        }))
+      const resp = await cropAPI.predictCrop(
+        selectedLocation.latitude,
+        selectedLocation.longitude,
+        season,
+        farmerId,
+        soilParams.nitrogen,
+        soilParams.phosphorus,
+        soilParams.potassium,
+        soilParams.temperature,
+        soilParams.humidity,
+        soilParams.ph,
+        soilParams.rainfall
       );
+
+      if (resp.ok && resp.data) {
+      setRecommendation(resp.data);
+
+      // Keep the map-selected district synchronized with
+      // the district returned by the backend.
+      if (resp.data.district) {
+        setSelectedLocation(prev => ({
+          ...prev,
+          district: resp.data.district,
+        }));
+      }
+
+      setValidation(null);
+      setServiceUnavailable('');
+      return;
+    }
+
+      // Handle validation outcome (HTTP 400 with land_cover)
+      if (resp.status === 400 && resp.validation) {
+        setValidation(resp.validation);
+        return;
+      }
+
+      // Service unavailable
+      if (resp.status === 503) {
+        setServiceUnavailable(resp.detail || 'Land-cover validation temporarily unavailable.');
+        return;
+      }
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to get recommendation');
       console.error(err);
@@ -180,64 +129,13 @@ const CropRecommendationPage = ({ onNavigate }) => {
     }
   };
 
-  const fetchSeasonalCrops = async (districtName, selectedSeason, soilData = null) => {
-    try {
-      const farmerId = localStorage.getItem('farmer_id') || 1;
-      
-      // Use provided soil data or current state
-      const soil = soilData || soilParams;
-      
-      // Adjust weather parameters based on season
-      const weatherParams = selectedSeason === 'Kharif' 
-        ? {
-            temperature: soil.temperature || 25,
-            humidity: 80, // High humidity during monsoon
-            rainfall: 800 // High rainfall during monsoon
-          }
-        : {
-            temperature: soil.temperature || 20,
-            humidity: 40, // Low humidity during winter
-            rainfall: 50 // Low rainfall during rabi
-          };
-      
-      // Get personalized seasonal prediction using the soil parameters
-      const response = await cropAPI.predictCrop(
-        selectedLocation.latitude,
-        selectedLocation.longitude,
-        selectedSeason,
-        farmerId,
-        soil.nitrogen,
-        soil.phosphorus,
-        soil.potassium,
-        weatherParams.temperature,
-        weatherParams.humidity,
-        soil.ph,
-        weatherParams.rainfall
-      );
-      
-      if (response.data && response.data.top_crops) {
-        // Get all crops but skip the first 3 (already shown in recommendation card)
-        const allCrops = [
-          {
-            crop: response.data.recommended_crop,
-            suitability: response.data.confidence,
-            rainfall: selectedSeason === 'Kharif' ? `800mm` : `50mm`
-          },
-          ...response.data.top_crops.map((crop, idx) => ({
-            crop: typeof crop === 'string' ? crop : crop.crop,
-            suitability: typeof crop === 'string' ? 90 - (idx * 5) : crop.confidence || 90 - (idx * 5),
-            rainfall: selectedSeason === 'Kharif' ? `${800 - (idx * 100)}mm` : `${50 - (idx * 10)}mm`
-          }))
-        ];
-        
-        // Skip first 3 crops (shown in main card) and show next 3-4 as alternatives
-        const seasonalAlternatives = allCrops.slice(3, 7);
-        setSeasonalCrops(seasonalAlternatives.length > 0 ? seasonalAlternatives : allCrops.slice(3));
-      }
-    } catch (err) {
-      console.log('Could not fetch seasonal crops');
-    }
-  };
+  // Compute display confidence once per render (backend may return 0.92 or 92)
+  let displayConfidence = 0;
+  if (recommendation) {
+    const raw = recommendation.confidence;
+    const numeric = typeof raw === 'number' ? raw : parseFloat(raw) || 0;
+    displayConfidence = numeric > 1 ? numeric : Math.round(numeric * 100);
+  }
 
   return (
     <div className="flex h-screen bg-transparent dark:bg-transparent">
@@ -267,10 +165,29 @@ const CropRecommendationPage = ({ onNavigate }) => {
           <div className="page-divider"></div>
         </div>
 
+        {serviceUnavailable && (
+          <div className="mb-6 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-600 rounded-lg p-4 text-yellow-700 dark:text-yellow-200 font-semibold">
+            {serviceUnavailable}
+          </div>
+        )}
+
         {error && (
           <div className="mb-6 bg-red-100 dark:bg-red-900/30 border-l-4 border-red-600 rounded-lg p-4 text-red-700 dark:text-red-200 font-semibold">
             ⚠️ {error}
           </div>
+        )}
+
+        {/* Land-cover validation state (not an error) */}
+        {validation && (
+          <LandCoverValidationCard
+          validation={validation}
+          selectedLocation={selectedLocation}
+          onChangeLocation={() => {
+            setValidation(null);
+            setSelectedLocation(null);
+          }}
+          language={language}
+        />
         )}
 
         {/* Main Grid: Map + Form */}
@@ -302,12 +219,16 @@ const CropRecommendationPage = ({ onNavigate }) => {
                     <p className="text-lg font-bold text-green-800 dark:text-green-200">{selectedLocation.longitude.toFixed(4)}°</p>
                   </div>
                 </div>
-                {district && (
-                  <div className="mt-4 pt-4 border-t border-green-300 dark:border-green-600">
-                    <p className="text-xs text-green-700 dark:text-green-300">District</p>
-                    <p className="text-lg font-bold text-green-800 dark:text-green-200">{getDistrictTranslation(district, language)}</p>
-                  </div>
-                )}
+                <div className="mt-4 pt-4 border-t border-green-300 dark:border-green-600">
+                  <p className="text-xs text-green-700 dark:text-green-300">District</p>
+                  <p className="text-lg font-bold text-green-800 dark:text-green-200">
+                    {selectedLocation.district
+                      ? getDistrictTranslation(selectedLocation.district, language)
+                      : recommendation?.district
+                        ? getDistrictTranslation(recommendation.district, language)
+                        : 'District not detected.'}
+                  </p>
+                </div>
               </div>
             )}
             </div>
@@ -415,14 +336,14 @@ const CropRecommendationPage = ({ onNavigate }) => {
                     <p className="text-green-100 text-lg mt-3">Peak Planting Window</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-6xl font-bold">{recommendation.confidence.toFixed(0)}%</p>
+                    <p className="text-6xl font-bold">{displayConfidence}%</p>
                     <p className="text-green-100 text-sm">Match</p>
                   </div>
                 </div>
                 <div className="h-2 bg-white/30 rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-white rounded-full transition-all"
-                    style={{width: `${recommendation.confidence}%`}}
+                    style={{width: `${displayConfidence}%`}}
                   />
                 </div>
               </div>
@@ -459,29 +380,29 @@ const CropRecommendationPage = ({ onNavigate }) => {
           </section>
         )}
 
-        {/* Seasonal Crops */}
-        {seasonalCrops.length > 0 && (
+        {/* Seasonal / Additional crops: render exactly what backend returned (no fabricated values) */}
+        {recommendation?.top_crops && recommendation.top_crops.length > 4 && (
           <section className="farm-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-4 border-green-200 dark:border-green-700 mb-10 animate-fadeInUp overflow-hidden transition-shadow duration-300">
             <div className="bg-gradient-to-r from-green-500 to-green-600 p-6 text-white">
-              <h3 className="text-3xl font-bold">🌾 Alternative {season} Crops</h3>
-              <p className="text-green-100 mt-2 text-lg">More crop options for {season} season</p>
+              <h3 className="text-3xl font-bold">🌾 More Crop Options</h3>
+              <p className="text-green-100 mt-2 text-lg">Additional crops returned by the model</p>
             </div>
-            
+
             <div className="p-8">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {seasonalCrops.map((crop, idx) => (
-                  <div key={idx} className="bg-gradient-to-br from-green-50 dark:from-gray-700 to-white dark:to-gray-800 rounded-2xl p-6 border-l-4 border-green-600">
-                    <p className="text-lg font-bold text-gray-900 dark:text-white mb-3">{crop.crop}</p>
-                    <div className="space-y-2">
-                      <p className="text-sm text-gray-700 dark:text-gray-300">
-                        <span className="font-semibold">Suitability:</span> <span className="font-bold text-green-600 dark:text-green-400">{crop.suitability || '85%'}</span>
-                      </p>
-                      <p className="text-sm text-gray-700 dark:text-gray-300">
-                        <span className="font-semibold">Rainfall:</span> {crop.rainfall}
-                      </p>
+                {recommendation.top_crops.slice(4).map((crop, idx) => {
+                  const name = typeof crop === 'string' ? crop : crop.crop || crop.name || JSON.stringify(crop);
+                  const conf = typeof crop === 'object' && (crop.confidence || crop.confidence === 0) ? crop.confidence : null;
+                  const displayConf = conf == null ? null : (conf > 1 ? conf : Math.round(conf * 100));
+                  return (
+                    <div key={idx} className="bg-gradient-to-br from-green-50 dark:from-gray-700 to-white dark:to-gray-800 rounded-2xl p-6 border-l-4 border-green-600">
+                      <p className="text-lg font-bold text-gray-900 dark:text-white mb-3">{getCropTranslation(name, language)}</p>
+                      {displayConf != null && (
+                        <p className="text-sm text-gray-700 dark:text-gray-300"><span className="font-semibold">Confidence:</span> <span className="font-bold text-green-600 dark:text-green-400">{displayConf}%</span></p>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </section>

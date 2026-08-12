@@ -13,7 +13,8 @@ pyotp==2.9.0
 twilio==8.10.0
 python-dotenv==1.0.0
 fastapi-cors==0.0.6
-scikit-learn==1.8.0
-joblib==1.5.3
-pandas==3.0.1
-numpy==2.4.3
+scikit-learn==1.7.2
+joblib==1.5.2
+pandas==2.2.3
+numpy==2.2.6
+earthengine-api

@@ -4,14 +4,17 @@ from pydantic import BaseModel
 from ..database.config import get_db
 from ..models.farmer import Prediction
 from ..utils.location import get_district_from_coordinates
+from ..utils.land_cover import check_land_cover, LandCoverProviderError
 from ..utils.soil_database import get_soil_data
 from ..utils.model_inference import get_model
 import requests
 import json
 from datetime import datetime
 from typing import Optional, List
+import logging
 
 router = APIRouter(prefix="/crop", tags=["crop recommendation"])
+logger = logging.getLogger(__name__)
 
 class CropRecommendationRequest(BaseModel):
     latitude: float
@@ -38,6 +41,33 @@ async def predict_crop(request: CropRecommendationRequest, db: Session = Depends
     """
     Predict crop using ML model based on soil, weather, DISTRICT, and SEASON
     """
+
+    # Validate land cover before any downstream crop recommendation logic
+    try:
+        land_cover = check_land_cover(
+            request.latitude,
+            request.longitude
+        )
+    except LandCoverProviderError:
+        logger.exception(
+            "Land cover validation failed for latitude=%s longitude=%s",
+            request.latitude,
+            request.longitude,
+        )
+        raise HTTPException(
+            status_code=503,
+            detail="Unable to validate land cover."
+        )
+
+    if not land_cover["allowed"]:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "message": "Crop recommendation is available only for agricultural land.",
+                "land_cover": land_cover["land_cover_class"],
+                "class_id": land_cover["class_id"]
+            }
+        )
     
     # Get district from coordinates
     district = get_district_from_coordinates(request.latitude, request.longitude)

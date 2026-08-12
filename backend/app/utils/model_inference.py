@@ -31,7 +31,7 @@ class CropRecommendationModel:
         """Load all necessary models and components"""
         try:
             # Load the trained Gradient Boosting model
-            self.model = joblib.load(self.model_path / "BhooDristi_gb_model.pkl")
+            self.model = joblib.load(self.model_path / "agrosahyadri_gb_model.pkl")
             
             # Load scaler for feature normalization
             self.scaler = joblib.load(self.model_path / "scaler.pkl")
@@ -40,7 +40,7 @@ class CropRecommendationModel:
             self.label_encoder = joblib.load(self.model_path / "label_encoder.pkl")
             
             # Load features list
-            self.features = joblib.load(self.model_path / "BhooDristi_features.pkl")
+            self.features = joblib.load(self.model_path / "agrosahyadri_features.pkl")
             
             print("✓ Models loaded successfully")
             print(f"  Features: {self.features}")
