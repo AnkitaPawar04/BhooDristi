@@ -37,13 +37,13 @@ const SettingsPage = ({ onNavigate }) => {
   };
 
   const handleVerifyCode = () => {
-    if (verificationCode.trim().length === 6) {
+      if (verificationCode.trim().length === 6) {
       setTwoFactorEnabled(true);
       setShowTwoFactorSetup(false);
       setVerificationCode('');
-      alert('✅ Two-Factor Authentication enabled successfully!');
+      alert('Two-Factor Authentication enabled successfully!');
     } else {
-      alert('⚠️ Please enter a valid 6-digit code');
+      alert('Please enter a valid 6-digit code');
     }
   };
 
@@ -82,7 +82,7 @@ const SettingsPage = ({ onNavigate }) => {
               onClick={() => setActiveTab('preferences')}
               className={`pb-3 px-1 font-semibold text-white border-b-2 border-green-600 dark:border-green-400`}
             >
-              ⚙️ Preferences
+              Preferences
             </button>
             <button
               onClick={() => setActiveTab('account')}
@@ -91,8 +91,8 @@ const SettingsPage = ({ onNavigate }) => {
                   ? 'text-white border-b-2 border-green-600 dark:border-green-400'
                   : 'text-white hover:text-white'
               }`}
-            >
-              🔐 Account
+              >
+              Account
             </button>
             <button
               onClick={() => setActiveTab('privacy')}
@@ -101,8 +101,8 @@ const SettingsPage = ({ onNavigate }) => {
                   ? 'text-white border-b-2 border-green-600 dark:border-green-400'
                   : 'text-white hover:text-white'
               }`}
-            >
-              🛡️ Privacy
+              >
+              Privacy
             </button>
           </div>
 
@@ -112,7 +112,7 @@ const SettingsPage = ({ onNavigate }) => {
               {/* Language Settings */}
               <div className="farm-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-4 border-green-200 dark:border-green-700 overflow-hidden hover:shadow-lg transition duration-300">
                 <div className="bg-gradient-to-r from-green-500 to-green-600 p-6 text-white">
-                  <h2 className="text-3xl font-bold flex items-center gap-3">🌐 Language & Localization</h2>
+                  <h2 className="text-3xl font-bold flex items-center gap-3">Language & Localization</h2>
                 </div>
                 <div className="p-8">
                   <div className="space-y-4">
@@ -136,7 +136,7 @@ const SettingsPage = ({ onNavigate }) => {
               {/* Theme Settings */}
               <div className="farm-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-4 border-blue-200 dark:border-blue-700 overflow-hidden hover:shadow-lg transition duration-300">
                 <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 text-white">
-                  <h2 className="text-3xl font-bold flex items-center gap-3">🎨 Appearance & Theme</h2>
+                  <h2 className="text-3xl font-bold flex items-center gap-3">Appearance & Theme</h2>
                 </div>
                 <div className="p-8">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -159,7 +159,7 @@ const SettingsPage = ({ onNavigate }) => {
                         />
                         <div className="mt-3">
                           <div className="font-semibold text-gray-800 capitalize dark:text-gray-200">
-                            {themeOption === 'light' ? '☀️ Light Mode' : themeOption === 'dark' ? '🌚 Dark Mode' : '⚙️ System Default'}
+                            {themeOption === 'light' ? 'Light Mode' : themeOption === 'dark' ? 'Dark Mode' : 'System Default'}
                           </div>
                           <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                             {themeOption === 'light' && 'Bright and clean interface'}
@@ -190,19 +190,19 @@ const SettingsPage = ({ onNavigate }) => {
               {/* Notification Settings */}
               <div className="farm-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-4 border-yellow-200 dark:border-yellow-700 overflow-hidden hover:shadow-lg transition duration-300">
                 <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 p-6 text-white">
-                  <h2 className="text-3xl font-bold flex items-center gap-3">🔔 Notifications</h2>
+                  <h2 className="text-3xl font-bold flex items-center gap-3">Notifications</h2>
                 </div>
                 <div className="p-8">
                   <div className="space-y-4">
                     {[
-                      { key: 'email', label: 'Email Notifications', icon: '📧' },
-                      { key: 'sms', label: 'SMS Notifications', icon: '📱' },
-                      { key: 'push', label: 'Push Notifications', icon: '💬' },
+                      { key: 'email', label: 'Email Notifications' },
+                      { key: 'sms', label: 'SMS Notifications' },
+                      { key: 'push', label: 'Push Notifications' },
                     ].map(({ key, label, icon }) => (
                       <div key={key} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-600 rounded-lg dark:bg-gray-700 hover:bg-yellow-50 dark:hover:bg-gray-600 transition">
                         <span className="text-lg text-gray-800 dark:text-gray-100 font-semibold">
-                          {icon} {label}
-                        </span>
+                            {label}
+                          </span>
                         <button
                           onClick={() => handleNotificationChange(key)}
                           className={`relative inline-flex h-8 w-14 items-center rounded-full transition btn-hover ${
@@ -238,7 +238,7 @@ const SettingsPage = ({ onNavigate }) => {
                 {!showTwoFactorSetup && (
                   <div className="mb-6 p-4 rounded-lg" style={{backgroundColor: twoFactorEnabled ? '#dcfce7' : '#fef3c7', borderLeft: '4px solid ' + (twoFactorEnabled ? '#16a34a' : '#ea580c')}}>
                     <p style={{color: twoFactorEnabled ? '#166534' : '#92400e'}} className="font-semibold flex items-center gap-2">
-                      {twoFactorEnabled ? '✅ Enabled' : '⚠️ Disabled'}
+                      {twoFactorEnabled ? 'Enabled' : 'Disabled'}
                     </p>
                     <p style={{color: twoFactorEnabled ? '#15803d' : '#b45309'}} className="text-sm mt-1">
                       {twoFactorEnabled ? 'Your account is protected with two-factor authentication.' : 'Enable 2FA to add an extra layer of security to your account.'}
@@ -249,14 +249,14 @@ const SettingsPage = ({ onNavigate }) => {
                 {/* 2FA Setup Form */}
                 {showTwoFactorSetup && !twoFactorEnabled && (
                   <div className="bg-blue-50 dark:bg-blue-900/30 border-2 border-blue-400 rounded-lg p-6 mb-6">
-                    <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100 mb-4">📱 Set Up Two-Factor Authentication</h3>
+                    <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100 mb-4">Set Up Two-Factor Authentication</h3>
                     
                     <div className="space-y-4">
                       <div>
                         <p className="text-sm text-blue-800 dark:text-blue-300 font-semibold mb-2">Step 1: Scan QR Code with Authenticator App</p>
                         <div className="bg-white dark:bg-gray-800 p-4 rounded border-2 border-dashed border-blue-300 text-center">
-                          <div className="w-40 h-40 mx-auto bg-gray-200 rounded flex items-center justify-center text-gray-600 text-sm">
-                            📲 QR Code
+                            <div className="w-40 h-40 mx-auto bg-gray-200 rounded flex items-center justify-center text-gray-600 text-sm">
+                            QR Code
                             <br />
                             (Use Google Authenticator, Authy, or Microsoft Authenticator)
                           </div>
@@ -276,12 +276,12 @@ const SettingsPage = ({ onNavigate }) => {
                       </div>
 
                       <div className="flex gap-3 pt-4">
-                        <button
+                          <button
                           onClick={handleVerifyCode}
                           disabled={verificationCode.length !== 6}
                           className="flex-1 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                         >
-                          ✓ Verify & Enable
+                          Verify & Enable
                         </button>
                         <button
                           onClick={() => {
@@ -306,14 +306,14 @@ const SettingsPage = ({ onNavigate }) => {
                       : 'bg-green-600 hover:bg-green-700'
                   }`}
                 >
-                  {twoFactorEnabled ? '🔓 Disable 2FA' : '🔐 Enable 2FA'}
+                  {twoFactorEnabled ? 'Disable 2FA' : 'Enable 2FA'}
                 </button>
               </div>
 
               {/* Password Settings */}
               <div className="card card-content">
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">
-                  🔑 Change Password
+                  Change Password
                 </h2>
                 <p className="text-gray-600 dark:text-gray-300 mb-6">
                   Update your password regularly to keep your account secure
@@ -326,7 +326,7 @@ const SettingsPage = ({ onNavigate }) => {
               {/* Active Sessions */}
               <div className="card card-content">
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">
-                  📱 Active Sessions
+                  Active Sessions
                 </h2>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-600 rounded-lg dark:bg-gray-700">
@@ -349,26 +349,26 @@ const SettingsPage = ({ onNavigate }) => {
               {/* Privacy Controls */}
               <div className="farm-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-4 border-purple-200 dark:border-purple-700 overflow-hidden hover:shadow-2xl transition duration-300 transform hover:-translate-y-1">
                 <div className="bg-gradient-to-r from-purple-500 to-purple-600 p-6 text-white">
-                  <h2 className="text-3xl font-bold flex items-center gap-3">🛡️ Privacy Controls</h2>
+                  <h2 className="text-3xl font-bold flex items-center gap-3">Privacy Controls</h2>
                 </div>
                 <div className="p-8">
                   <div className="space-y-4">
                     {[
-                      { 
+                        { 
                         key: 'profileVisibility', 
-                        label: '👥 Profile Visibility', 
+                        label: 'Profile Visibility', 
                         description: 'Control who can view your farm profile and location data',
                         icon: '🌍'
                       },
                       { 
                         key: 'dataCollection', 
-                        label: '📊 Data Collection', 
+                        label: 'Data Collection', 
                         description: 'Allow system to collect usage analytics for service improvement',
-                        icon: '📈'
+                        icon: ''
                       },
                       { 
                         key: 'personalizedRecommendations', 
-                        label: '⚡ Personalized Recommendations', 
+                        label: 'Personalized Recommendations', 
                         description: 'Receive tailored crop and weather recommendations',
                         icon: '🎯'
                       },
@@ -399,20 +399,20 @@ const SettingsPage = ({ onNavigate }) => {
               {/* Data Download & Export */}
               <div className="farm-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-4 border-indigo-200 dark:border-indigo-700 overflow-hidden hover:shadow-2xl transition duration-300 transform hover:-translate-y-1">
                 <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 p-6 text-white">
-                  <h2 className="text-3xl font-bold flex items-center gap-3">💾 Data Export & Download</h2>
+                  <h2 className="text-3xl font-bold flex items-center gap-3">Data Export & Download</h2>
                 </div>
                 <div className="p-8">
                   <div className="space-y-4">
                     <button className="w-full px-6 py-4 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white font-semibold rounded-lg hover:from-indigo-600 hover:to-indigo-700 transition shadow-lg btn-hover">
-                      📥 Download My Data (CSV)
+                      Download My Data (CSV)
                     </button>
                     <button className="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition shadow-lg btn-hover">
-                      📋 Request Account Report
+                      Request Account Report
                     </button>
                   </div>
                   <div className="mt-6 p-4 bg-indigo-50 dark:bg-indigo-900 border border-indigo-200 dark:border-indigo-700 rounded-lg">
                     <p className="text-sm text-indigo-800 dark:text-indigo-200">
-                      ℹ️ Your data will be compiled and ready for download within 24 hours.
+                      Your data will be compiled and ready for download within 24 hours.
                     </p>
                   </div>
                 </div>
@@ -421,16 +421,16 @@ const SettingsPage = ({ onNavigate }) => {
               {/* Account Deletion */}
               <div className="farm-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-4 border-red-200 dark:border-red-700 overflow-hidden hover:shadow-2xl transition duration-300 transform hover:-translate-y-1">
                 <div className="bg-gradient-to-r from-red-500 to-red-600 p-6 text-white">
-                  <h2 className="text-3xl font-bold flex items-center gap-3">⚠️ Danger Zone</h2>
+                  <h2 className="text-3xl font-bold flex items-center gap-3">Danger Zone</h2>
                 </div>
                 <div className="p-8">
                   <div className="p-6 bg-red-50 dark:bg-red-900 border-2 border-red-200 dark:border-red-800 rounded-lg">
-                    <h3 className="text-lg font-bold text-red-800 dark:text-red-200 mb-3">🗑️ Delete Account</h3>
+                    <h3 className="text-lg font-bold text-red-800 dark:text-red-200 mb-3">Delete Account</h3>
                     <p className="text-red-700 dark:text-red-300 mb-6 text-sm">
                       Once you delete your account, there is no going back. All your data, recommendations, and settings will be permanently removed.
                     </p>
                     <button className="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition shadow-lg btn-hover">
-                      🗑️ Delete Account Permanently
+                      Delete Account Permanently
                     </button>
                   </div>
                 </div>

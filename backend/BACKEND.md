@@ -2,7 +2,7 @@
 
 ## Overview
 
-BhooDristi Backend is a FastAPI-based REST API that powers the crop recommendation system. It integrates machine learning models with real-time data processing to provide intelligent agricultural recommendations.
+BhooDrishti Backend is a FastAPI-based REST API that powers the crop recommendation system. It integrates machine learning models with real-time data processing to provide intelligent agricultural recommendations.
 
 **Tech Stack:**
 - FastAPI 0.104.1
@@ -63,7 +63,7 @@ pip install -r requirements.txt
 
 Create `.env` file:
 ```env
-DATABASE_URL=postgresql://user:password@localhost:5432/BhooDristi
+DATABASE_URL=postgresql://user:password@localhost:5432/BhooDrishti
 SECRET_KEY=your-secret-key-here
 OPENWEATHERMAP_API_KEY=your-api-key
 ```
@@ -349,7 +349,7 @@ Frontend origins allowed:
 
 ### Database Connection
 ```python
-DATABASE_URL = "postgresql://user:password@localhost:5432/BhooDristi"
+DATABASE_URL = "postgresql://user:password@localhost:5432/BhooDrishti"
 ```
 
 ### JWT Settings
@@ -386,12 +386,12 @@ pytest --cov=app
 
 ### Build Image
 ```bash
-docker build -t BhooDristi-backend .
+docker build -t BhooDrishti-backend .
 ```
 
 ### Run Container
 ```bash
-docker run -p 8000:8000 BhooDristi-backend
+docker run -p 8000:8000 BhooDrishti-backend
 ```
 
 ---

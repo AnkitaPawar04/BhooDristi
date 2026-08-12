@@ -126,9 +126,9 @@ const AdminSettingsPage = ({ onNavigate }) => {
                           {getTranslation(language, themeOption === 'light' ? 'lightMode' : themeOption === 'dark' ? 'darkMode' : 'systemMode')}
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                          {themeOption === 'light' && '☀️ ' + getTranslation(language, 'lightTheme')}
-                          {themeOption === 'dark' && '🌚 ' + getTranslation(language, 'darkTheme')}
-                          {themeOption === 'system' && '⚙️ ' + getTranslation(language, 'systemDefault')}
+                          {themeOption === 'light' && getTranslation(language, 'lightTheme')}
+                          {themeOption === 'dark' && getTranslation(language, 'darkTheme')}
+                          {themeOption === 'system' && getTranslation(language, 'systemDefault')}
                         </div>
                         {/* Theme Preview */}
                         <div className={`mt-4 p-3 rounded border ${
@@ -150,7 +150,7 @@ const AdminSettingsPage = ({ onNavigate }) => {
                 </div>
                 <div className="p-4 bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-lg">
                   <p className="text-sm text-green-800 dark:text-green-200">
-                    💡 Your theme preference is saved and will be applied across all sessions
+                    Your theme preference is saved and will be applied across all sessions
                   </p>
                 </div>
               </div>

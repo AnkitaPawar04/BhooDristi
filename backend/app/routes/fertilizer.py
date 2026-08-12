@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Query
 import os
 import requests
+import json
 
 router = APIRouter(prefix="/fertilizer", tags=["Fertilizer"])
 
@@ -48,5 +49,19 @@ def search_fertilizer_shops(
         }
 
     response = requests.post(url, headers=headers, json=body)
+
+    # Log response status and body for debugging (do not log API key)
+    try:
+        status = response.status_code
+        text = response.text
+        print(f"[fertilizer.search] Google Places status={status}")
+        # Try to pretty-print JSON body if possible
+        try:
+            parsed = response.json()
+            print("[fertilizer.search] Google Places body:", json.dumps(parsed, indent=2))
+        except Exception:
+            print("[fertilizer.search] Google Places body (raw):", text)
+    except Exception as e:
+        print("[fertilizer.search] Failed to log Google response:", e)
 
     return response.json()

@@ -15,13 +15,13 @@ const AdminBackground = ({ children, isDark = false }) => {
 
         {/* Data Visualization Elements */}
         <div className="admin-data-viz">
-          {/* Floating Data Cards/Icons */}
-          <div className="data-float data-float-1">📊</div>
-          <div className="data-float data-float-2">📈</div>
-          <div className="data-float data-float-3">🔍</div>
-          <div className="data-float data-float-4">⚙️</div>
-          <div className="data-float data-float-5">💾</div>
-          <div className="data-float data-float-6">🎯</div>
+          {/* Floating Data Cards/Icons (decorative only) */}
+          <div className="data-float data-float-1"></div>
+          <div className="data-float data-float-2"></div>
+          <div className="data-float data-float-3"></div>
+          <div className="data-float data-float-4"></div>
+          <div className="data-float data-float-5"></div>
+          <div className="data-float data-float-6"></div>
         </div>
 
         {/* Animated Lines/Networks */}

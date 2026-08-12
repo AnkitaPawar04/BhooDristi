@@ -10,7 +10,7 @@ const AdminProfilePage = () => {
     lastName: 'User',
     email: 'admin.agro@gmail.com',
     phone: '+91 98765 43210',
-    organization: 'BhooDristi Admin',
+    organization: 'BhooDrishti Admin',
     profilePhoto: 'https://ui-avatars.com/api/?name=Admin+User&background=16a34a&color=fff&size=160',
   });
 
@@ -53,7 +53,7 @@ const AdminProfilePage = () => {
     setProfileData(finalData);
     setEditMode(false);
     setTempPhotoPreview(null);
-    setMessage({ type: 'success', text: '✓ ' + getTranslation(language, 'profileUpdatedSuccess'), visible: true });
+    setMessage({ type: 'success', text: getTranslation(language, 'profileUpdatedSuccess'), visible: true });
     setTimeout(() => setMessage({ ...message, visible: false }), 3000);
   };
 
@@ -90,7 +90,7 @@ const AdminProfilePage = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setTempPhotoPreview(reader.result);
-        setMessage({ type: 'success', text: '📸 ' + getTranslation(language, 'photoSelectedSuccess'), visible: true });
+        setMessage({ type: 'success', text: getTranslation(language, 'photoSelectedSuccess'), visible: true });
         setTimeout(() => setMessage({ ...message, visible: false }), 3000);
       };
       reader.readAsDataURL(file);
@@ -136,7 +136,7 @@ const AdminProfilePage = () => {
                 </div>
 
                 <label className="cursor-pointer bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl transition transform hover:scale-105 shadow-lg">
-                  📸 {getTranslation(language, 'changePhoto')}
+                  {getTranslation(language, 'changePhoto')}
                   <input
                     type="file"
                     accept="image/*"
@@ -147,8 +147,8 @@ const AdminProfilePage = () => {
 
                 <div className="mt-8 text-center space-y-2">
                   <p className="text-gray-800 font-bold text-lg">{getTranslation(language, 'administrator')}</p>
-                  <p className="text-green-600 font-semibold">BhooDristi System</p>
-                  <p className="text-gray-500 text-sm">Status: 🟢 Active</p>
+                  <p className="text-green-600 font-semibold">BhooDrishti System</p>
+                  <p className="text-gray-500 text-sm">Status: Active</p>
                 </div>
               </div>
 
@@ -223,7 +223,7 @@ const AdminProfilePage = () => {
                         }}
                         className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-4 rounded-lg transition"
                       >
-                        ✕ {getTranslation(language, 'cancel')}
+                        {getTranslation(language, 'cancel')}
                       </button>
                     </div>
                   </div>
@@ -260,7 +260,7 @@ const AdminProfilePage = () => {
                       onClick={() => setEditMode(true)}
                       className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition transform hover:scale-105 shadow-lg"
                     >
-                      ✏️ {getTranslation(language, 'editProfile')}
+                      {getTranslation(language, 'editProfile')}
                     </button>
                   </div>
                 )}
@@ -270,8 +270,8 @@ const AdminProfilePage = () => {
 
           {/* Security Section */}
           <div className="bg-white rounded-2xl shadow-xl p-10 border border-gray-100">
-            <h2 className="text-3xl font-bold text-gray-800 mb-8 flex items-center gap-3">
-              <span className="bg-gradient-to-r from-red-500 to-red-600 text-white w-12 h-12 rounded-lg flex items-center justify-center text-xl">🔐</span>
+              <h2 className="text-3xl font-bold text-gray-800 mb-8 flex items-center gap-3">
+              <span className="bg-gradient-to-r from-red-500 to-red-600 text-white w-12 h-12 rounded-lg flex items-center justify-center text-xl"></span>
               {getTranslation(language, 'securityPassword')}
             </h2>
             
@@ -280,7 +280,7 @@ const AdminProfilePage = () => {
                 onClick={() => setShowPasswordChange(true)}
                 className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold py-3 px-8 rounded-lg transition transform hover:scale-105 shadow-lg"
               >
-                🔑 {getTranslation(language, 'changePasswordBtn')}
+                {getTranslation(language, 'changePasswordBtn')}
               </button>
             ) : (
               <form onSubmit={handleChangePassword} className="w-full max-w-2xl">
@@ -299,9 +299,9 @@ const AdminProfilePage = () => {
                       <button
                         type="button"
                         onClick={() => setShowPasswords(prev => ({ ...prev, currentPassword: !prev.currentPassword }))}
-                        className="absolute right-3 top-3.5 text-gray-600 hover:text-gray-800 text-xl"
+                        className="absolute right-3 top-3.5 text-gray-600 hover:text-gray-800 text-sm"
                       >
-                        {showPasswords.currentPassword ? '👁️' : '👁️‍🗨️'}
+                        {showPasswords.currentPassword ? 'Hide' : 'Show'}
                       </button>
                     </div>
                   </div>
@@ -320,12 +320,12 @@ const AdminProfilePage = () => {
                       <button
                         type="button"
                         onClick={() => setShowPasswords(prev => ({ ...prev, newPassword: !prev.newPassword }))}
-                        className="absolute right-3 top-3.5 text-gray-600 hover:text-gray-800 text-xl"
+                        className="absolute right-3 top-3.5 text-gray-600 hover:text-gray-800 text-sm"
                       >
-                        {showPasswords.newPassword ? '👁️' : '👁️‍🗨️'}
+                        {showPasswords.newPassword ? 'Hide' : 'Show'}
                       </button>
                     </div>
-                    <p className="text-xs text-gray-600 mt-2">🔒 {getTranslation(language, 'passwordRequirements')}</p>
+                    <p className="text-xs text-gray-600 mt-2">{getTranslation(language, 'passwordRequirements')}</p>
                   </div>
 
                   <div>
@@ -342,9 +342,9 @@ const AdminProfilePage = () => {
                       <button
                         type="button"
                         onClick={() => setShowPasswords(prev => ({ ...prev, confirmPassword: !prev.confirmPassword }))}
-                        className="absolute right-3 top-3.5 text-gray-600 hover:text-gray-800 text-xl"
+                        className="absolute right-3 top-3.5 text-gray-600 hover:text-gray-800 text-sm"
                       >
-                        {showPasswords.confirmPassword ? '👁️' : '👁️‍🗨️'}
+                        {showPasswords.confirmPassword ? 'Hide' : 'Show'}
                       </button>
                     </div>
                   </div>
@@ -354,7 +354,7 @@ const AdminProfilePage = () => {
                       type="submit"
                       className="flex-1 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold py-3 px-4 rounded-lg transition transform hover:scale-105 shadow-lg"
                     >
-                      🔐 {getTranslation(language, 'updatePassword')}
+                      {getTranslation(language, 'updatePassword')}
                     </button>
                     <button
                       type="button"
@@ -376,7 +376,7 @@ const AdminProfilePage = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
             <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
               <p className="text-gray-600 text-sm font-semibold">{getTranslation(language, 'accountStatus')}</p>
-              <p className="text-2xl font-bold text-blue-600 mt-2">🟢 {getTranslation(language, 'active')}</p>
+              <p className="text-2xl font-bold text-blue-600 mt-2">{getTranslation(language, 'active')}</p>
               <p className="text-gray-500 text-xs mt-2">{getTranslation(language, 'allSystemsOperational')}</p>
             </div>
 

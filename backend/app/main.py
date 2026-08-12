@@ -13,7 +13,7 @@ Base.metadata.create_all(bind=engine)
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="BhooDristi API",
+    title="BhooDrishti API",
     description="Agriculture recommendation system for Maharashtra farmers",
     version="1.0.0"
 )
@@ -38,7 +38,7 @@ app.include_router(fertilizer.router)
 @app.get("/")
 async def root():
     return {
-        "message": "Welcome to BhooDristi API",
+        "message": "Welcome to BhooDrishti API",
         "version": "1.0.0",
         "docs": "/docs",
         "health": "/health"

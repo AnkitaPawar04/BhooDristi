@@ -1,8 +1,8 @@
-# 🌾 BhooDristi - Intelligent Crop Recommendation System
+# 🌾 BhooDrishti - Intelligent Crop Recommendation System
 
 ## 📖 Overview
 
-**BhooDristi** is an intelligent agricultural decision support system for Maharashtra farmers. It combines machine learning, geolocation services, and real-time weather data to provide personalized crop recommendations based on soil conditions and local climate.
+**BhooDrishti** is an intelligent agricultural decision support system for Maharashtra farmers. It combines machine learning, geolocation services, and real-time weather data to provide personalized crop recommendations based on soil conditions and local climate.
 
 Built with React + FastAPI + Scikit-learn, it delivers 99% accurate crop predictions to help farmers optimize their harvests.
 
@@ -200,7 +200,7 @@ docker-compose up --build
 ## 📁 Project Structure
 
 ```
-BhooDristi/
+BhooDrishti/
 ├── backend/
 │   ├── app/
 │   │   ├── main.py              # FastAPI app
@@ -244,7 +244,7 @@ BhooDristi/
 │   │       ├── CropDataset-Enhanced.csv
 │   │       └── *.pkl           # Trained models
 │   ├── models/                 # Model artifacts
-│   │   ├── BhooDristi_gb_model.pkl
+│   │   ├── BhooDrishti_gb_model.pkl
 │   │   ├── scaler.pkl
 │   │   └── label_encoder.pkl
 │   └── README.md
@@ -334,12 +334,12 @@ This starts:
 ### Individual Containers
 ```bash
 # Backend
-docker build -t BhooDristi-backend ./backend
-docker run -p 8000:8000 BhooDristi-backend
+docker build -t BhooDrishti-backend ./backend
+docker run -p 8000:8000 BhooDrishti-backend
 
 # Frontend
-docker build -t BhooDristi-frontend ./frontend
-docker run -p 3000:3000 BhooDristi-frontend
+docker build -t BhooDrishti-frontend ./frontend
+docker run -p 3000:3000 BhooDrishti-frontend
 ```
 
 ---
@@ -348,7 +348,7 @@ docker run -p 3000:3000 BhooDristi-frontend
 
 ### Backend (.env)
 ```
-DATABASE_URL=postgresql://user:password@localhost/BhooDristi
+DATABASE_URL=postgresql://user:password@localhost/BhooDrishti
 WEATHER_API_KEY=your_openweathermap_key
 JWT_SECRET=your_jwt_secret
 FIREBASE_CONFIG=your_firebase_config
@@ -456,7 +456,7 @@ python --version          # Should be 3.10+
 pip list | grep scikit-learn
 
 # Verify database
-psql -U postgres -d BhooDristi
+psql -U postgres -d BhooDrishti
 ```
 
 ### Frontend Issues
@@ -478,7 +478,7 @@ node --version            # Should be v18+
 ls -la ai/models/*.pkl
 
 # Test model loading
-python -c "import joblib; m = joblib.load('ai/models/BhooDristi_gb_model.pkl')"
+python -c "import joblib; m = joblib.load('ai/models/BhooDrishti_gb_model.pkl')"
 ```
 
 See detailed troubleshooting in [FRONTEND.md](FRONTEND.md), [BACKEND.md](BACKEND.md), [AI.md](AI.md).

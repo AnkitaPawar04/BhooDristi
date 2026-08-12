@@ -135,25 +135,25 @@ const LoginPage = () => {
           {/* Features Grid */}
           <div className="grid grid-cols-2 gap-4 mb-12">
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4 border border-white border-opacity-20 hover:bg-opacity-20 transition">
-              <p className="text-3xl mb-2">🌽</p>
+              <p className="text-3xl mb-2"></p>
               <p className="font-bold text-green-100 text-sm">Find Best Crops</p>
               <p className="text-xs text-green-200 mt-1">Based on soil and weather</p>
             </div>
 
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4 border border-white border-opacity-20 hover:bg-opacity-20 transition">
-              <p className="text-3xl mb-2">🌤️</p>
+              <p className="text-3xl mb-2"></p>
               <p className="font-bold text-green-100 text-sm">Real-Time Weather</p>
               <p className="text-xs text-green-200 mt-1">Plan farming days better</p>
             </div>
 
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4 border border-white border-opacity-20 hover:bg-opacity-20 transition">
-              <p className="text-3xl mb-2">🌱</p>
+              <p className="text-3xl mb-2"></p>
               <p className="font-bold text-green-100 text-sm">Soil Analysis</p>
               <p className="text-xs text-green-200 mt-1">Understand your farm</p>
             </div>
 
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4 border border-white border-opacity-20 hover:bg-opacity-20 transition">
-              <p className="text-3xl mb-2">📊</p>
+              <p className="text-3xl mb-2"></p>
               <p className="font-bold text-green-100 text-sm">Farm Dashboard</p>
               <p className="text-xs text-green-200 mt-1">Track everything</p>
             </div>
@@ -162,21 +162,21 @@ const LoginPage = () => {
           {/* Bottom Content */}
           <div className="space-y-3 mb-8">
             <div className="flex items-start gap-3 bg-white bg-opacity-10 rounded-lg p-3 backdrop-blur-sm">
-              <span className="text-2xl flex-shrink-0">✓</span>
+              <span className="text-2xl flex-shrink-0"></span>
               <div>
                 <p className="font-bold text-white text-sm">AI Crop Recommendations</p>
                 <p className="text-green-100 text-xs">Smart suggestions for your farm</p>
               </div>
             </div>
             <div className="flex items-start gap-3 bg-white bg-opacity-10 rounded-lg p-3 backdrop-blur-sm">
-              <span className="text-2xl flex-shrink-0">✓</span>
+              <span className="text-2xl flex-shrink-0"></span>
               <div>
                 <p className="font-bold text-white text-sm">Simple & Easy to Use</p>
                 <p className="text-green-100 text-xs">Designed for all farmers</p>
               </div>
             </div>
             <div className="flex items-start gap-3 bg-white bg-opacity-10 rounded-lg p-3 backdrop-blur-sm">
-              <span className="text-2xl flex-shrink-0">✓</span>
+              <span className="text-2xl flex-shrink-0"></span>
               <div>
                 <p className="font-bold text-white text-sm">Increase Your Yield</p>
                 <p className="text-green-100 text-xs">Grow more, earn more</p>
@@ -205,7 +205,7 @@ const LoginPage = () => {
                   selectedRole === 'admin' ? 'bg-green-600 text-white' : 'text-gray-700 hover:text-gray-900'
                 }`}
               >
-                👨‍💼 Admin
+                Admin
               </button>
               <button
                 onClick={() => {
@@ -218,14 +218,14 @@ const LoginPage = () => {
                   selectedRole === 'farmer' ? 'bg-green-600 text-white' : 'text-gray-700 hover:text-gray-900'
                 }`}
               >
-                👨‍🌾 Farmer
+                Farmer
               </button>
             </div>
           </div>
 
           {error && (
             <div className="mb-5 p-3 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-lg shadow-sm text-sm">
-              <p className="font-bold">⚠️ Error</p>
+              <p className="font-bold">Error</p>
               <p className="text-xs mt-1">{error}</p>
             </div>
           )}
@@ -235,7 +235,7 @@ const LoginPage = () => {
               {!isSignup ? (
                 <>
                   <h2 className="text-3xl font-bold text-gray-800 mb-2">
-                    {selectedRole === 'admin' ? '👨‍💼 Admin Login' : '👨‍🌾 Farmer Login'}
+                    {selectedRole === 'admin' ? 'Admin Login' : 'Farmer Login'}
                   </h2>
                   <p className="text-gray-600 text-sm mb-8">
                     Login to access your farm dashboard and insights
@@ -273,7 +273,7 @@ const LoginPage = () => {
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-3 text-gray-600 hover:text-gray-800"
                       >
-                        {showPassword ? '👁️' : '👁️‍🗨️'}
+                        {showPassword ? 'Hide' : 'Show'}
                       </button>
                     </div>
                   </div>
@@ -283,13 +283,13 @@ const LoginPage = () => {
                     disabled={loading}
                     className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-3 px-4 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md mb-4"
                   >
-                    {loading ? 'Logging in...' : '🚀 Login'}
+                    {loading ? 'Logging in...' : 'Login'}
                   </button>
                 </>
               ) : (
                 <>
                   <h2 className="text-3xl font-bold text-gray-800 mb-2">
-                    {selectedRole === 'admin' ? '👨‍💼 Create Admin Account' : '👨‍🌾 Create Farmer Account'}
+                    {selectedRole === 'admin' ? 'Create Admin Account' : 'Create Farmer Account'}
                   </h2>
                   <p className="text-gray-600 text-sm mb-8">
                     {getTranslation(language, 'joinGetRecommendations')}
@@ -354,11 +354,11 @@ const LoginPage = () => {
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-3 text-gray-600 hover:text-gray-800"
                       >
-                        {showPassword ? '👁️' : '👁️‍🗨️'}
+                        {showPassword ? 'Hide' : 'Show'}
                       </button>
                     </div>
                     <p className="text-xs text-gray-500 mt-2">
-                      🔒 Use at least 8 characters
+                      Use at least 8 characters
                     </p>
                   </div>
 
@@ -380,24 +380,24 @@ const LoginPage = () => {
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         className="absolute right-3 top-3 text-gray-600 hover:text-gray-800"
                       >
-                        {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
+                        {showConfirmPassword ? 'Hide' : 'Show'}
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-3 text-gray-600 hover:text-gray-800"
+                      >
+                        {showPassword ? 'Hide' : 'Show'}
                       </button>
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
                     className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-3 px-4 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md mb-4"
                   >
                     {loading ? 'Creating Account...' : '✓ Create Account'}
-                  </button>
-                </>
-              )}
-
-              <div className="mt-6 text-center border-t pt-6">
-                {!isSignup ? (
-                  <p className="text-gray-700 text-sm">
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-3 text-gray-600 hover:text-gray-800"
+                      >
+                        {showConfirmPassword ? 'Hide' : 'Show'}
+                      </button>
                     Don't have an account?{' '}
                     <button
                       type="button"
@@ -459,8 +459,8 @@ export default LoginPage;
           {/* Logo & Tagline */}
           <div className="mb-12 animate-fadeInUp">
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-7xl">🌾</span>
-              <h1 className="text-6xl font-bold">BhooDristi</h1>
+              <span className="text-7xl"></span>
+              <h1 className="text-6xl font-bold">BhooDrishti</h1>
             </div>
             <p className="text-2xl font-semibold text-green-100 mb-3">
               Your Digital Farmer's Assistant
@@ -474,35 +474,35 @@ export default LoginPage;
           <div className="grid grid-cols-2 gap-4 mb-12">
             {/* Crop Selection Card */}
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-5 border border-white border-opacity-20 hover:bg-opacity-20 transition transform hover:scale-105">
-              <p className="text-3xl mb-2">🌽</p>
+              <p className="text-3xl mb-2"></p>
               <p className="font-bold text-green-100">Find Best Crops</p>
               <p className="text-xs text-green-200 mt-1">Based on your soil and weather</p>
             </div>
 
             {/* Weather Card */}
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-5 border border-white border-opacity-20 hover:bg-opacity-20 transition transform hover:scale-105">
-              <p className="text-3xl mb-2">🌤️</p>
+              <p className="text-3xl mb-2"></p>
               <p className="font-bold text-green-100">Real-Time Weather</p>
               <p className="text-xs text-green-200 mt-1">Plan your farming days better</p>
             </div>
 
             {/* Soil Health Card */}
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-5 border border-white border-opacity-20 hover:bg-opacity-20 transition transform hover:scale-105">
-              <p className="text-3xl mb-2">🌱</p>
+              <p className="text-3xl mb-2"></p>
               <p className="font-bold text-green-100">Soil Analysis</p>
               <p className="text-xs text-green-200 mt-1">Understand your farm better</p>
             </div>
 
             {/* Dashboard Card */}
             <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-5 border border-white border-opacity-20 hover:bg-opacity-20 transition transform hover:scale-105">
-              <p className="text-3xl mb-2">📊</p>
+              <p className="text-3xl mb-2"></p>
               <p className="font-bold text-green-100">Farm Dashboard</p>
               <p className="text-xs text-green-200 mt-1">Track everything at a glance</p>
             </div>
           </div>
         </div>
 
-        {/* Bottom Section - Why BhooDristi? */}
+        {/* Bottom Section - Why BhooDrishti? */}
         <div className="relative z-10">
           {/* Key Features */}
           <div className="mb-8 space-y-3">
@@ -541,7 +541,7 @@ export default LoginPage;
         <div className="w-full max-w-sm animate-fadeInUp">
           {/* Mobile Hero Section */}
           <div className="lg:hidden bg-black/40 backdrop-blur-md rounded-2xl p-6 mb-6 text-white border border-white/20">
-            <h1 className="text-3xl font-bold mb-2">🌾 BhooDristi</h1>
+              <h1 className="text-3xl font-bold mb-2">BhooDrishti</h1>
             <p className="text-base font-semibold text-green-100 mb-3">
               Your Smart Farming Assistant
             </p>
@@ -566,7 +566,7 @@ export default LoginPage;
                     : 'text-gray-700 hover:text-gray-900'
                 }`}
               >
-                👨‍💼 Admin
+                Admin
               </button>
               <button
                 onClick={() => {
@@ -581,14 +581,14 @@ export default LoginPage;
                     : 'text-gray-700 hover:text-gray-900'
                 }`}
               >
-                👨‍🌾 Farmer
+                Farmer
               </button>
             </div>
           </div>
 
           {error && (
             <div className="mb-5 p-3 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-lg shadow-sm animate-slideInLeft text-sm">
-              <p className="font-bold">⚠️ Oops! Something went wrong</p>
+              <p className="font-bold">Oops! Something went wrong</p>
               <p className="text-xs mt-1">{error}</p>
             </div>
           )}
@@ -599,7 +599,7 @@ export default LoginPage;
               {!isSignup ? (
                 <>
                   <h2 className="text-3xl font-bold text-gray-800 mb-2">
-                    {selectedRole === 'admin' ? '👨‍💼 Admin Login' : '👨‍🌾 Farmer Login'}
+                    {selectedRole === 'admin' ? 'Admin Login' : 'Farmer Login'}
                   </h2>
                   <p className="text-gray-600 text-sm mb-8">
                     Login to access your farm dashboard and insights
@@ -637,7 +637,7 @@ export default LoginPage;
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-3 text-gray-600 hover:text-gray-800 transition"
                       >
-                        {showPassword ? '👁️' : '👁️‍🗨️'}
+                        {showPassword ? 'Hide' : 'Show'}
                       </button>
                     </div>
                   </div>
@@ -658,15 +658,15 @@ export default LoginPage;
                         <span className="inline-block animate-spin mr-2">⏳</span>
                         Logging in...
                       </>
-                    ) : (
-                      '🚀 Login'
+                      ) : (
+                      'Login'
                     )}
                   </button>
                   </>
                 ) : (
                   <>
                     <h2 className="text-3xl font-bold text-gray-800 mb-2">
-                      {selectedRole === 'admin' ? '👨‍💼 Create Admin Account' : '👨‍🌾 Create Farmer Account'}
+                        {selectedRole === 'admin' ? 'Create Admin Account' : 'Create Farmer Account'}
                     </h2>
                     <p className="text-gray-600 text-sm mb-8">
                       {getTranslation(language, 'joinGetRecommendations')}
@@ -731,11 +731,11 @@ export default LoginPage;
                           onClick={() => setShowPassword(!showPassword)}
                           className="absolute right-3 top-3 text-gray-600 hover:text-gray-800 transition"
                         >
-                          {showPassword ? '👁️' : '👁️‍🗨️'}
+                          {showPassword ? 'Hide' : 'Show'}
                         </button>
                       </div>
                       <p className="text-xs text-gray-500 mt-2">
-                        🔒 Use at least 8 characters with uppercase, lowercase, and numbers
+                        Use at least 8 characters with uppercase, lowercase, and numbers
                       </p>
                     </div>
 
@@ -757,7 +757,7 @@ export default LoginPage;
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                           className="absolute right-3 top-3 text-gray-600 hover:text-gray-800 transition"
                         >
-                          {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
+                          {showConfirmPassword ? 'Hide' : 'Show'}
                         </button>
                       </div>
                     </div>
@@ -769,11 +769,11 @@ export default LoginPage;
                     >
                       {loading ? (
                         <>
-                          <span className="inline-block animate-spin mr-2">⏳</span>
+                          <span className="inline-block animate-spin mr-2"></span>
                           Creating Account...
                         </>
                       ) : (
-                        '✓ Create Account'
+                        'Create Account'
                       )}
                     </button>
                 </>

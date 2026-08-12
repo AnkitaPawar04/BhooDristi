@@ -2,7 +2,7 @@
 const translations = {
   en: {
     // App Name
-    appName: 'BhooDristi',
+    appName: 'BhooDrishti',
     
     // Sidebar
     adminPanel: 'Admin Panel',
@@ -10,6 +10,7 @@ const translations = {
     cropRecommendation: 'Crop Recommendation',
     weatherInformation: 'Weather Information',
     fertilizerShops: 'Nearby Fertilizer Shops',
+    governmentSchemes: 'Government Schemes',
     currentLocation: 'Current Location',
     searchRadius: 'Search Radius',
     viewDetails: 'View Details',
@@ -160,7 +161,7 @@ const translations = {
     recommendations: 'Recommendations',
     phOptimal: '✓ pH level is optimal for most crops',
     nitrogenBalanced: '✓ Nitrogen level is balanced',
-    considerK: '🔔 Consider K fertilizer for better yield',
+    considerK: 'Consider K fertilizer for better yield',
     moistureGood: '✓ Moisture retention is good',
 
     // Crop Recommendation
@@ -327,8 +328,8 @@ const translations = {
     invalidEmailPassword: 'Invalid email or password',
     smartCropRecommendations: 'Smart Crop Recommendations',
     smartCropDescription: 'Smart crop recommendations, disease detection, and weather insights powered by artificial intelligence.',
-    joinFarmers: 'Join 5000+ Maharashtra farmers improving their yields with BhooDristi',
-    joinGetRecommendations: 'Join BhooDristi to get smart crop recommendations and farm insights',
+    joinFarmers: 'Join 5000+ Maharashtra farmers improving their yields with BhooDrishti',
+    joinGetRecommendations: 'Join BhooDrishti to get smart crop recommendations and farm insights',
     createAccount: 'Create Account',
     loginButton: 'Login',
     lightTheme: 'Light Theme',
@@ -405,6 +406,8 @@ const translations = {
     dashboard: 'डैशबोर्ड',
     cropRecommendation: 'फसल सिफारिश',
     weatherInformation: 'मौसम की जानकारी',
+    fertilizerShops: 'पास के उर्वरक की दुकानें',
+    governmentSchemes: 'सरकारी योजनाएं',
     profile: 'प्रोफाइल',
     settings: 'सेटिंग्स',
     logout: 'लॉग आउट',
@@ -553,7 +556,7 @@ const translations = {
     recommendations: 'सिफारिशें',
     phOptimal: '✓ pH स्तर अधिकांश फसलों के लिए इष्टतम है',
     nitrogenBalanced: '✓ नाइट्रोजन स्तर संतुलित है',
-    considerK: '🔔 बेहतर उपज के लिए K उर्वरक पर विचार करें',
+    considerK: 'बेहतर उपज के लिए K उर्वरक पर विचार करें',
     moistureGood: '✓ नमी प्रतिधारण अच्छा है',
 
     // Crop Recommendation
@@ -766,8 +769,8 @@ const translations = {
     invalidEmailPassword: 'अमान्य ईमेल या पासवर्ड',
     smartCropRecommendations: 'स्मार्ट फसल सिफारिशें',
     smartCropDescription: 'कृत्रिम बुद्धिमत्ता द्वारा संचालित स्मार्ट फसल सिफारिशें, रोग पहचान और मौसम अंतर्दृष्टि।',
-    joinFarmers: 'BhooDristi के साथ 5000+ महाराष्ट्र किसानों से जुड़ें जो अपनी पैदावार में सुधार कर रहे हैं',
-    joinGetRecommendations: 'BhooDristi में शामिल हों और स्मार्ट फसल सिफारिशें और फार्म अंतर्दृष्टि प्राप्त करें',
+    joinFarmers: 'BhooDrishti के साथ 5000+ महाराष्ट्र किसानों से जुड़ें जो अपनी पैदावार में सुधार कर रहे हैं',
+    joinGetRecommendations: 'BhooDrishti में शामिल हों और स्मार्ट फसल सिफारिशें और फार्म अंतर्दृष्टि प्राप्त करें',
     createAccount: 'खाता बनाएँ',
     loginButton: 'लॉगिन',
     lightTheme: 'लाइट थीम',
@@ -798,6 +801,8 @@ const translations = {
     dashboard: 'डॅशबोर्ड',
     cropRecommendation: 'पिक सुचना',
     weatherInformation: 'हवामान माहिती',
+    fertilizerShops: 'जवळील खत दुकाने',
+    governmentSchemes: 'शासकीय योजना',
     profile: 'प्रोफाईल',
     settings: 'सेटिंग्स',
     logout: 'लॉग आउट',
@@ -944,7 +949,7 @@ const translations = {
     recommendations: 'शिफारशी',
     phOptimal: '✓ pH स्तर बहुतेक पिकांसाठी इष्टतम आहे',
     nitrogenBalanced: '✓ नायट्रोजन स्तर संतुलित आहे',
-    considerK: '🔔 चांगल्या उपजाzsाठी K खत विचारात घ्या',
+    considerK: 'चांगल्या उपजेसाठी K खत विचारात घ्या',
     moistureGood: '✓ आर्द्रता प्रतिधारण चांगले आहे',
 
     // Crop Recommendation

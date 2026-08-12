@@ -9,7 +9,7 @@ load_dotenv()
 # Use SQLite for development, PostgreSQL for production
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "sqlite:///./BhooDristi.db"  # Development database
+    "sqlite:///./BhooDrishti.db"  # Development database
 )
 
 # For SQLite, we need to add check_same_thread=False

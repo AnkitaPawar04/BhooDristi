@@ -155,16 +155,8 @@ const IrrigationPage = ({ onNavigate }) => {
   };
 
   const getPredictionIcon = (predictionClass) => {
-    switch (predictionClass) {
-      case 'High':
-        return '🚨';
-      case 'Medium':
-        return '⚠️';
-      case 'Low':
-        return '✅';
-      default:
-        return '❓';
-    }
+    // icons removed; return empty string
+    return '';
   };
 
   return (
@@ -190,8 +182,8 @@ const IrrigationPage = ({ onNavigate }) => {
           <div className="p-8">
             {/* Header */}
           <div className="page-header animate-fadeInUp">
-            <h1 className="page-title">Irrigation Prediction</h1>
-            <p className="page-subtitle">Get AI-powered irrigation recommendations for optimal water management</p>
+            <h1 className="page-title">{getTranslation(language, 'irrigationPrediction')}</h1>
+            <p className="page-subtitle">{getTranslation(language, 'getIrrigationPrediction') || 'Get AI-powered irrigation recommendations for optimal water management'}</p>
             <div className="page-divider"></div>
           </div>
 
@@ -199,7 +191,7 @@ const IrrigationPage = ({ onNavigate }) => {
           <div className="space-y-6">
               {/* Map Section */}
               <div className="map-card">
-                <h2>📍 {getTranslation(language, 'selectYourFarmLocation')}</h2>
+                <h2>{getTranslation(language, 'selectYourFarmLocation')}</h2>
                 <div className="map-card-inner">
                   <MaharashtraMap onLocationSelect={handleMapClick} selectedLocation={selectedLocation} />
                 </div>
@@ -217,7 +209,7 @@ const IrrigationPage = ({ onNavigate }) => {
 
               {/* Input Parameters Section */}
               <div className="params-card">
-                <h2>🌱 {getTranslation(language, 'environmentalCropParameters')}</h2>
+                <h2>{getTranslation(language, 'environmentalCropParameters')}</h2>
 
                 <div className="params-grid">
                   {/* Soil Moisture */}
@@ -534,7 +526,7 @@ const IrrigationPage = ({ onNavigate }) => {
                 {/* Error Message */}
                 {error && (
                   <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-red-700 font-semibold">❌ {error}</p>
+                    <p className="text-red-700 font-semibold">{error}</p>
                   </div>
                 )}
 
@@ -550,12 +542,12 @@ const IrrigationPage = ({ onNavigate }) => {
                 >
                   {loading ? (
                     <>
-                      <span className="animate-spin">⏳</span>
+                      <span className="animate-spin"></span>
                       Analyzing...
                     </>
                   ) : (
                     <>
-                      <span>🔮</span>
+                      <span></span>
                       {getTranslation(language, 'getIrrigationPrediction')}
                     </>
                   )}
@@ -566,7 +558,6 @@ const IrrigationPage = ({ onNavigate }) => {
               {prediction && (
                 <div className={`params-card border-4 ${getPredictionColor(prediction.prediction)}`}>
                   <div className="text-center mb-6">
-                    <div className="text-6xl mb-3">{getPredictionIcon(prediction.prediction)}</div>
                     <h3 className="text-2xl font-bold text-gray-800">
                       {getTranslation(language, 'irrigationNeeded')}: <span className="text-3xl">{prediction.prediction}</span>
                     </h3>
@@ -595,7 +586,7 @@ const IrrigationPage = ({ onNavigate }) => {
 
                     {/* Advice Section */}
                     <div className="bg-white bg-opacity-60 p-4 rounded-lg border-l-4 border-blue-500">
-                      <p className="text-sm text-gray-600 font-semibold mb-2">💡 {getTranslation(language, 'expertAdvice')}</p>
+                      <p className="text-sm text-gray-600 font-semibold mb-2">{getTranslation(language, 'expertAdvice')}</p>
                       <p className="text-sm text-gray-800 leading-relaxed">
                         {prediction.advice || 'No specific advice at this time'}
                       </p>
@@ -605,7 +596,7 @@ const IrrigationPage = ({ onNavigate }) => {
                   {/* Submitted Data Summary */}
                   {submittedData && (
                     <div className="bg-white bg-opacity-60 p-4 rounded-lg border-t-2 border-gray-200 mt-4">
-                      <p className="text-xs text-gray-600 font-semibold mb-2">📋 {getTranslation(language, 'inputSummary')}</p>
+                      <p className="text-xs text-gray-600 font-semibold mb-2">{getTranslation(language, 'inputSummary')}</p>
                       <div className="text-xs space-y-1 text-gray-700">
                         <p><strong>{getTranslation(language, 'location')}:</strong> {submittedData.location}</p>
                         <p><strong>{getTranslation(language, 'crop')}:</strong> {submittedData.crop_type} ({submittedData.crop_growth_stage})</p>

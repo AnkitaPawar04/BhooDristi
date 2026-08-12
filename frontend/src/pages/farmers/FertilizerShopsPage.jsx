@@ -101,6 +101,8 @@ const FertilizerShopsPage = ({ onNavigate }) => {
 
   const [selectedShopId, setSelectedShopId] =
     useState(null);
+  const [showDebug, setShowDebug] = useState(false);
+  const [debugData, setDebugData] = useState({ raw: null, mapped: null });
       // -----------------------------
   // Detect Current Location
   // -----------------------------
@@ -138,6 +140,14 @@ const FertilizerShopsPage = ({ onNavigate }) => {
         );
 
         setShops(result);
+
+        // pick up debug data if the service attached it to window
+        try {
+          const dbg = (typeof window !== "undefined" && window.__fertilizerDebug) || {};
+          setDebugData({ raw: dbg.lastRaw || null, mapped: dbg.lastMapped || null });
+        } catch (e) {
+          // ignore
+        }
 
         if (result.length > 0) {
           setSelectedShopId(result[0].id);
@@ -259,7 +269,7 @@ const FertilizerShopsPage = ({ onNavigate }) => {
 
                 <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 p-4 text-white">
                   <h2 className="text-2xl font-bold">
-                    📍 Search Location
+                    Search Location
                   </h2>
 
                   <p className="text-emerald-100 mt-1 text-sm">
@@ -383,7 +393,7 @@ const FertilizerShopsPage = ({ onNavigate }) => {
 
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                     <div className="bg-emerald-50 rounded-xl border p-4">
 
@@ -422,7 +432,7 @@ const FertilizerShopsPage = ({ onNavigate }) => {
 
                 <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-4 text-white">
                   <h2 className="text-2xl font-bold">
-                    🛒 Nearby Fertilizer Shops
+                    {getTranslation(language, 'fertilizerShops')}
                   </h2>
 
                   <p className="text-blue-100 mt-1 text-sm">
@@ -460,6 +470,23 @@ const FertilizerShopsPage = ({ onNavigate }) => {
                           Use GPS
                         </button>
 
+                      </div>
+                      <div className="mt-4">
+                        <button
+                          onClick={() => setShowDebug((s) => !s)}
+                          className="text-xs text-gray-500 underline"
+                        >
+                          {showDebug ? "Hide Debug Data" : "Show Debug Data"}
+                        </button>
+
+                        {showDebug && (
+                          <div className="mt-3 p-3 bg-gray-50 rounded border overflow-auto max-h-60 text-xs">
+                            <div className="font-semibold mb-2">Raw API Response</div>
+                            <pre className="whitespace-pre-wrap">{JSON.stringify(debugData.raw, null, 2)}</pre>
+                            <div className="font-semibold mt-3 mb-2">Mapped Shops</div>
+                            <pre className="whitespace-pre-wrap">{JSON.stringify(debugData.mapped, null, 2)}</pre>
+                          </div>
+                        )}
                       </div>
 
                     </div>

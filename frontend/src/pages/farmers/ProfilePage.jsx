@@ -433,9 +433,9 @@ const ProfilePage = ({ onNavigate }) => {
                           type="button"
                           onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
                           className="absolute right-3 top-2.5 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-                        >
-                          {showPasswords.current ? '👁️' : '👁️‍🗨️'}
-                        </button>
+                          >
+                            {showPasswords.current ? 'Hide' : 'Show'}
+                          </button>
                       </div>
                     </div>
 
@@ -456,9 +456,9 @@ const ProfilePage = ({ onNavigate }) => {
                           type="button"
                           onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}
                           className="absolute right-3 top-2.5 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-                        >
-                          {showPasswords.new ? '👁️' : '👁️‍🗨️'}
-                        </button>
+                          >
+                            {showPasswords.new ? 'Hide' : 'Show'}
+                          </button>
                       </div>
                     </div>
 
@@ -479,9 +479,9 @@ const ProfilePage = ({ onNavigate }) => {
                           type="button"
                           onClick={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}
                           className="absolute right-3 top-2.5 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-                        >
-                          {showPasswords.confirm ? '👁️' : '👁️‍🗨️'}
-                        </button>
+                          >
+                            {showPasswords.confirm ? 'Hide' : 'Show'}
+                          </button>
                       </div>
                     </div>
 
@@ -499,7 +499,7 @@ const ProfilePage = ({ onNavigate }) => {
             {/* Statistics */}
             <div>
               <div className="stat-card mb-6">
-                <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">📊 {getTranslation(language, 'statistics')}</h3>
+                <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">{getTranslation(language, 'statistics')}</h3>
                 <div className="space-y-4">
                   <div className="p-3 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-default">
                     <p className="stat-label">{getTranslation(language, 'totalPredictionsLabel')}</p>

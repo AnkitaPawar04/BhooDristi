@@ -2,7 +2,7 @@
 
 ## Overview
 
-The AI/ML component of BhooDristi handles data processing, model training, and crop prediction. It includes trained scikit-learn models achieving 99% accuracy on crop recommendations.
+The AI/ML component of BhooDrishti handles data processing, model training, and crop prediction. It includes trained scikit-learn models achieving 99% accuracy on crop recommendations.
 
 **Tech Stack:**
 - Python 3.10+
@@ -23,21 +23,21 @@ ai/
 │   ├── AgroData/              # Data folder
 │   │   ├── Crop_recommendation.csv          # Training data (2200 samples)
 │   │   ├── CropDataset-Enhanced.csv         # Geographic data
-│   │   ├── BhooDristi_cleaned_full_dataset.csv
-│   │   ├── BhooDristi_district_dataset.csv
+│   │   ├── BhooDrishti_cleaned_full_dataset.csv
+│   │   ├── BhooDrishti_district_dataset.csv
 │   │   └── *.pkl              # Pre-trained models
 │   └── README.md
 ├── models/                     # Trained models directory
-│   ├── BhooDristi_gb_model.pkl            # Main Gradient Boosting model (8.8MB)
-│   ├── BhooDristi_random_forest_model.pkl # Alternative model (6.8MB)
-│   ├── BhooDristi_gradient_boosting_model.pkl
-│   ├── BhooDristi_decision_tree_model.pkl
-│   ├── BhooDristi_knn_model.pkl
-│   ├── BhooDristi_svm_model.pkl
+│   ├── BhooDrishti_gb_model.pkl            # Main Gradient Boosting model (8.8MB)
+│   ├── BhooDrishti_random_forest_model.pkl # Alternative model (6.8MB)
+│   ├── BhooDrishti_gradient_boosting_model.pkl
+│   ├── BhooDrishti_decision_tree_model.pkl
+│   ├── BhooDrishti_knn_model.pkl
+│   ├── BhooDrishti_svm_model.pkl
 │   ├── scaler.pkl              # Feature normalization
 │   ├── label_encoder.pkl       # Crop category encoding
-│   ├── BhooDristi_features.pkl
-│   ├── BhooDristi_classes.pkl
+│   ├── BhooDrishti_features.pkl
+│   ├── BhooDrishti_classes.pkl
 │   └── model_metadata.pkl      # Model info
 └── README.md
 ```
@@ -69,7 +69,7 @@ from pathlib import Path
 import joblib
 
 # Load model
-model = joblib.load("models/BhooDristi_gb_model.pkl")
+model = joblib.load("models/BhooDrishti_gb_model.pkl")
 scaler = joblib.load("models/scaler.pkl")
 
 # Prepare features
@@ -251,12 +251,12 @@ def predict(
 
 | File | Size | Purpose |
 |------|------|---------|
-| `BhooDristi_gb_model.pkl` | 8.8 MB | Primary Gradient Boosting model |
-| `BhooDristi_random_forest_model.pkl` | 6.8 MB | Random Forest (99.39% accuracy) |
+| `BhooDrishti_gb_model.pkl` | 8.8 MB | Primary Gradient Boosting model |
+| `BhooDrishti_random_forest_model.pkl` | 6.8 MB | Random Forest (99.39% accuracy) |
 | `scaler.pkl` | 1.0 KB | StandardScaler for features |
 | `label_encoder.pkl` | 0.7 KB | Crop label encoder |
-| `BhooDristi_features.pkl` | 0.1 KB | Feature list |
-| `BhooDristi_classes.pkl` | 0.6 KB | Supported crops |
+| `BhooDrishti_features.pkl` | 0.1 KB | Feature list |
+| `BhooDrishti_classes.pkl` | 0.6 KB | Supported crops |
 | `model_metadata.pkl` | 0.4 KB | Model information |
 
 ---
@@ -387,7 +387,7 @@ logger.info(f"Prediction: {crop}, Confidence: {confidence}%")
 ```python
 # Check if pickle files exist
 from pathlib import Path
-print(Path("models/BhooDristi_gb_model.pkl").exists())
+print(Path("models/BhooDrishti_gb_model.pkl").exists())
 ```
 
 **Issue:** Different predictions on different runs

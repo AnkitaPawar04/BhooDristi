@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import LogoutConfirm from './LogoutConfirm';
 import { useApp } from '../contexts/AppContext';
 import { getTranslation } from '../utils/i18n';
+
 import {
   FiHome,
   FiTrendingUp,
@@ -16,7 +17,8 @@ import {
   FiFilter,
   FiAlertCircle,
   FiBell,
-  FiBarChart2
+  FiBarChart2,
+  FiFileText
 } from 'react-icons/fi';
 
 const Sidebar = ({ userName, currentPage, onNavigate }) => {
@@ -34,12 +36,14 @@ const Sidebar = ({ userName, currentPage, onNavigate }) => {
   const farmerMenuItems = [
     { id: 'dashboard', label: getTranslation(language, 'dashboard'), path: '/dashboard', icon: FiHome },
     { id: 'crop-recommendation', label: getTranslation(language, 'cropRecommendation'), path: '/crop-recommendation', icon: FiTrendingUp },
-    { id: 'irrigation', label: getTranslation(language, 'irrigationRecommendation'), path: '/irrigation', icon: FiDroplet },
+    { id: 'irrigation', label: getTranslation(language, 'irrigationPrediction'), path: '/irrigation', icon: FiDroplet },
     { id: 'fertilizer', label: getTranslation(language, 'fertilizerShops') || 'Nearby Fertilizer Shops', path: '/fertilizer', icon: FiMapPin },
     { id: 'soil', label: getTranslation(language, 'soilManagement'), path: '/soil', icon: FiFilter },
+    { id: 'Schemes', label: getTranslation(language, 'governmentSchemes'), path: '/Schemes', icon: FiFileText },
     { id: 'weather', label: getTranslation(language, 'weatherInformation'), path: '/weather', icon: FiSun },
     { id: 'profile', label: getTranslation(language, 'profile'), path: '/profile', icon: FiUser },
     { id: 'settings', label: getTranslation(language, 'settings'), path: '/settings', icon: FiSettings },
+    
   ];
 
   const adminMenuItems = [
@@ -73,7 +77,7 @@ const Sidebar = ({ userName, currentPage, onNavigate }) => {
   return (
     <>
       <div className="sidebar">
-        {/* Header Section - Same Color as BhooDristi */}
+        {/* Header Section - Same Color as BhooDrishti */}
         <div className="sidebar-header">
           <h1 className="text-2xl font-bold text-white">{getTranslation(language, 'appName')}</h1>
           <p className="text-sm mt-2 text-white font-semibold opacity-100">Smart Farming Platform</p>

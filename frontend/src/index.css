@@ -111,7 +111,7 @@ body.dark {
 
 /* Farm feature card */
 .farm-card {
-  @apply bg-white rounded-xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border-2 border-green-100;
+  @apply bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border-2 border-green-100;
 }
 
 .farm-card:hover {
@@ -898,7 +898,7 @@ body {
 
 /* Glow effect for farm elements */
 .farm-card:hover {
-  box-shadow: 0 20px 40px rgba(34, 197, 94, 0.15), 0 0 30px rgba(34, 197, 94, 0.08) !important;
+  box-shadow: 0 12px 24px rgba(34, 197, 94, 0.08) !important;
 }
 
 /* Grid gap animation */

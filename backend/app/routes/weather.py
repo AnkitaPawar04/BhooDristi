@@ -7,7 +7,7 @@ from urllib3.util.retry import Retry
 import os
 from dotenv import load_dotenv
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 
 load_dotenv()
 
@@ -152,7 +152,6 @@ async def get_forecast(latitude: float, longitude: float):
     base_temp = 20 + (latitude / 30) * 10
     
     for i in range(5):
-        from datetime import timedelta, datetime
         date = datetime.now() + timedelta(days=i+1)
         
         forecast_days.append({

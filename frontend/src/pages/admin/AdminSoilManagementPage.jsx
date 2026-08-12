@@ -59,27 +59,27 @@ const AdminSoilManagementPage = () => {
     
     // Determine primary strength
     let strength = '';
-    let strengthEmoji = '';
+    let strengthEmoji = ''; // Removed emoji
     if (soilData.nitrogen > 40) {
       strength = 'High Nitrogen';
-      strengthEmoji = '✓';
+      strengthEmoji = ''; // Removed emoji
     } else if (soilData.phosphorus > 30) {
       strength = 'Good Phosphorus';
-      strengthEmoji = '✓';
+      strengthEmoji = ''; // Removed emoji
     } else if (soilData.potassium > 150) {
       strength = 'Excellent Potassium';
-      strengthEmoji = '✓';
+      strengthEmoji = ''; // Removed emoji
     } else if (soilData.ph >= 6.0 && soilData.ph <= 7.5) {
       strength = 'Balanced pH';
-      strengthEmoji = '✓';
+      strengthEmoji = ''; // Removed emoji
     } else {
       strength = 'Needs Improvement';
-      strengthEmoji = '⚠️';
+      strengthEmoji = ''; // Removed emoji
     }
 
     // Determine soil health status
     let health = '';
-    let healthEmoji = '';
+    let healthEmoji = ''; // Removed emoji
     const nStatus = soilData.nitrogen >= 30 && soilData.nitrogen <= 50 ? 1 : 0;
     const pStatus = soilData.phosphorus >= 20 && soilData.phosphorus <= 40 ? 1 : 0;
     const kStatus = soilData.potassium >= 20 && soilData.potassium <= 150 ? 1 : 0;
@@ -88,21 +88,21 @@ const AdminSoilManagementPage = () => {
 
     if (totalStatus === 4) {
       health = 'Excellent Condition';
-      healthEmoji = '✓';
+      healthEmoji = ''; // Removed emoji
     } else if (totalStatus >= 3) {
       health = 'Good Condition';
-      healthEmoji = '◐';
+      healthEmoji = ''; // Removed emoji
     } else if (totalStatus >= 2) {
       health = 'Fair Condition';
-      healthEmoji = '⚠️';
+      healthEmoji = ''; // Removed emoji
     } else {
       health = 'Poor Condition';
-      healthEmoji = '❌';
+      healthEmoji = ''; // Removed emoji
     }
 
     return { 
-      strength: `${strengthEmoji} ${strength}`,
-      health: `${healthEmoji} ${health}`,
+      strength: strength,
+      health: health,
       nStatus,
       pStatus,
       kStatus,
@@ -126,7 +126,7 @@ const AdminSoilManagementPage = () => {
           )}
 
           <div className="page-header mb-8">
-            <h1 className="page-title">🌾 Soil Management & Insights</h1>
+              <h1 className="page-title">Soil Management & Insights</h1>
             <p className="page-subtitle">AI-powered soil analysis and crop recommendations by district</p>
             <div className="page-divider"></div>
           </div>
@@ -135,7 +135,8 @@ const AdminSoilManagementPage = () => {
             {/* Districts Sidebar */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-lg shadow-lg p-6 border border-emerald-200 sticky top-8 h-[calc(100vh-50px)]">
-                <h2 className="text-xl font-bold text-gray-800 mb-4">📍 Districts</h2>
+                <h2 className="text-xl font-bold text-gray-800 mb-4">Districts</h2>
+                                <h2 className="text-xl font-bold text-gray-800 mb-4">Districts</h2>
                 <div className="space-y-2 h-[calc(100%-60px)] overflow-y-auto">
                   {MAHARASHTRA_DISTRICTS.map(district => (
                     <button
@@ -159,7 +160,7 @@ const AdminSoilManagementPage = () => {
               {loading ? (
                 <div className="flex items-center justify-center h-96 bg-white rounded-lg shadow-lg">
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-gray-800 mb-2">⏳ Loading District Insights...</p>
+                    <p className="text-2xl font-bold text-gray-800 mb-2">Loading District Insights...</p>
                     <p className="text-gray-500">Analyzing soil and crop data for {selectedDistrict}</p>
                   </div>
                 </div>
@@ -168,9 +169,10 @@ const AdminSoilManagementPage = () => {
                   {/* Current Soil Status */}
                   {soilData && (
                     <div className="bg-white rounded-lg shadow-lg p-6 border border-emerald-200">
-                      <h2 className="text-2xl font-bold text-gray-800 mb-6">📊 Soil Status - {selectedDistrict}</h2>
+                      <h2 className="text-2xl font-bold text-gray-800 mb-6">Soil Status - {selectedDistrict}</h2>
+                                            <h2 className="text-2xl font-bold text-gray-800 mb-6">Soil Status - {selectedDistrict}</h2>
                       
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                         <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border-l-4 border-green-600">
                           <p className="text-gray-600 text-xs font-semibold uppercase">Nitrogen (N)</p>
                           <p className="text-3xl font-bold text-green-600 mt-2">{soilData.nitrogen}</p>
@@ -203,7 +205,8 @@ const AdminSoilManagementPage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Kharif Season */}
                       <div className="bg-white rounded-lg shadow-lg p-6 border-t-4 border-green-600">
-                        <h3 className="text-xl font-bold text-gray-800 mb-4">🌾 Kharif Season (June-September)</h3>
+                        <h3 className="text-xl font-bold text-gray-800 mb-4">Kharif Season (June-September)</h3>
+                                                <h3 className="text-xl font-bold text-gray-800 mb-4">Kharif Season (June-September)</h3>
                         {districtCrops.kharif && districtCrops.kharif.top_crops && districtCrops.kharif.top_crops.length > 0 ? (
                           <div className="space-y-3">
                             {districtCrops.kharif.top_crops.map((crop, idx) => (
@@ -226,6 +229,9 @@ const AdminSoilManagementPage = () => {
                       {/* Rabi Season */}
                       <div className="bg-white rounded-lg shadow-lg p-6 border-t-4 border-blue-600">
                         <h3 className="text-xl font-bold text-gray-800 mb-4">❄️ Rabi Season (October-March)</h3>
+                                                <h3 className="text-xl font-bold text-gray-800 mb-4">Rabi Season (October-March)</h3>
+                                                    <p className="text-gray-600 text-center">Crop recommendations loading...</p>
+                                              <h3 className="text-xl font-bold text-gray-800 mb-4">Soil Status - {selectedDistrict}</h3>
                         {districtCrops.rabi && districtCrops.rabi.top_crops && districtCrops.rabi.top_crops.length > 0 ? (
                           <div className="space-y-3">
                             {districtCrops.rabi.top_crops.map((crop, idx) => (
@@ -247,7 +253,7 @@ const AdminSoilManagementPage = () => {
                     </div>
                   ) : (
                     <div className="bg-white rounded-lg shadow-lg p-6 border border-yellow-300 text-center">
-                      <p className="text-gray-600">⏳ Crop recommendations loading...</p>
+                      <p className="text-gray-600">Crop recommendations loading...</p>
                     </div>
                   )}
 
@@ -256,7 +262,7 @@ const AdminSoilManagementPage = () => {
                     const insights = getKeyInsights();
                     return (
                       <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg shadow-lg p-6 border-l-4 border-green-700">
-                        <h3 className="text-xl font-bold text-gray-800 mb-4">🎯 Key Insights for {selectedDistrict}</h3>
+                        <h3 className="text-xl font-bold text-gray-800 mb-4">Key Insights for {selectedDistrict}</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="bg-white rounded p-3 border border-green-200">
                             <p className="text-sm font-semibold text-gray-600">Primary Strength</p>
@@ -280,8 +286,8 @@ const AdminSoilManagementPage = () => {
                               {soilData.ph >= 6.0 && soilData.ph <= 7.5 
                                 ? `✓ Optimal (${soilData.ph})` 
                                 : soilData.ph < 6.0 
-                                ? `⚠️ Acidic (${soilData.ph}) - Add Lime`
-                                : `⚠️ Alkaline (${soilData.ph}) - Monitor`}
+                                ? `Acidic (${soilData.ph}) - Add Lime`
+                                : `Alkaline (${soilData.ph}) - Monitor`}
                             </p>
                           </div>
                         </div>
@@ -298,7 +304,7 @@ const AdminSoilManagementPage = () => {
                     // Only render if we have actual crop data from model
                     return bestCrop ? (
                       <div className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-lg shadow-lg p-6 border-t-4 border-yellow-500">
-                        <h3 className="text-2xl font-bold text-gray-800 mb-6">🏆 Best Crop for Current Soil Conditions</h3>
+                        <h3 className="text-2xl font-bold text-gray-800 mb-6">Best Crop for Current Soil Conditions</h3>
                         
                         <div className="space-y-4">
                           <div className="bg-gradient-to-r from-yellow-100 to-amber-100 rounded-lg p-6 border-2 border-yellow-400">
@@ -308,19 +314,19 @@ const AdminSoilManagementPage = () => {
                               <div className="bg-white rounded p-2 border border-yellow-300">
                                 <p className="text-gray-600 font-semibold">Nitrogen Match</p>
                                 <p className="text-lg font-bold text-green-600 mt-1">
-                                  {soilData && soilData.nitrogen >= 30 && soilData.nitrogen <= 50 ? '✓ Excellent' : soilData && soilData.nitrogen > 20 ? '◐ Good' : '⚠️ Low'}
+                                  {soilData && soilData.nitrogen >= 30 && soilData.nitrogen <= 50 ? 'Excellent' : soilData && soilData.nitrogen > 20 ? 'Good' : 'Low'}
                                 </p>
                               </div>
                               <div className="bg-white rounded p-2 border border-yellow-300">
                                 <p className="text-gray-600 font-semibold">Phosphorus Match</p>
                                 <p className="text-lg font-bold text-green-600 mt-1">
-                                  {soilData && soilData.phosphorus >= 20 && soilData.phosphorus <= 40 ? '✓ Excellent' : soilData && soilData.phosphorus > 15 ? '◐ Good' : '⚠️ Low'}
+                                  {soilData && soilData.phosphorus >= 20 && soilData.phosphorus <= 40 ? 'Excellent' : soilData && soilData.phosphorus > 15 ? 'Good' : 'Low'}
                                 </p>
                               </div>
                               <div className="bg-white rounded p-2 border border-yellow-300">
                                 <p className="text-gray-600 font-semibold">pH Suitability</p>
                                 <p className="text-lg font-bold text-green-600 mt-1">
-                                  {soilData && soilData.ph >= 6.0 && soilData.ph <= 7.5 ? '✓ Perfect' : soilData && soilData.ph >= 5.5 && soilData.ph <= 8.0 ? '◐ Suitable' : '⚠️ Needs Work'}
+                                  {soilData && soilData.ph >= 6.0 && soilData.ph <= 7.5 ? 'Perfect' : soilData && soilData.ph >= 5.5 && soilData.ph <= 8.0 ? 'Suitable' : 'Needs Work'}
                                 </p>
                               </div>
                             </div>
@@ -349,7 +355,7 @@ const AdminSoilManagementPage = () => {
 
                           {/* Soil Optimization Tips */}
                           <div className="mt-4 bg-white rounded-lg p-4 border border-yellow-300">
-                            <p className="text-sm font-semibold text-gray-700 mb-2">💡 To Maximize Yield:</p>
+                            <p className="text-sm font-semibold text-gray-700 mb-2">To Maximize Yield:</p>
                             <ul className="space-y-1 text-sm text-gray-600">
                               {soilData && soilData.nitrogen < 30 && <li>• Increase nitrogen fertilizer application</li>}
                               {soilData && soilData.phosphorus < 20 && <li>• Add phosphate-rich fertilizers</li>}

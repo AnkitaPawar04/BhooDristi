@@ -1,4 +1,4 @@
-def BhooDristi_predict(district):
+def BhooDrishti_predict(district):
 
     import pandas as pd
     import numpy as np

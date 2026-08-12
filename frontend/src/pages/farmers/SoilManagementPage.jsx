@@ -125,7 +125,7 @@ const SoilManagementPage = ({ onNavigate }) => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* District List */}
             <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-6 border-4 border-emerald-200 relative z-10 flex flex-col h-full lg:max-h-[900px]">
-              <h2 className="text-xl font-bold text-gray-800 mb-6">📍 {getTranslation(language, 'districts')}</h2>
+              <h2 className="text-xl font-bold text-gray-800 mb-6">{getTranslation(language, 'districts')}</h2>
               <div className="space-y-2 overflow-y-auto pr-2 flex-1 district-list-scroll">
                 {MAHARASHTRA_DISTRICTS.map(district => (
                   <button
@@ -147,8 +147,8 @@ const SoilManagementPage = ({ onNavigate }) => {
             <div className="lg:col-span-2 space-y-6 relative z-10">
               {/* Current Data Card */}
               <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-0 border-4 border-green-200 overflow-hidden">
-                <div className="bg-gradient-to-r from-green-500 to-green-600 p-8 text-white">
-                  <h2 className="text-3xl font-bold">🌾 {getDistrictTranslation(selectedDistrict, language)}</h2>
+                  <div className="bg-gradient-to-r from-green-500 to-green-600 p-8 text-white">
+                  <h2 className="text-3xl font-bold">{getDistrictTranslation(selectedDistrict, language)}</h2>
                 </div>
                 <div className="p-8">
 
@@ -157,7 +157,7 @@ const SoilManagementPage = ({ onNavigate }) => {
                     <div className="text-gray-500">Loading soil data...</div>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     {/* Nitrogen */}
                     <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border-l-4 border-green-600 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                       <p className="text-gray-600 text-sm font-semibold uppercase tracking-wide">{getTranslation(language, 'nitrogen2')} (N)</p>
@@ -237,7 +237,7 @@ const SoilManagementPage = ({ onNavigate }) => {
               {/* Soil Health Info */}
               <div className="bg-green-50 rounded-2xl shadow-xl p-0 border-4 border-green-200 overflow-hidden">
                 <div className="bg-gradient-to-r from-green-500 to-green-600 p-8 text-white">
-                  <h3 className="text-2xl font-bold">📊 {getTranslation(language, 'soilHealthGuide')}</h3>
+                  <h3 className="text-2xl font-bold">{getTranslation(language, 'soilHealthGuide')}</h3>
                 </div>
                 <div className="p-8">
                   <ul className="space-y-4 text-sm text-gray-700">

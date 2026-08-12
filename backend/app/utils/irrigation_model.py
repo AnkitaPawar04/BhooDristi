@@ -40,7 +40,7 @@ class IrrigationModel:
             # Target: ai/
             current_file = Path(__file__)
             backend_dir = current_file.parent.parent.parent  # go to backend
-            project_root = backend_dir.parent  # go to BhooDristi (project root)
+            project_root = backend_dir.parent  # go to BhooDrishti (project root)
             models_path = project_root / 'ai'
             
             model_file = models_path / 'irrigation_model.pkl'

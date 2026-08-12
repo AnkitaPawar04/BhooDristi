@@ -18,7 +18,7 @@ class CropRecommendationModel:
         # Models are at: ai/models/
         current_file = Path(__file__)
         backend_dir = current_file.parent.parent.parent  # go to backend folder
-        project_root = backend_dir.parent  # go to project root (BhooDristi)
+        project_root = backend_dir.parent  # go to project root (BhooDrishti)
         self.model_path = project_root / "ai" / "models"
         
         self.model = None

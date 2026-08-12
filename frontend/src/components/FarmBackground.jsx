@@ -22,14 +22,14 @@ const FarmBackground = ({ children, isDark = false }) => {
         {/* Animated Field Rows */}
         <div className="farm-rows"></div>
 
-        {/* Crop Plants */}
+        {/* Crop Plants (decorative shapes only) */}
         <div className="farm-crops">
-          <div className="crop-group" style={{fontSize: '2.5rem'}}>🌾</div>
-          <div className="crop-group" style={{fontSize: '2rem'}}>🌱</div>
-          <div className="crop-group" style={{fontSize: '2.5rem'}}>🌾</div>
-          <div className="crop-group" style={{fontSize: '2.2rem'}}>🌽</div>
-          <div className="crop-group" style={{fontSize: '2.5rem'}}>🌾</div>
-          <div className="crop-group" style={{fontSize: '2rem'}}>🌱</div>
+          <div className="crop-group" style={{fontSize: '2.5rem'}}></div>
+          <div className="crop-group" style={{fontSize: '2rem'}}></div>
+          <div className="crop-group" style={{fontSize: '2.5rem'}}></div>
+          <div className="crop-group" style={{fontSize: '2.2rem'}}></div>
+          <div className="crop-group" style={{fontSize: '2.5rem'}}></div>
+          <div className="crop-group" style={{fontSize: '2rem'}}></div>
         </div>
 
         {/* Dust Particles */}

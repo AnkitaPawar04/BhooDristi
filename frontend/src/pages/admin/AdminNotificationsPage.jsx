@@ -160,7 +160,7 @@ const AdminNotificationsPage = () => {
                 onClick={() => setShowForm(true)}
                 className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-lg transition"
               >
-                ➕ {getTranslation(language, 'sendNotification')}
+                {getTranslation(language, 'sendNotification')}
               </button>
             )}
           </div>
@@ -269,7 +269,7 @@ const AdminNotificationsPage = () => {
                     disabled={notificationForm.targetType === 'district' && !notificationForm.district}
                     className="flex-1 !bg-purple-700 hover:!bg-purple-800 !text-white font-bold py-2 px-4 rounded-lg shadow-sm transition disabled:!bg-gray-400 disabled:!text-white disabled:cursor-not-allowed disabled:opacity-100"
                   >
-                    📤 Send to {notificationForm.targetType === 'all' ? 'All Farmers' : notificationForm.district}
+                    Send to {notificationForm.targetType === 'all' ? 'All Farmers' : notificationForm.district}
                   </button>
                   <button
                     type="button"
@@ -285,7 +285,7 @@ const AdminNotificationsPage = () => {
 
           {/* Notification History */}
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">📋 Notification History</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Notification History</h2>
             
             <div className="space-y-3">
               {notifications.length > 0 ? (
@@ -302,8 +302,8 @@ const AdminNotificationsPage = () => {
                       <div className="flex-1">
                         <h3 className="font-bold text-gray-800 text-lg">{notif.message}</h3>
                         <div className="mt-2 flex gap-4 text-sm text-gray-600">
-                          <span>📍 {notif.targetUsers}</span>
-                          <span>📅 {notif.date}</span>
+                          <span>Target: {notif.targetUsers}</span>
+                          <span>Date: {notif.date}</span>
                         </div>
                       </div>
                       <button
@@ -324,8 +324,8 @@ const AdminNotificationsPage = () => {
 
           {/* Stats Card */}
           <div className="mt-8 bg-gradient-to-r from-purple-100 to-indigo-100 dark:from-purple-500 dark:to-indigo-600 rounded-lg shadow-lg p-6 text-gray-800 dark:text-white">
-            <h3 className="text-xl font-bold mb-4">📊 Notification Stats</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <h3 className="text-xl font-bold mb-4">Notification Stats</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <p className="text-purple-700 dark:text-purple-100 text-sm">Total Sent</p>
                 <p className="text-3xl font-bold">{notifications.length}</p>

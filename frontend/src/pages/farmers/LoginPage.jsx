@@ -1,5 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 import { authAPI, adminAPI } from '../../services/api';
 import authStorage from '../../services/authStorage';
 import { getTranslation } from '../../utils/i18n';
@@ -250,7 +251,7 @@ const LoginPage = () => {
           <div className="w-full max-w-sm animate-fadeInUp">
             {/* Mobile Hero Section */}
             <div className="lg:hidden bg-black/40 backdrop-blur-md rounded-2xl p-6 mb-6 text-white border border-white/20">
-              <h1 className="text-3xl font-bold mb-2">🌾 BhooDristi</h1>
+              <h1 className="text-3xl font-bold mb-2">BhooDrishti</h1>
               <p className="text-base font-semibold text-green-100 mb-3">
                 Your Smart Farming Assistant
               </p>
@@ -275,7 +276,7 @@ const LoginPage = () => {
                       : 'text-gray-700 hover:text-gray-900'
                   }`}
                 >
-                  👨‍💼 Admin
+                  Admin
                 </button>
                 <button
                   onClick={() => {
@@ -290,14 +291,14 @@ const LoginPage = () => {
                       : 'text-gray-700 hover:text-gray-900'
                   }`}
                 >
-                  👨‍🌾 Farmer
+                  Farmer
                 </button>
               </div>
             </div>
 
             {error && (
               <div className="mb-5 p-3 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-lg shadow-sm animate-slideInLeft text-sm">
-                <p className="font-bold">⚠️ Oops! Something went wrong</p>
+                <p className="font-bold">Oops! Something went wrong</p>
                 <p className="text-xs mt-1">{error}</p>
               </div>
             )}
@@ -308,7 +309,7 @@ const LoginPage = () => {
                 {!isSignup ? (
                   <>
                     <h2 className="text-3xl font-bold text-gray-800 mb-2">
-                      {selectedRole === 'admin' ? '👨‍💼 Admin Login' : '👨‍🌾 Farmer Login'}
+                      {selectedRole === 'admin' ? 'Admin Login' : 'Farmer Login'}
                     </h2>
                     <p className="text-gray-600 text-sm mb-8">
                       Login to access your farm dashboard and insights
@@ -322,12 +323,11 @@ const LoginPage = () => {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="your.email@example.com"
+                      placeholder="example@email.com"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
                       required
                     />
                   </div>
-
                   <div className="mb-6">
                     <label className="block text-gray-700 text-sm font-bold mb-2">
                       Password
@@ -346,7 +346,7 @@ const LoginPage = () => {
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-3 text-gray-600 hover:text-gray-800 transition"
                       >
-                        {showPassword ? '👁️' : '👁️‍🗨️'}
+                        {showPassword ? <AiOutlineEyeInvisible size={20} /> : <AiOutlineEye size={20} />}
                       </button>
                     </div>
                   </div>
@@ -364,18 +364,18 @@ const LoginPage = () => {
                   >
                     {loading ? (
                       <>
-                        <span className="inline-block animate-spin mr-2">⏳</span>
+                        <span className="inline-block animate-spin mr-2"></span>
                         Logging in...
                       </>
                     ) : (
-                      '🚀 Login'
+                      'Login'
                     )}
                   </button>
                   </>
                 ) : (
                   <>
                     <h2 className="text-3xl font-bold text-gray-800 mb-2">
-                      {selectedRole === 'admin' ? '👨‍💼 Create Admin Account' : '👨‍🌾 Create Farmer Account'}
+                      {selectedRole === 'admin' ? 'Create Admin Account' : 'Create Farmer Account'}
                     </h2>
                     <p className="text-gray-600 text-sm mb-8">
                       {getTranslation(language, 'joinGetRecommendations')}
@@ -440,11 +440,11 @@ const LoginPage = () => {
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-3 text-gray-600 hover:text-gray-800 transition"
                       >
-                        {showPassword ? '👁️' : '👁️‍🗨️'}
+                        {showPassword ? <AiOutlineEyeInvisible size={20} /> : <AiOutlineEye size={20} />}
                       </button>
                     </div>
                     <p className="text-xs text-gray-500 mt-2">
-                      🔒 Use at least 8 characters with uppercase, lowercase, and numbers
+                      Use at least 8 characters with uppercase, lowercase, and numbers
                     </p>
                   </div>
 
@@ -466,7 +466,7 @@ const LoginPage = () => {
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         className="absolute right-3 top-3 text-gray-600 hover:text-gray-800 transition"
                       >
-                        {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
+                        {showConfirmPassword ? <AiOutlineEyeInvisible size={20} /> : <AiOutlineEye size={20} />}
                       </button>
                     </div>
                   </div>
@@ -478,11 +478,11 @@ const LoginPage = () => {
                   >
                     {loading ? (
                       <>
-                        <span className="inline-block animate-spin mr-2">⏳</span>
+                        <span className="inline-block animate-spin mr-2"></span>
                         Creating Account...
                       </>
-                    ) : (
-                      '✓ Create Account'
+                      ) : (
+                      'Create Account'
                     )}
                   </button>
                 </>
@@ -531,8 +531,8 @@ const LoginPage = () => {
             {/* Logo & Tagline */}
             <div className="text-center animate-fadeInUp">
               <div className="flex items-center justify-center gap-2 mb-4">
-                <span className="text-6xl">🌾</span>
-                <h1 className="text-5xl xl:text-6xl font-bold">BhooDristi</h1>
+                <span className="text-6xl"></span>
+                <h1 className="text-5xl xl:text-6xl font-bold">BhooDrishti</h1>
               </div>
               <p className="text-xl xl:text-2xl font-semibold text-green-100 mb-2">
                 Your Digital Farmer's Assistant

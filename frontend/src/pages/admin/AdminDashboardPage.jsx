@@ -24,7 +24,7 @@ const AdminDashboardPage = ({ onNavigate }) => {
 
   // System health status
   const systemHealth = {
-    status: '🟢 Operational',
+    status: 'Operational',
     uptime: '99.9%'
   };
 
@@ -134,7 +134,7 @@ const AdminDashboardPage = ({ onNavigate }) => {
     return (
       <div className="flex items-center justify-center h-screen bg-transparent backdrop-blur-sm">
         <div className="text-center">
-          <p className="text-2xl font-bold text-white">⏳ Loading Dashboard...</p>
+          <p className="text-2xl font-bold text-white">Loading Dashboard...</p>
           <p className="text-gray-300 mt-2">Please wait while we fetch your data</p>
         </div>
       </div>
@@ -173,12 +173,11 @@ const AdminDashboardPage = ({ onNavigate }) => {
               <div className="card card-content hover:shadow-lg">
                 <div className="flex items-center justify-between mb-4">
                   <p className="stat-label">{getTranslation(language, 'totalFarmers')}</p>
-                  <span className="text-3xl">👨‍🌾</span>
                 </div>
                 <p className="stat-value text-green-600 dark:text-green-400">{statistics.total_farmers}</p>
                 <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    ✓ {statistics.verified_farmers} {getTranslation(language, 'verified')} • ⏳ {statistics.total_farmers - statistics.verified_farmers} {getTranslation(language, 'pending')}
+                    {statistics.verified_farmers} {getTranslation(language, 'verified')} • {statistics.total_farmers - statistics.verified_farmers} {getTranslation(language, 'pending')}
                   </p>
                 </div>
               </div>
@@ -186,12 +185,11 @@ const AdminDashboardPage = ({ onNavigate }) => {
               <div className="card card-content hover:shadow-lg">
                 <div className="flex items-center justify-between mb-4">
                   <p className="stat-label">{getTranslation(language, 'totalPredictions')}</p>
-                  <span className="text-3xl">🎯</span>
                 </div>
                 <p className="stat-value text-blue-600 dark:text-blue-400">{statistics.total_predictions}</p>
                 <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    📈 {Math.round((statistics.total_predictions / statistics.total_farmers) * 10) / 10} {getTranslation(language, 'averageFarmer')}
+                    {Math.round((statistics.total_predictions / statistics.total_farmers) * 10) / 10} {getTranslation(language, 'averageFarmer')}
                   </p>
                 </div>
               </div>
@@ -199,12 +197,11 @@ const AdminDashboardPage = ({ onNavigate }) => {
               <div className="card card-content hover:shadow-lg">
                 <div className="flex items-center justify-between mb-4">
                   <p className="stat-label">{getTranslation(language, 'systemHealth')}</p>
-                  <span className="text-3xl">💚</span>
                 </div>
                 <p className="stat-value text-emerald-600 dark:text-emerald-400">{getTranslation(language, 'operational')}</p>
                 <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    ⬆️ {systemHealth.uptime} {getTranslation(language, 'uptime')}
+                    {systemHealth.uptime} {getTranslation(language, 'uptime')}
                   </p>
                 </div>
               </div>
@@ -212,14 +209,13 @@ const AdminDashboardPage = ({ onNavigate }) => {
               <div className="card card-content hover:shadow-lg">
                 <div className="flex items-center justify-between mb-4">
                   <p className="stat-label">{getTranslation(language, 'topCrop')}</p>
-                  <span className="text-3xl">🌾</span>
                 </div>
                 <p className="stat-value text-purple-600 dark:text-purple-400">
                   {statistics.top_crops[0]?.crop || 'N/A'}
                 </p>
                 <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    📊 {statistics.top_crops[0]?.count || 0} predictions
+                    {statistics.top_crops[0]?.count || 0} predictions
                   </p>
                 </div>
               </div>
@@ -232,7 +228,7 @@ const AdminDashboardPage = ({ onNavigate }) => {
             <div className="lg:col-span-2 space-y-8">
               {/* Crop Distribution */}
               <div className="card card-content hover:shadow-lg">
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">🥬 {getTranslation(language, 'cropDistributionAnalysis')}</h2>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">{getTranslation(language, 'cropDistributionAnalysis')}</h2>
                 <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">{getTranslation(language, 'distributionAcrossRegion')}</p>
                 {statistics?.top_crops && statistics.top_crops.length > 0 ? (
                   <div style={{ position: 'relative', height: '300px' }}>
@@ -245,7 +241,7 @@ const AdminDashboardPage = ({ onNavigate }) => {
 
               {/* District-wise Analysis */}
               <div className="card card-content hover:shadow-lg">
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">📍 {getTranslation(language, 'districtWisePredictions')}</h2>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">{getTranslation(language, 'districtWisePredictions')}</h2>
                 <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">{getTranslation(language, 'systemActivityAcrossDistricts')}</p>
                 {districtData.length > 0 ? (
                   <div style={{ position: 'relative', height: '300px' }}>
@@ -266,7 +262,7 @@ const AdminDashboardPage = ({ onNavigate }) => {
           <div className="card card-content hover:shadow-lg">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">👥 Farmer Management</h2>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Farmer Management</h2>
                 <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">Manage and monitor all registered farmers</p>
               </div>
               <div className="mt-4 md:mt-0 flex gap-3">
@@ -344,7 +340,7 @@ const AdminDashboardPage = ({ onNavigate }) => {
                               ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
                               : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
                           }`}>
-                            {farmer.verified ? '✓ Verified' : '⏳ Pending'}
+                            {farmer.verified ? 'Verified' : 'Pending'}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
@@ -358,7 +354,7 @@ const AdminDashboardPage = ({ onNavigate }) => {
                                 className="px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 transition"
                                 title="Verify Farmer"
                               >
-                                ✓ Verify
+                                Verify
                               </button>
                             )}
                             <button
@@ -366,14 +362,14 @@ const AdminDashboardPage = ({ onNavigate }) => {
                               className="px-3 py-1 text-xs bg-orange-500 text-white rounded hover:bg-orange-600 transition"
                               title="Suspend Farmer"
                             >
-                              ⊘ Suspend
+                              Suspend
                             </button>
                             <button
                               onClick={() => handleDeleteClick(farmer)}
                               className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition"
                               title="Delete Farmer"
                             >
-                              🗑️ Delete
+                              Delete
                             </button>
                           </div>
                         </td>
@@ -397,7 +393,6 @@ const AdminDashboardPage = ({ onNavigate }) => {
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-sm w-full">
               <div className="p-6">
                 <div className="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 dark:bg-red-900/30 rounded-full mb-4">
-                  <span className="text-2xl">⚠️</span>
                 </div>
                 
                 <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 text-center mb-2">
@@ -409,7 +404,7 @@ const AdminDashboardPage = ({ onNavigate }) => {
                 </p>
                 
                 <p className="text-sm text-orange-600 dark:text-orange-400 text-center mb-6 p-3 bg-orange-50 dark:bg-orange-900/20 rounded">
-                  ⚠️ This action is permanent and will remove:
+                  This action is permanent and will remove:
                   <br/>• Farmer account
                   <br/>• All crop predictions
                   <br/>• All associated data

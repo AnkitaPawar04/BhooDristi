@@ -3,6 +3,7 @@ import Sidebar from '../../components/Sidebar';
 import { useApp } from '../../contexts/AppContext';
 import { getTranslation, getDistrictTranslation } from '../../utils/i18n';
 import { weatherAPI, soilAPI } from '../../services/api';
+import { DISTRICT_CENTERS } from '../../utils/districts';
 import useGeolocation from '../../hooks/useGeolocation';
 import dashboardBgVideo from './videos/dashboard.mp4';
 
@@ -50,20 +51,14 @@ const WeatherPage = ({ onNavigate }) => {
   };
 
   const determineDistrict = (lat, lon) => {
-    const districts = [
-      { name: 'Pune', lat: 18.516, lon: 73.856 },
-      { name: 'Satara', lat: 17.665, lon: 73.912 },
-      { name: 'Kolhapur', lat: 16.702, lon: 73.735 },
-    ];
-
-    let closestDistrict = 'Pune';
+    let closestDistrict = '';
     let minDistance = Infinity;
 
-    districts.forEach((d) => {
-      const distance = Math.sqrt((lat - d.lat) ** 2 + (lon - d.lon) ** 2);
+    Object.entries(DISTRICT_CENTERS).forEach(([districtName, coords]) => {
+      const distance = Math.sqrt((lat - coords.latitude) ** 2 + (lon - coords.longitude) ** 2);
       if (distance < minDistance) {
         minDistance = distance;
-        closestDistrict = d.name;
+        closestDistrict = districtName;
       }
     });
 
@@ -116,26 +111,26 @@ const WeatherPage = ({ onNavigate }) => {
           {/* Current Weather Card */}
           <div className="farm-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-4 border-blue-200 dark:border-blue-700 overflow-hidden transition-shadow duration-300">
             <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 text-white">
-              <h2 className="text-3xl font-bold flex items-center gap-3">📊 Current Condition</h2>
+              <h2 className="text-3xl font-bold flex items-center gap-3">Current Condition</h2>
               <p className="text-blue-100 mt-2 text-lg">Real-time atmospheric data for your location</p>
             </div>
             
             <div className="p-8">
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <button
+                    <button
                     onClick={getLocation}
                     disabled={locationLoading}
                     className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-xl mb-6 transition disabled:opacity-50 shadow-lg text-lg"
                   >
-                    {locationLoading ? '📡 Detecting Location...' : '🔄 Refresh Current Location'}
+                    {locationLoading ? 'Detecting Location...' : 'Refresh Current Location'}
                   </button>
                 </div>
               </div>
 
               {locationError && (
                 <div className="bg-red-100 dark:bg-red-900/30 border-l-4 border-red-500 p-4 rounded-lg text-red-700 dark:text-red-200 text-sm mb-6">
-                  ⚠️ {locationError}
+                  {locationError}
                 </div>
               )}
 
@@ -146,24 +141,26 @@ const WeatherPage = ({ onNavigate }) => {
                   <p className="text-xl text-gray-700 dark:text-gray-300 font-semibold mt-4">{weather.description}</p>
                   
                   {/* Weather Details Grid */}
-                  <div className="grid grid-cols-3 gap-4 mt-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
                     <div className="bg-blue-100 dark:bg-blue-900/30 rounded-xl p-4 border-l-4 border-blue-600">
-                      <p className="text-blue-700 dark:text-blue-300 text-sm font-semibold">💧 Humidity</p>
+                      <p className="text-blue-700 dark:text-blue-300 text-sm font-semibold">Humidity</p>
                       <p className="text-3xl font-bold text-blue-800 dark:text-blue-200 mt-2">{weather.humidity}%</p>
                     </div>
                     <div className="bg-cyan-100 dark:bg-cyan-900/30 rounded-xl p-4 border-l-4 border-cyan-600">
-                      <p className="text-cyan-700 dark:text-cyan-300 text-sm font-semibold">🌧️ Rainfall</p>
+                      <p className="text-cyan-700 dark:text-cyan-300 text-sm font-semibold">Rainfall</p>
                       <p className="text-3xl font-bold text-cyan-800 dark:text-cyan-200 mt-2">{weather.rainfall}mm</p>
                     </div>
-                    <div className="bg-indigo-100 dark:bg-indigo-900/30 rounded-xl p-4 border-l-4 border-indigo-600">
-                      <p className="text-indigo-700 dark:text-indigo-300 text-sm font-semibold">📍 Location</p>
-                      <p className="text-3xl font-bold text-indigo-800 dark:text-indigo-200 mt-2">{district || 'Current Location'}</p>
-                    </div>
+                    {district && (
+                      <div className="bg-indigo-100 dark:bg-indigo-900/30 rounded-xl p-4 border-l-4 border-indigo-600">
+                        <p className="text-indigo-700 dark:text-indigo-300 text-sm font-semibold">Location</p>
+                        <p className="text-3xl font-bold text-indigo-800 dark:text-indigo-200 mt-2">{getDistrictTranslation(district, language)}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : (
                 <div className="text-center py-12 bg-gray-50 dark:bg-gray-700 rounded-2xl">
-                  <p className="text-gray-700 dark:text-gray-300 text-lg font-semibold">📍 Loading weather for your current location...</p>
+                  <p className="text-gray-700 dark:text-gray-300 text-lg font-semibold">Loading weather for your current location...</p>
                 </div>
               )}
             </div>
@@ -180,7 +177,7 @@ const WeatherPage = ({ onNavigate }) => {
               </div>
               
               <div className="p-8">
-                <div className="grid grid-cols-5 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                   {forecast.map((day, index) => (
                     <div key={index} className="bg-gradient-to-br from-green-50 dark:from-gray-700 to-white dark:to-gray-800 rounded-xl p-4 border-2 border-green-100 dark:border-green-600 text-center transition-shadow duration-300">
                       <p className="font-bold text-gray-800 dark:text-white text-lg">{day.day}</p>
@@ -203,11 +200,11 @@ const WeatherPage = ({ onNavigate }) => {
                       <div className="border-t border-green-100 dark:border-green-600 pt-3">
                         <div className="flex justify-around text-xs">
                           <div>
-                            <p className="text-gray-600 dark:text-gray-400">💧</p>
+                            <p className="text-gray-600 dark:text-gray-400"></p>
                             <p className="font-semibold text-gray-700 dark:text-gray-300">{day.humidity}%</p>
                           </div>
                           <div>
-                            <p className="text-gray-600 dark:text-gray-400">🌧️</p>
+                            <p className="text-gray-600 dark:text-gray-400"></p>
                             <p className="font-semibold text-gray-700 dark:text-gray-300">{day.rainfall}mm</p>
                           </div>
                         </div>

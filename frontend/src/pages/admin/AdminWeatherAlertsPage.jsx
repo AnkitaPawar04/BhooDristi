@@ -184,14 +184,14 @@ const AdminWeatherAlertsPage = () => {
                 onClick={() => setShowAlertForm(true)}
                 className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-6 rounded-lg transition"
               >
-                ➕ Send Alert
+                Send Alert
               </button>
             )}
           </div>
 
           {showAlertForm && (
             <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">📢 Send Weather Alert</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">Send Weather Alert</h2>
               
               <form onSubmit={handleSendAlert} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -238,7 +238,7 @@ const AdminWeatherAlertsPage = () => {
                     type="submit"
                     className="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-lg transition"
                   >
-                    📢 Send Alert
+                    Send Alert
                   </button>
                   <button
                     type="button"
@@ -255,15 +255,15 @@ const AdminWeatherAlertsPage = () => {
           {/* Weather Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
             {loadingWeather ? (
-              <div className="col-span-full flex justify-center items-center py-8">
-                <div className="text-gray-500">⏳ Loading weather data for all districts...</div>
+                <div className="col-span-full flex justify-center items-center py-8">
+                <div className="text-gray-500">Loading weather data for all districts...</div>
               </div>
             ) : (
               Object.entries(DISTRICTS_COORDINATES).map(([district]) => {
                 const weather = weatherData[district];
                 return (
                   <div key={district} className="bg-white rounded-lg shadow-lg p-6 border-t-4 border-orange-500 hover:shadow-xl transition">
-                    <h3 className="text-lg font-bold text-gray-800 mb-4">📍 {getDistrictTranslation(district, language)}</h3>
+                    <h3 className="text-lg font-bold text-gray-800 mb-4">{getDistrictTranslation(district, language)}</h3>
                     
                     {weather ? (
                       <div className="space-y-3">
@@ -300,7 +300,7 @@ const AdminWeatherAlertsPage = () => {
 
           {/* Alerts History */}
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">📋 {getTranslation(language, 'alertHistory')}</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">{getTranslation(language, 'alertHistory')}</h2>
             
             <div className="space-y-3">
               {alerts.length > 0 ? (
@@ -309,7 +309,7 @@ const AdminWeatherAlertsPage = () => {
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <h3 className="font-bold text-gray-800">{alert.message}</h3>
-                        <p className="text-sm text-gray-600">📍 {getDistrictTranslation(alert.district, language)} • {alert.date}</p>
+                        <p className="text-sm text-gray-600">{getDistrictTranslation(alert.district, language)} • {alert.date}</p>
                       </div>
                       <div className="flex gap-2">
                         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
@@ -323,7 +323,7 @@ const AdminWeatherAlertsPage = () => {
                           onClick={() => handleDeleteAlert(alert.id)}
                           className="text-red-600 hover:text-red-700 font-semibold text-sm"
                         >
-                          ✕
+                          
                         </button>
                       </div>
                     </div>

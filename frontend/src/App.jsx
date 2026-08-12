@@ -24,6 +24,7 @@ import AdminSettingsPage from './pages/admin/AdminSettingsPage';
 import authStorage from './services/authStorage';
 import './index.css';
 import './admin-cards.css';
+import Schemes from './pages/farmers/Schemes';
 
 const ProtectedRoute = ({ children }) => {
   if (!authStorage.isAuthenticated()) {
@@ -106,6 +107,15 @@ function BackgroundWrappedApp({ handleNavigate }) {
           </ProtectedRoute>
         }
       />
+            <Route
+        path="/Schemes"
+        element={
+          <ProtectedRoute>
+            <Schemes onNavigate={handleNavigate} />
+          </ProtectedRoute>
+        }
+      />
+
       <Route
         path="/soil"
         element={

@@ -72,7 +72,7 @@ const AdminFarmerManagementPage = () => {
         <Sidebar />
         <div className="flex-1 flex items-center justify-center admin-page">
           <div className="text-center">
-            <p className="text-2xl font-bold text-gray-800 dark:text-white">⏳ {getTranslation(language, 'loadingFarmers')}</p>
+            <p className="text-2xl font-bold text-gray-800 dark:text-white">{getTranslation(language, 'loadingFarmers')}</p>
           </div>
         </div>
       </div>
@@ -148,7 +148,7 @@ const AdminFarmerManagementPage = () => {
                             ? 'bg-green-100 text-green-800 border border-green-200 dark:bg-green-500/30 dark:text-green-200 dark:border-green-500/50'
                             : 'bg-yellow-100 text-yellow-800 border border-yellow-200 dark:bg-yellow-500/30 dark:text-yellow-200 dark:border-yellow-500/50'
                         }`}>
-                          {farmer.verified ? '✓ ' + getTranslation(language, 'verifiedLabel') : '⏳ ' + getTranslation(language, 'pendingLabel')}
+                          {farmer.verified ? getTranslation(language, 'verifiedLabel') : getTranslation(language, 'pendingLabel')}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600 dark:text-slate-400">
@@ -166,7 +166,7 @@ const AdminFarmerManagementPage = () => {
                             onClick={() => handleDelete(farmer.id, farmer.name)}
                             className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
                           >
-                            🗑️ Delete
+                            Delete
                           </button>
                         </div>
                       </td>
@@ -210,7 +210,7 @@ const AdminFarmerManagementPage = () => {
                   <div>
                     <label className="text-sm font-semibold text-gray-600">Status</label>
                     <p className="text-gray-800">
-                      {viewModal.farmer.verified ? '✓ Verified' : '⏳ Pending Verification'}
+                      {viewModal.farmer.verified ? 'Verified' : 'Pending Verification'}
                     </p>
                   </div>
                   
