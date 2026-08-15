@@ -5,8 +5,10 @@ import os
 from .routes import auth, crop, admin, weather, soil, irrigation, fertilizer
 from .database.config import Base, engine
 
-load_dotenv()
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+load_dotenv(os.path.join(BASE_DIR, ".env"))
 print("Google API Key Loaded:", bool(os.getenv("GOOGLE_PLACES_API_KEY")))
+print("Earth Engine Project:", os.getenv("EE_PROJECT"))
 
 # Create tables
 Base.metadata.create_all(bind=engine)
