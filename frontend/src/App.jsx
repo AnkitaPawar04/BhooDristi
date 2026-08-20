@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ChatbotPage from './pages/farmers/ChatbotPage';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AppProvider } from './contexts/AppContext';
 import FarmBackground from './components/FarmBackground';
@@ -131,6 +132,14 @@ function BackgroundWrappedApp({ handleNavigate }) {
             <WeatherPage onNavigate={handleNavigate} />
           </ProtectedRoute>
         }
+      />
+      <Route
+        path="/chatbot"
+        element={
+          <ProtectedRoute>
+            <ChatbotPage onNavigate={handleNavigate} />
+          </ProtectedRoute>
+      }
       />
       <Route
         path="/profile"
