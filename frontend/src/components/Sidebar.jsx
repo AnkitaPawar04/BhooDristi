@@ -40,7 +40,6 @@ const Sidebar = ({ userName, currentPage, onNavigate }) => {
     { id: 'irrigation', label: getTranslation(language, 'irrigationPrediction'), path: '/irrigation', icon: FiDroplet },
     { id: 'fertilizer', label: getTranslation(language, 'fertilizerShops') || 'Nearby Fertilizer Shops', path: '/fertilizer', icon: FiMapPin },
     { id: 'soil', label: getTranslation(language, 'soilManagement'), path: '/soil', icon: FiFilter },
-    { id: 'Schemes', label: getTranslation(language, 'governmentSchemes'), path: '/Schemes', icon: FiFileText },
     { id: 'weather', label: getTranslation(language, 'weatherInformation'), path: '/weather', icon: FiSun },
     { id: 'chatbot', label: 'Farmer Chatbot', path: '/chatbot', icon: FiMessageCircle },
     { id: 'profile', label: getTranslation(language, 'profile'), path: '/profile', icon: FiUser },
