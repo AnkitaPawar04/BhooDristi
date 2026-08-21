@@ -18,7 +18,8 @@ import {
   FiAlertCircle,
   FiBell,
   FiBarChart2,
-  FiFileText
+  FiFileText,
+  FiMessageCircle
 } from 'react-icons/fi';
 
 const Sidebar = ({ userName, currentPage, onNavigate }) => {
@@ -40,6 +41,7 @@ const Sidebar = ({ userName, currentPage, onNavigate }) => {
     { id: 'fertilizer', label: getTranslation(language, 'fertilizerShops') || 'Nearby Fertilizer Shops', path: '/fertilizer', icon: FiMapPin },
     { id: 'soil', label: getTranslation(language, 'soilManagement'), path: '/soil', icon: FiFilter },
     { id: 'weather', label: getTranslation(language, 'weatherInformation'), path: '/weather', icon: FiSun },
+    { id: 'chatbot', label: 'Farmer Chatbot', path: '/chatbot', icon: FiMessageCircle },
     { id: 'profile', label: getTranslation(language, 'profile'), path: '/profile', icon: FiUser },
     { id: 'settings', label: getTranslation(language, 'settings'), path: '/settings', icon: FiSettings },
     

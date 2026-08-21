@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
-from .routes import auth, crop, admin, weather, soil, irrigation, fertilizer
+from .routes import auth, crop, admin, weather, soil, irrigation, fertilizer,chatbot
 from .database.config import Base, engine
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -37,6 +37,14 @@ app.include_router(weather.router)
 app.include_router(soil.router)
 app.include_router(irrigation.router)
 app.include_router(fertilizer.router)
+app.include_router(chatbot.router, prefix="/chatbot")
+
+app.include_router(
+    chatbot.router,
+    prefix="/chatbot"
+)
+
+
 @app.get("/")
 async def root():
     return {
