@@ -2,16 +2,29 @@ import React, { useState } from 'react';
 import Sidebar from '../../components/Sidebar';
 import { useApp } from '../../contexts/AppContext';
 import { getTranslation } from '../../utils/i18n';
+import adminProfileImage from '../../assets/admin_profile.jpg';
 
 const AdminProfilePage = () => {
   const { language } = useApp();
-  const [profileData, setProfileData] = useState({
+  const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const defaultProfileData = {
     firstName: 'Admin',
     lastName: 'User',
     email: 'admin.agro@gmail.com',
     phone: '+91 98765 43210',
     organization: 'BhooDrishti Admin',
-    profilePhoto: 'https://ui-avatars.com/api/?name=Admin+User&background=16a34a&color=fff&size=160',
+    profilePhoto: adminProfileImage,
+  };
+
+  const [profileData, setProfileData] = useState({
+    ...defaultProfileData,
+    ...storedUser,
+    firstName: storedUser.firstName || storedUser.firstname || defaultProfileData.firstName,
+    lastName: storedUser.lastName || storedUser.lastname || defaultProfileData.lastName,
+    email: storedUser.email || defaultProfileData.email,
+    phone: storedUser.phone || defaultProfileData.phone,
+    organization: storedUser.organization || defaultProfileData.organization,
+    profilePhoto: storedUser.profilePhoto || defaultProfileData.profilePhoto,
   });
 
   const [editMode, setEditMode] = useState(false);
@@ -45,11 +58,22 @@ const AdminProfilePage = () => {
       return;
     }
 
-    // Apply temp photo if one was selected
-    const finalData = tempPhotoPreview 
+    const finalData = tempPhotoPreview
       ? { ...editData, profilePhoto: tempPhotoPreview }
       : editData;
 
+    const updatedUser = {
+      ...JSON.parse(localStorage.getItem('user') || '{}'),
+      ...finalData,
+      firstName: finalData.firstName,
+      lastName: finalData.lastName,
+      email: finalData.email,
+      phone: finalData.phone,
+      organization: finalData.organization,
+      profilePhoto: finalData.profilePhoto,
+    };
+
+    localStorage.setItem('user', JSON.stringify(updatedUser));
     setProfileData(finalData);
     setEditMode(false);
     setTempPhotoPreview(null);

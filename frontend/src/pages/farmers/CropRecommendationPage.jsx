@@ -2,20 +2,22 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar';
 import MaharashtraMap from '../../maps/MaharashtraMap';
 import { useApp } from '../../contexts/AppContext';
-import { getCropTranslation, getDistrictTranslation } from '../../utils/i18n';
-import { cropAPI } from '../../services/api';
+import {
+  getCropTranslation,
+  getDistrictTranslation,
+} from '../../utils/i18n';
+import { cropAPI, soilAPI, weatherAPI } from '../../services/api';
 import LandCoverValidationCard from '../../components/LandCoverValidationCard';
-import useGeolocation from '../../hooks/useGeolocation';
 import dashboardBgVideo from './videos/dashboard.mp4';
 
 const CropRecommendationPage = ({ onNavigate }) => {
   const { language } = useApp();
-  const { location } = useGeolocation();
 
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [season, setSeason] = useState('Kharif');
   const [recommendation, setRecommendation] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [soilLoading, setSoilLoading] = useState(false);
   const [error, setError] = useState('');
 
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -43,7 +45,8 @@ const CropRecommendationPage = ({ onNavigate }) => {
   }, [season]);
 
   // Handle location selected from Maharashtra map
-  const handleMapClick = (lat, lon, district) => {
+  const handleMapClick = async (lat, lon, district) => {
+    // Set selected location immediately
     setSelectedLocation({
       latitude: lat,
       longitude: lon,
@@ -55,6 +58,87 @@ const CropRecommendationPage = ({ onNavigate }) => {
     setValidation(null);
     setServiceUnavailable('');
     setError('');
+
+    try {
+      const weatherResponse = await weatherAPI.getCurrentWeather(lat, lon);
+      const weatherData = weatherResponse?.data || weatherResponse;
+
+      if (weatherData) {
+        setSoilParams((prev) => ({
+          ...prev,
+          temperature:
+            weatherData.temperature !== undefined
+              ? Number(weatherData.temperature)
+              : prev.temperature,
+          humidity:
+            weatherData.humidity !== undefined
+              ? Number(weatherData.humidity)
+              : prev.humidity,
+          rainfall:
+            weatherData.rainfall !== undefined
+              ? Number(weatherData.rainfall)
+              : prev.rainfall,
+        }));
+      }
+    } catch (weatherError) {
+      console.error('Failed to fetch live weather data for selected location:', weatherError);
+    }
+
+    // Fetch actual soil data for selected district
+    if (district) {
+      setSoilLoading(true);
+
+      try {
+        console.log(
+          `Fetching soil data for selected district: ${district}`
+        );
+
+        const response = await soilAPI.getSoilData(district);
+
+        console.log(
+          `Soil data received for ${district}:`,
+          response?.data
+        );
+
+        if (response?.data) {
+          setSoilParams((prev) => ({
+            ...prev,
+
+            // District-specific soil values
+            nitrogen:
+              response.data.nitrogen !== undefined
+                ? Number(response.data.nitrogen)
+                : prev.nitrogen,
+
+            phosphorus:
+              response.data.phosphorus !== undefined
+                ? Number(response.data.phosphorus)
+                : prev.phosphorus,
+
+            potassium:
+              response.data.potassium !== undefined
+                ? Number(response.data.potassium)
+                : prev.potassium,
+
+            ph:
+              response.data.ph !== undefined
+                ? Number(response.data.ph)
+                : prev.ph,
+          }));
+        }
+      } catch (soilError) {
+        console.error(
+          `Failed to fetch soil data for ${district}:`,
+          soilError
+        );
+
+        setError(
+          `Could not load soil data for ${district}. Please try again.`
+        );
+      } finally {
+        setSoilLoading(false);
+      }
+    }
   };
 
   // Handle soil/weather parameter changes
@@ -78,7 +162,22 @@ const CropRecommendationPage = ({ onNavigate }) => {
     setServiceUnavailable('');
 
     try {
-      const farmerId = localStorage.getItem('farmer_id') || 1;
+      const farmerId =
+        localStorage.getItem('farmer_id') || 1;
+
+      console.log('Sending crop prediction request with:', {
+        latitude: selectedLocation.latitude,
+        longitude: selectedLocation.longitude,
+        district: selectedLocation.district,
+        season,
+        nitrogen: soilParams.nitrogen,
+        phosphorus: soilParams.phosphorus,
+        potassium: soilParams.potassium,
+        temperature: soilParams.temperature,
+        humidity: soilParams.humidity,
+        ph: soilParams.ph,
+        rainfall: soilParams.rainfall,
+      });
 
       const resp = await cropAPI.predictCrop(
         selectedLocation.latitude,
@@ -93,6 +192,8 @@ const CropRecommendationPage = ({ onNavigate }) => {
         soilParams.ph,
         soilParams.rainfall
       );
+
+      console.log('Crop recommendation response:', resp);
 
       // Successful recommendation
       if (resp.ok && resp.data) {
@@ -124,6 +225,7 @@ const CropRecommendationPage = ({ onNavigate }) => {
           resp.detail ||
             'Land-cover validation temporarily unavailable.'
         );
+
         setRecommendation(null);
         return;
       }
@@ -135,7 +237,10 @@ const CropRecommendationPage = ({ onNavigate }) => {
           'Unable to get crop recommendation.'
       );
     } catch (err) {
-      console.error('Crop Recommendation Error:', err);
+      console.error(
+        'Crop Recommendation Error:',
+        err
+      );
 
       setError(
         err?.response?.data?.detail ||
@@ -172,6 +277,7 @@ const CropRecommendationPage = ({ onNavigate }) => {
 
   return (
     <div className="flex h-screen bg-transparent dark:bg-transparent">
+
       <Sidebar
         currentPage="crop-recommendation"
         onNavigate={onNavigate}
@@ -179,6 +285,7 @@ const CropRecommendationPage = ({ onNavigate }) => {
       />
 
       <div className="flex-1 overflow-auto farm-dashboard relative">
+
         {/* Background Video */}
         <video
           autoPlay
@@ -192,14 +299,19 @@ const CropRecommendationPage = ({ onNavigate }) => {
             }
           }}
         >
-          <source src={dashboardBgVideo} type="video/mp4" />
+          <source
+            src={dashboardBgVideo}
+            type="video/mp4"
+          />
         </video>
 
         <div className="dashboard-content relative z-10">
+
           <div className="p-8 relative z-10">
 
             {/* Page Header */}
             <div className="page-header animate-fadeInUp">
+
               <h1 className="page-title">
                 Smart Recommendation
               </h1>
@@ -210,6 +322,7 @@ const CropRecommendationPage = ({ onNavigate }) => {
               </p>
 
               <div className="page-divider"></div>
+
             </div>
 
             {/* Service Unavailable */}
@@ -243,13 +356,16 @@ const CropRecommendationPage = ({ onNavigate }) => {
             {/* Main Grid */}
             <section
               className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10 animate-fadeInUp"
-              style={{ animationDelay: '0.1s' }}
+              style={{
+                animationDelay: '0.1s',
+              }}
             >
 
               {/* Map Section */}
               <div className="lg:col-span-2 farm-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-4 border-green-200 dark:border-green-700 overflow-hidden transition-shadow duration-300">
 
                 <div className="bg-gradient-to-r from-green-500 to-green-600 p-6 text-white">
+
                   <h2 className="text-3xl font-bold flex items-center gap-3">
                     Farm Location & Context
                   </h2>
@@ -258,6 +374,7 @@ const CropRecommendationPage = ({ onNavigate }) => {
                     Click on your farm location to select your
                     farm location.
                   </p>
+
                 </div>
 
                 <div className="p-6">
@@ -278,23 +395,29 @@ const CropRecommendationPage = ({ onNavigate }) => {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
 
                         <div>
+
                           <p className="text-xs text-green-700 dark:text-green-300">
                             Latitude
                           </p>
 
                           <p className="text-lg font-bold text-green-800 dark:text-green-200">
-                            {selectedLocation.latitude.toFixed(4)}°
+                            {selectedLocation.latitude.toFixed(4)}
+                            °
                           </p>
+
                         </div>
 
                         <div>
+
                           <p className="text-xs text-green-700 dark:text-green-300">
                             Longitude
                           </p>
 
                           <p className="text-lg font-bold text-green-800 dark:text-green-200">
-                            {selectedLocation.longitude.toFixed(4)}°
+                            {selectedLocation.longitude.toFixed(4)}
+                            °
                           </p>
+
                         </div>
 
                       </div>
@@ -325,6 +448,7 @@ const CropRecommendationPage = ({ onNavigate }) => {
                   )}
 
                 </div>
+
               </div>
 
               {/* Form Section */}
@@ -392,6 +516,7 @@ const CropRecommendationPage = ({ onNavigate }) => {
                       }
                       className="w-full py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 hover:border-green-600 dark:hover:border-green-500 transition font-semibold text-gray-900 dark:text-white flex items-center justify-between px-4"
                     >
+
                       {showAdvanced
                         ? 'Hide'
                         : 'Show'}{' '}
@@ -400,29 +525,40 @@ const CropRecommendationPage = ({ onNavigate }) => {
                       <span className="text-sm">
                         {showAdvanced ? '−' : '+'}
                       </span>
+
                     </button>
 
                     {showAdvanced && (
                       <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl space-y-4 max-h-96 overflow-y-auto">
+
+                        {/* Soil loading indicator */}
+                        {soilLoading && (
+                          <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg text-sm font-semibold text-green-700 dark:text-green-300">
+                            Loading soil data for{' '}
+                            {selectedLocation?.district ||
+                              'selected district'}
+                            ...
+                          </div>
+                        )}
 
                         {[
                           {
                             name: 'nitrogen',
                             label: 'Nitrogen (N)',
                             min: 0,
-                            max: 140,
+                            max: 300,
                           },
                           {
                             name: 'phosphorus',
                             label: 'Phosphorus (P)',
-                            min: 5,
-                            max: 145,
+                            min: 0,
+                            max: 300,
                           },
                           {
                             name: 'potassium',
                             label: 'Potassium (K)',
-                            min: 5,
-                            max: 205,
+                            min: 0,
+                            max: 500,
                           },
                           {
                             name: 'temperature',
@@ -459,7 +595,9 @@ const CropRecommendationPage = ({ onNavigate }) => {
                               </label>
 
                               <span className="text-sm font-semibold text-green-600 dark:text-green-400">
+
                                 {soilParams[param.name]}
+
                                 {param.name === 'ph'
                                   ? ''
                                   : param.label.includes('%')
@@ -467,6 +605,7 @@ const CropRecommendationPage = ({ onNavigate }) => {
                                   : param.label.includes('°C')
                                   ? '°'
                                   : ''}
+
                               </span>
 
                             </div>
@@ -475,8 +614,12 @@ const CropRecommendationPage = ({ onNavigate }) => {
                               type="range"
                               min={param.min}
                               max={param.max}
-                              step={param.step || 1}
-                              value={soilParams[param.name]}
+                              step={
+                                param.step || 1
+                              }
+                              value={
+                                soilParams[param.name]
+                              }
                               onChange={(e) =>
                                 handleParameterChange(
                                   param.name,
@@ -499,16 +642,23 @@ const CropRecommendationPage = ({ onNavigate }) => {
                     type="button"
                     onClick={handleGetRecommendation}
                     disabled={
-                      loading || !selectedLocation
+                      loading ||
+                      soilLoading ||
+                      !selectedLocation
                     }
                     className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 px-6 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg text-lg"
                   >
+
                     {loading
                       ? 'Getting Recommendation...'
+                      : soilLoading
+                      ? 'Loading Soil Data...'
                       : 'Get Recommendation'}
+
                   </button>
 
                 </div>
+
               </div>
 
             </section>
@@ -604,8 +754,23 @@ const CropRecommendationPage = ({ onNavigate }) => {
                               const confidence =
                                 typeof crop === 'string'
                                   ? 85 - idx * 5
-                                  : crop.confidence ||
-                                    85 - idx * 5;
+                                  : crop.confidence !==
+                                    undefined
+                                  ? Number(
+                                      crop.confidence
+                                    )
+                                  : 85 - idx * 5;
+
+                              const safeConfidence =
+                                Math.max(
+                                  0,
+                                  Math.min(
+                                    100,
+                                    confidence > 1
+                                      ? confidence
+                                      : confidence * 100
+                                  )
+                                );
 
                               return (
                                 <div
@@ -618,18 +783,27 @@ const CropRecommendationPage = ({ onNavigate }) => {
                                     <div>
 
                                       <p className="text-2xl font-bold text-gray-900 dark:text-white">
+
                                         {getCropTranslation(
-                                          typeof crop === 'string'
+                                          typeof crop ===
+                                            'string'
                                             ? crop
-                                            : crop.crop || crop,
+                                            : crop.crop ||
+                                              crop,
                                           language
                                         )}
+
                                       </p>
 
                                     </div>
 
                                     <p className="text-xl font-bold text-green-600 dark:text-green-400">
-                                      {confidence.toFixed(0)}%
+
+                                      {safeConfidence.toFixed(
+                                        0
+                                      )}
+                                      %
+
                                     </p>
 
                                   </div>
@@ -639,13 +813,7 @@ const CropRecommendationPage = ({ onNavigate }) => {
                                     <div
                                       className="h-full bg-green-600 dark:bg-green-500 rounded-full transition-all"
                                       style={{
-                                        width: `${Math.min(
-                                          100,
-                                          Math.max(
-                                            0,
-                                            confidence
-                                          )
-                                        )}%`,
+                                        width: `${safeConfidence}%`,
                                       }}
                                     />
 
@@ -701,7 +869,9 @@ const CropRecommendationPage = ({ onNavigate }) => {
                             typeof crop === 'object' &&
                             (crop.confidence ||
                               crop.confidence === 0)
-                              ? crop.confidence
+                              ? Number(
+                                  crop.confidence
+                                )
                               : null;
 
                           const displayConf =
@@ -720,10 +890,12 @@ const CropRecommendationPage = ({ onNavigate }) => {
                             >
 
                               <p className="text-lg font-bold text-gray-900 dark:text-white mb-3">
+
                                 {getCropTranslation(
                                   name,
                                   language
                                 )}
+
                               </p>
 
                               {displayConf != null && (
@@ -752,8 +924,11 @@ const CropRecommendationPage = ({ onNavigate }) => {
               )}
 
           </div>
+
         </div>
+
       </div>
+
     </div>
   );
 };

@@ -63,6 +63,68 @@ function App() {
   );
 }
 
+function ChatbotFloatingWidget() {
+  const [open, setOpen] = useState(false);
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  const isAuthRoute = location.pathname !== '/login' && location.pathname !== '/admin/login';
+
+  if (!isAuthRoute || isAdminRoute) return null;
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        aria-label="Open Farmer Assistant"
+        style={{
+          position: 'fixed',
+          right: '24px',
+          bottom: '24px',
+          zIndex: 9999,
+          width: '62px',
+          height: '62px',
+          borderRadius: '50%',
+          border: 'none',
+          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+          color: '#fff',
+          boxShadow: '0 18px 36px rgba(16, 185, 129, 0.35)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+        }}
+      >
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          <path d="M8 9h8M8 13h5" />
+        </svg>
+      </button>
+
+      {open && (
+        <div
+          style={{
+            position: 'fixed',
+            right: '24px',
+            bottom: '96px',
+            width: '390px',
+            maxWidth: 'calc(100vw - 24px)',
+            height: '560px',
+            maxHeight: 'calc(100vh - 120px)',
+            zIndex: 9998,
+            borderRadius: '22px',
+            boxShadow: '0 24px 60px rgba(15, 23, 42, 0.28)',
+            overflow: 'hidden',
+            background: '#fff',
+          }}
+        >
+          <ChatbotPage compact onClose={() => setOpen(false)} />
+        </div>
+      )}
+    </>
+  );
+}
+
 // Separate component to wrap routes with appropriate background
 function BackgroundWrappedApp({ handleNavigate }) {
   const location = useLocation();
@@ -230,17 +292,18 @@ function BackgroundWrappedApp({ handleNavigate }) {
     </Routes>
   );
 
-  if (isLoginRoute) {
-    return content;
-  }
+  const wrappedContent = isLoginRoute ? content : isDashboardRoute ? content : isAdminRoute ? (
+    <AdminBackground>{content}</AdminBackground>
+  ) : (
+    <FarmBackground>{content}</FarmBackground>
+  );
 
-  if (isDashboardRoute) {
-    return content;
-  }
-
-  return isAdminRoute ? 
-    <AdminBackground>{content}</AdminBackground> : 
-    <FarmBackground>{content}</FarmBackground>;
+  return (
+    <>
+      {wrappedContent}
+      <ChatbotFloatingWidget />
+    </>
+  );
 }
 
 export default App;

@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import LogoutConfirm from './LogoutConfirm';
 import { useApp } from '../contexts/AppContext';
 import { getTranslation } from '../utils/i18n';
+import farmerProfileImage from '../assets/farmer_profile.png';
+import adminProfileImage from '../assets/admin_profile.jpg';
 
 import {
   FiHome,
@@ -20,20 +22,30 @@ import {
   FiBarChart2,
   FiFileText,
   FiMessageCircle,
-  
+  FiChevronLeft,
+  FiChevronRight
 } from 'react-icons/fi';
 
 const Sidebar = ({ userName, currentPage, onNavigate }) => {
   const navigate = useNavigate();
   const { language } = useApp();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Check if user is admin
   const isAdmin = localStorage.getItem('is_admin') === 'true';
   
   // Get user info from localStorage
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const userFirstName = user.firstName || (isAdmin ? 'Administrator' : 'Farmer');
+  const userFirstName = user.firstName || user.firstname || user.name || (isAdmin ? 'Administrator' : 'Farmer');
+  const userInitials = (userFirstName || 'F')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() || '')
+    .join('') || 'F';
+
+  const userAvatarUrl = user.profilePhoto || (isAdmin ? adminProfileImage : farmerProfileImage);
 
   const farmerMenuItems = [
     { id: 'dashboard', label: getTranslation(language, 'dashboard'), path: '/dashboard', icon: FiHome },
@@ -42,8 +54,7 @@ const Sidebar = ({ userName, currentPage, onNavigate }) => {
     { id: 'fertilizer', label: getTranslation(language, 'fertilizerShops') || 'Nearby Fertilizer Shops', path: '/fertilizer', icon: FiMapPin },
     { id: 'soil', label: getTranslation(language, 'soilManagement'), path: '/soil', icon: FiFilter },
     { id: 'weather', label: getTranslation(language, 'weatherInformation'), path: '/weather', icon: FiSun },
-    { id: 'chatbot', label: 'Farmer Chatbot', path: '/chatbot', icon: FiMessageCircle },
-     {id: 'Schemes', label: 'Government Schemes', path: '/Schemes', icon: FiHome},
+    { id: 'Schemes', label: 'Government Schemes', path: '/Schemes', icon: FiHome },
     { id: 'profile', label: getTranslation(language, 'profile'), path: '/profile', icon: FiUser },
     { id: 'settings', label: getTranslation(language, 'settings'), path: '/settings', icon: FiSettings },
     
@@ -79,20 +90,45 @@ const Sidebar = ({ userName, currentPage, onNavigate }) => {
 
   return (
     <>
-      <div className="sidebar">
+      <div className={`sidebar ${isCollapsed ? 'sidebar-collapsed' : ''}`}>
         {/* Header Section - Same Color as BhooDrishti */}
         <div className="sidebar-header">
-          <h1 className="text-2xl font-bold text-white">{getTranslation(language, 'appName')}</h1>
-          <p className="text-sm mt-2 text-white font-semibold opacity-100">Smart Farming Platform</p>
+          <div className="sidebar-header-row">
+            <div className="sidebar-header-text">
+              <h1 className="text-2xl font-bold text-white">{getTranslation(language, 'appName')}</h1>
+              <p className="text-sm mt-2 text-white font-semibold opacity-100">Smart Farming Platform</p>
+            </div>
+            <button
+              type="button"
+              className="sidebar-toggle-btn"
+              onClick={() => setIsCollapsed((value) => !value)}
+              aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {isCollapsed ? <FiChevronRight size={18} /> : <FiChevronLeft size={18} />}
+            </button>
+          </div>
         </div>
 
         {/* User Profile Section - Clean Display */}
         <div className="sidebar-welcome">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 sidebar-user-row">
             <div className="sidebar-avatar">
-              {isAdmin ? <FiUser size={32} /> : <FiUser size={32} />}
+              {userAvatarUrl ? (
+                <img
+                  src={userAvatarUrl}
+                  alt={userFirstName}
+                  className="sidebar-avatar-image"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.parentElement.querySelector('.sidebar-avatar-text').style.display = 'flex';
+                  }}
+                />
+              ) : null}
+              <span className="sidebar-avatar-text" style={{ display: userAvatarUrl ? 'none' : 'flex' }}>
+                {userInitials}
+              </span>
             </div>
-            <div className="flex-1">
+            <div className="flex-1 sidebar-user-text">
               <p className="text-xs text-white">{getTranslation(language, 'welcomeBack')}</p>
               <p className="text-lg font-bold text-white">{userFirstName}</p>
             </div>
@@ -123,7 +159,7 @@ const Sidebar = ({ userName, currentPage, onNavigate }) => {
             className="logout-btn"
           >
             <FiLogOut size={18} />
-            {getTranslation(language, 'logout')}
+            <span>{getTranslation(language, 'logout')}</span>
           </button>
         </div>
       </div>

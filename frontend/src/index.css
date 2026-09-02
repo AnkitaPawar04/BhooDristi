@@ -1041,6 +1041,42 @@ body {
   box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
   position: relative;
   z-index: 100;
+  transition: width 0.25s ease;
+}
+
+.sidebar-collapsed {
+  width: 92px;
+}
+
+.sidebar-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sidebar-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar-toggle-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.sidebar-toggle-btn:hover {
+  background: rgba(255,255,255,0.16);
 }
 
 .sidebar-header {
@@ -1069,6 +1105,14 @@ body {
   background: transparent !important;
 }
 
+.sidebar-user-row {
+  align-items: center;
+}
+
+.sidebar-user-text {
+  transition: opacity 0.2s ease, width 0.2s ease;
+}
+
 .sidebar-welcome > div {
   background: transparent !important;
 }
@@ -1087,16 +1131,39 @@ body {
 }
 
 .sidebar-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 10px;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
   background: linear-gradient(135deg, #22c55e, #16a34a);
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
   color: white;
   flex-shrink: 0;
   box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+  border: 4px solid rgba(255,255,255,0.75);
+  position: relative;
+}
+
+.sidebar-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.sidebar-avatar-text {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: white;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
 }
 
 .sidebar-menu {
@@ -1106,6 +1173,52 @@ body {
   gap: 6px;
   padding: 16px;
   overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.sidebar-collapsed .sidebar-header-text,
+.sidebar-collapsed .sidebar-user-text,
+.sidebar-collapsed .menu-label,
+.sidebar-collapsed .logout-btn span {
+  display: none;
+}
+
+.sidebar-collapsed .sidebar-header {
+  padding: 14px 10px;
+}
+
+.sidebar-collapsed .sidebar-welcome {
+  padding: 16px 10px;
+}
+
+.sidebar-collapsed .sidebar-user-row {
+  justify-content: center;
+}
+
+.sidebar-collapsed .sidebar-menu {
+  padding: 12px 8px;
+}
+
+.sidebar-collapsed .menu-item {
+  justify-content: center;
+  padding: 14px 10px;
+}
+
+.sidebar-collapsed .menu-item .menu-icon {
+  margin: 0;
+}
+
+.sidebar-collapsed .sidebar-logout {
+  padding: 12px 8px;
+}
+
+.sidebar-collapsed .logout-btn {
+  padding: 12px 8px;
+}
+
+.sidebar-menu::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 .menu-item {

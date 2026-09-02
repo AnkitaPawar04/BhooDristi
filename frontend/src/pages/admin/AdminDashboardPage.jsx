@@ -5,6 +5,7 @@ import { useApp } from '../../contexts/AppContext';
 import { getTranslation } from '../../utils/i18n';
 import { adminAPI } from '../../services/api';
 import { CropDistributionChart, FarmerActivityChart, DistrictCropChart } from '../../charts/Charts';
+import adminProfileImage from '../../assets/admin_profile.jpg';
 
 const AdminDashboardPage = ({ onNavigate }) => {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ const AdminDashboardPage = ({ onNavigate }) => {
   // Get user info
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const userName = user.firstName || 'Administrator';
+  const userAvatarUrl = user.profilePhoto || adminProfileImage;
 
   // System health status
   const systemHealth = {
@@ -160,10 +162,24 @@ const AdminDashboardPage = ({ onNavigate }) => {
 
           {/* Header */}
           <div className="page-header mb-8">
-            <h1 className="page-title">{getTranslation(language, 'adminDashboard')}</h1>
-            <p className="page-subtitle">
-              {getTranslation(language, 'welcome')}, {userName}! {getTranslation(language, 'monitorSystem')}
-            </p>
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-green-600 shadow-lg bg-green-50 flex items-center justify-center">
+                <img
+                  src={userAvatarUrl}
+                  alt={userName}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = adminProfileImage;
+                  }}
+                />
+              </div>
+              <div>
+                <h1 className="page-title mb-0">{getTranslation(language, 'adminDashboard')}</h1>
+                <p className="page-subtitle mt-2">
+                  {getTranslation(language, 'welcome')}, {userName}! {getTranslation(language, 'monitorSystem')}
+                </p>
+              </div>
+            </div>
             <div className="page-divider"></div>
           </div>
 

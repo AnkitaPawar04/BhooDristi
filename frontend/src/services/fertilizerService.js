@@ -41,6 +41,11 @@ export async function getNearbyFertilizerShops(
 
     console.log("Google Places Response", data);
 
+    if (data.error) {
+      console.error("Fertilizer API error:", data.error);
+      return [];
+    }
+
     if (!data.places) return [];
 
     const shops = data.places.map((shop) => ({

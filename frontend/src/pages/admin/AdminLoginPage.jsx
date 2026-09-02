@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 import { adminAPI } from '../../services/api';
+import adminProfileImage from '../../assets/admin_profile.jpg';
 
 const AdminLoginPage = () => {
   const navigate = useNavigate();
@@ -24,7 +25,9 @@ const AdminLoginPage = () => {
       localStorage.setItem('is_admin', 'true');
       localStorage.setItem('user', JSON.stringify({
         firstName: 'Administrator',
-        isAdmin: true
+        lastName: 'User',
+        isAdmin: true,
+        profilePhoto: adminProfileImage
       }));
       
       navigate('/admin/dashboard');
