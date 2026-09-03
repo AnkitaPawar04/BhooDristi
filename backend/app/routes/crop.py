@@ -574,6 +574,104 @@ def is_crop_in_season(
     return normalized in allowed_normalized
 
 
+def rank_top_crop_candidates(
+    candidates: list,
+    season: Optional[str] = None,
+    district_crops: Optional[list] = None,
+    district_data_available: bool = False,
+    max_results: int = 5,
+    min_confidence: float = 0.01,
+) -> list:
+    """Return valid top-ranked crop candidates with zero-confidence entries removed."""
+
+    if not candidates:
+        return []
+
+    district_set = set()
+    if district_data_available and district_crops:
+        district_set = {
+            normalize_crop_name(crop)
+            for crop in district_crops
+            if crop
+        }
+
+    ordered = []
+    seen = set()
+
+    for candidate in candidates:
+        if not candidate:
+            continue
+
+        crop_name = candidate.get("crop")
+        if not crop_name:
+            continue
+
+        normalized = normalize_crop_name(crop_name)
+        if not normalized:
+            continue
+
+        confidence = float(candidate.get("confidence", 0) or 0)
+        if confidence <= min_confidence:
+            continue
+
+        if season and not is_crop_in_season(normalized, season):
+            continue
+
+        if district_data_available and district_set and normalized not in district_set:
+            continue
+
+        if normalized in seen:
+            continue
+
+        seen.add(normalized)
+        ordered.append({
+            "crop": crop_name,
+            "confidence": round(confidence, 2),
+        })
+
+    ordered.sort(key=lambda item: item["confidence"], reverse=True)
+    return ordered[:max_results]
+
+
+def build_district_season_fallback(
+    district_crops: Optional[list],
+    season: Optional[str] = None,
+    max_results: int = 5,
+) -> list:
+    """Create a deterministic fallback list from the district crop dataset when model output is unusable."""
+
+    if not district_crops:
+        return []
+
+    valid = []
+    seen = set()
+
+    for crop in district_crops:
+        normalized = normalize_crop_name(crop)
+        if not normalized or normalized in seen:
+            continue
+        seen.add(normalized)
+        if season and not is_crop_in_season(normalized, season):
+            continue
+        valid.append(normalized)
+
+    if not valid:
+        for crop in district_crops:
+            normalized = normalize_crop_name(crop)
+            if normalized and normalized not in seen:
+                valid.append(normalized)
+                seen.add(normalized)
+
+    fallback = []
+    for idx, crop in enumerate(valid[:max_results]):
+        fallback.append({
+            "crop": crop,
+            "confidence": round(max(60.0 - idx * 5, 35.0), 2),
+        })
+
+    return fallback
+
+
 # ============================================================
 # WEATHER
 # ============================================================
@@ -1275,79 +1373,101 @@ async def predict_crop(
     # 18. FINAL RECOMMENDATION
     # ========================================================
 
-    if final_candidates:
+    ranked_final_candidates = rank_top_crop_candidates(
+        final_candidates,
+        season=season,
+        district_crops=district_crops,
+        district_data_available=district_data_available,
+        max_results=5,
+    )
 
-        final_candidates.sort(
-            key=lambda x: x["confidence"],
-            reverse=True
-        )
+    if ranked_final_candidates:
 
-        recommended = (
-            final_candidates[0]
-        )
-
-        recommended_crop = (
-            recommended["crop"]
-        )
-
-        recommended_confidence = float(
-            recommended["confidence"]
-        )
-
-        alternatives = (
-            final_candidates[1:3]
-        )
+        recommended = ranked_final_candidates[0]
+        recommended_crop = recommended["crop"]
+        recommended_confidence = float(recommended["confidence"])
+        alternatives = ranked_final_candidates[1:]
 
     else:
 
-        # ----------------------------------------------------
-        # Generic fallback
-        # ----------------------------------------------------
-        #
-        # This should happen only when:
-        #
-        # 1. District data doesn't exist, OR
-        # 2. There is absolutely no overlap between the
-        #    model's supported crops and the district data.
-        #
-        # We keep the API functional instead of returning
-        # an empty response.
-        #
-
-        recommended_crop = (
-            model_recommended_crop
+        district_fallback = build_district_season_fallback(
+            district_crops,
+            season=season,
+            max_results=5,
         )
 
-        recommended_confidence = (
-            model_confidence
-        )
+        if district_fallback:
+            recommended = district_fallback[0]
+            recommended_crop = recommended["crop"]
+            recommended_confidence = float(recommended["confidence"])
+            alternatives = district_fallback[1:]
+            logger.warning(
+                "Using district-season fallback for %s: %s (%s%%)",
+                district,
+                recommended_crop,
+                recommended_confidence,
+            )
+        else:
+            # ----------------------------------------------------
+            # Generic fallback using only valid model scores
+            # ----------------------------------------------------
 
-        alternatives = []
+            ranked_model_candidates = rank_top_crop_candidates(
+                model_candidates,
+                season=season,
+                district_crops=district_crops,
+                district_data_available=district_data_available,
+                max_results=5,
+            )
 
-        logger.warning(
-            "Using generic ML fallback for %s: %s",
-            district,
-            recommended_crop
-        )
+            if ranked_model_candidates:
+                recommended = ranked_model_candidates[0]
+                recommended_crop = recommended["crop"]
+                recommended_confidence = float(recommended["confidence"])
+                alternatives = ranked_model_candidates[1:]
+                logger.warning(
+                    "Using valid ML fallback for %s: %s (%s%%)",
+                    district,
+                    recommended_crop,
+                    recommended_confidence,
+                )
+            else:
+                recommended_crop = "No reliable crop recommendation"
+                recommended_confidence = 0.0
+                alternatives = []
+                logger.warning(
+                    "No valid crop recommendation available for %s in %s season.",
+                    district,
+                    season,
+                )
 
     # ========================================================
-    # 19. TOP 3
+    # 19. TOP 5 CROPS
     # ========================================================
+
+    unique_top = [
+        {"crop": recommended_crop, "confidence": recommended_confidence}
+    ]
+
+    for crop in alternatives:
+        unique_top.append({
+            "crop": crop["crop"],
+            "confidence": float(crop["confidence"]),
+        })
 
     top_crops = []
-
-    for crop in alternatives[:2]:
-
+    seen = set()
+    for crop in unique_top:
+        crop_name = normalize_crop_name(crop["crop"]) if crop.get("crop") else ""
+        if not crop_name or crop_name in seen:
+            continue
+        seen.add(crop_name)
         top_crops.append({
-
-            "crop":
-                crop["crop"],
-
-            "confidence":
-                float(
-                    crop["confidence"]
-                )
+            "crop": crop["crop"],
+            "confidence": float(crop["confidence"]),
         })
+        if len(top_crops) >= 5:
+            break
 
     # ========================================================
     # 20. CHECK RAW MODEL RECOMMENDATION
@@ -1688,4 +1808,30 @@ async def get_district_crops(
 
         "farmer_count":
             35,
+    }
+
+
+@router.get("/history/{farmer_id}")
+async def get_prediction_history(farmer_id: int, db: Session = Depends(get_db)):
+    """Return saved crop recommendations for one farmer."""
+    predictions = (
+        db.query(Prediction)
+        .filter(Prediction.farmer_id == farmer_id)
+        .order_by(Prediction.created_at.desc())
+        .all()
+    )
+
+    return {
+        "total_predictions": len(predictions),
+        "predictions": [
+            {
+                "id": prediction.id,
+                "district": prediction.district,
+                "season": prediction.season,
+                "recommended_crop": prediction.recommended_crop,
+                "confidence": prediction.confidence,
+                "created_at": prediction.created_at,
+            }
+            for prediction in predictions
+        ],
     }

@@ -111,7 +111,7 @@ export const CropPerformanceChart = ({ data }) => {
     labels: data.map((item) => item.crop),
     datasets: [
       {
-        label: 'Yield (kg/hectare)',
+        label: 'Recommendation Count',
         data: data.map((item) => item.yield),
         borderColor: '#10b981',
         backgroundColor: 'rgba(16, 185, 129, 0.1)',

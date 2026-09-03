@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import { useApp } from '../../contexts/AppContext';
 import { getTranslation, getCropTranslation, getDistrictTranslation } from '../../utils/i18n';
-import { weatherAPI, soilAPI } from '../../services/api';
+import { weatherAPI, soilAPI, cropAPI, authAPI } from '../../services/api';
 import { TemperatureTrendChart, RainfallChart, SoilNutrientsChart, CropPerformanceChart } from '../../charts/Charts';
 import useGeolocation from '../../hooks/useGeolocation';
 import MaharashtraMap from '../../maps/MaharashtraMap';
@@ -18,6 +18,8 @@ const DashboardPage = ({ onNavigate }) => {
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [district, setDistrict] = useState('');
   const [soilData, setSoilData] = useState(null);
+  const [forecast, setForecast] = useState([]);
+  const [predictionHistory, setPredictionHistory] = useState([]);
 
   // Get user role from storage
   const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -33,33 +35,8 @@ const DashboardPage = ({ onNavigate }) => {
     }
   }, [isAdmin, navigate]);
 
-  // Mock analytics data
-  const temperatureData = [
-    { day: 'Mon', temp: 28 },
-    { day: 'Tue', temp: 30 },
-    { day: 'Wed', temp: 29 },
-    { day: 'Thu', temp: 32 },
-    { day: 'Fri', temp: 31 },
-    { day: 'Sat', temp: 27 },
-    { day: 'Sun', temp: 25 },
-  ];
-
-  const rainfallData = [
-    { day: 'Mon', rainfall: 5 },
-    { day: 'Tue', rainfall: 0 },
-    { day: 'Wed', rainfall: 12 },
-    { day: 'Thu', rainfall: 8 },
-    { day: 'Fri', rainfall: 3 },
-    { day: 'Sat', rainfall: 0 },
-    { day: 'Sun', rainfall: 15 },
-  ];
-
-  const mockSoilData = {
-    nitrogen: 45,
-    phosphorus: 35,
-    potassium: 58,
-    ph: 6.8,
-  };
+  const temperatureData = forecast.map((day) => ({ day: day.day.slice(0, 3), temp: day.temp_max }));
+  const rainfallData = forecast.map((day) => ({ day: day.day.slice(0, 3), rainfall: day.rainfall }));
 
   const mapLocation = selectedLocation || location;
   const weatherDisplay = weather || {
@@ -69,13 +46,35 @@ const DashboardPage = ({ onNavigate }) => {
     rainfall: '--',
   };
 
-  const cropPerformanceData = [
-    { crop: 'Sugarcane', yield: 85 },
-    { crop: 'Maize', yield: 72 },
-    { crop: 'Cotton', yield: 68 },
-    { crop: 'Wheat', yield: 80 },
-    { crop: 'Rice', yield: 78 },
-  ];
+  const cropPerformanceData = Object.entries(
+    predictionHistory.reduce((counts, prediction) => {
+      counts[prediction.recommended_crop] = (counts[prediction.recommended_crop] || 0) + 1;
+      return counts;
+    }, {})
+  ).map(([crop, count]) => ({ crop, yield: count }));
+
+  const farmerId = localStorage.getItem('farmer_id');
+
+  useEffect(() => {
+    if (!farmerId) return;
+    Promise.all([
+      authAPI.getFarmerProfile(farmerId),
+      cropAPI.getPredictionHistory(farmerId),
+    ]).then(([profileResponse, historyResponse]) => {
+      const farmerProfile = profileResponse.data;
+      setDistrict(farmerProfile.district || '');
+      setPredictionHistory(historyResponse.data.predictions || []);
+      if (farmerProfile.district) {
+        soilAPI.getSoilData(farmerProfile.district)
+          .then((soilResponse) => setSoilData(soilResponse.data))
+          .catch((err) => console.error('Failed to load soil data:', err));
+      }
+      if (farmerProfile.latitude && farmerProfile.longitude && !location) {
+        setSelectedLocation({ latitude: farmerProfile.latitude, longitude: farmerProfile.longitude });
+        fetchWeather(farmerProfile.latitude, farmerProfile.longitude);
+      }
+    }).catch((err) => console.error('Failed to load dashboard data:', err));
+  }, [farmerId]);
 
   useEffect(() => {
     if (location) {
@@ -88,6 +87,8 @@ const DashboardPage = ({ onNavigate }) => {
     try {
       const response = await weatherAPI.getCurrentWeather(lat, lon);
       setWeather(response.data);
+      const forecastResponse = await weatherAPI.getForecast(lat, lon);
+      setForecast(forecastResponse.data.forecast || []);
       setSelectedLocation({ latitude: lat, longitude: lon });
     } catch (err) {
       console.error('Failed to fetch weather:', err);
@@ -224,22 +225,22 @@ const DashboardPage = ({ onNavigate }) => {
               <div className="dashboard-stat-card dashboard-stat-card-compact">
                 <div className="stat-card-icon green"></div>
                 <h3 className="stat-card-title">Total Predictions</h3>
-                <p className="stat-card-value">--</p>
+                <p className="stat-card-value">{predictionHistory.length}</p>
                 <p className="stat-card-desc">Total crop suggestions</p>
               </div>
 
               <div className="dashboard-stat-card dashboard-stat-card-compact">
                 <div className="stat-card-icon blue"></div>
                 <h3 className="stat-card-title">Last Recommendation</h3>
-                <p className="stat-card-value"></p>
+                <p className="stat-card-value">{predictionHistory[0]?.recommended_crop || 'None yet'}</p>
                 <p className="stat-card-desc">Best crop for season</p>
               </div>
 
               <div className="dashboard-stat-card dashboard-stat-card-compact">
                 <div className="stat-card-icon green"></div>
                 <h3 className="stat-card-title">Farm Health</h3>
-                <p className="stat-card-value status-good">Good</p>
-                <p className="stat-card-desc">Farm conditions optimal</p>
+                <p className="stat-card-value status-good">{weather ? 'Live' : 'Waiting'}</p>
+                <p className="stat-card-desc">Based on current weather data</p>
               </div>
             </div>
           </div>
@@ -264,8 +265,8 @@ const DashboardPage = ({ onNavigate }) => {
                   </div>
                   <div className="bg-orange-50 dark:bg-orange-900/20 p-2.5 rounded-lg border-l-4 border-orange-500 mt-2.5">
                     <p className="text-orange-700 dark:text-orange-300 text-sm font-semibold">Average Temperature</p>
-                    <p className="text-2xl font-bold text-orange-600 dark:text-orange-400 mt-1">29°C</p>
-                    <p className="text-orange-600 dark:text-orange-300 text-xs mt-1">Ideal for monsoon crops</p>
+                    <p className="text-2xl font-bold text-orange-600 dark:text-orange-400 mt-1">{forecast.length ? `${(forecast.reduce((sum, day) => sum + day.temp_max, 0) / forecast.length).toFixed(1)}°C` : '--'}</p>
+                    <p className="text-orange-600 dark:text-orange-300 text-xs mt-1">{forecast.length ? 'Forecast average' : 'Select a location for live data'}</p>
                   </div>
                 </div>
               </div>
@@ -281,8 +282,8 @@ const DashboardPage = ({ onNavigate }) => {
                   </div>
                   <div className="bg-blue-50 dark:bg-blue-900/20 p-2.5 rounded-lg border-l-4 border-blue-500 mt-2.5">
                     <p className="text-blue-700 dark:text-blue-300 text-sm font-semibold">Total Rainfall</p>
-                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">43mm</p>
-                    <p className="text-blue-600 dark:text-blue-300 text-xs mt-1">Good moisture for crops</p>
+                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{forecast.length ? `${forecast.reduce((sum, day) => sum + day.rainfall, 0).toFixed(1)}mm` : '--'}</p>
+                    <p className="text-blue-600 dark:text-blue-300 text-xs mt-1">{forecast.length ? 'Next 5 days' : 'Select a location for live data'}</p>
                   </div>
                 </div>
               </div>
@@ -297,23 +298,23 @@ const DashboardPage = ({ onNavigate }) => {
                 </div>
                 <div className="p-3">
                   <div style={{ position: 'relative', height: '150px' }}>
-                    <SoilNutrientsChart data={mockSoilData} />
+                    <SoilNutrientsChart data={soilData || {}} />
                   </div>
                   <div className="grid grid-cols-3 gap-2 mt-3">
                     <div className="text-center p-2.5 bg-green-50 dark:bg-green-900/20 rounded-xl border-2 border-green-300 dark:border-green-700">
                       <p className="text-green-700 dark:text-green-300 text-xs font-bold">pH LEVEL</p>
-                      <p className="text-xl font-bold text-green-600 dark:text-green-400 mt-1">{mockSoilData.ph}</p>
-                      <p className="text-green-600 dark:text-green-300 text-xs mt-1">Optimal</p>
+                      <p className="text-xl font-bold text-green-600 dark:text-green-400 mt-1">{soilData?.ph || '--'}</p>
+                      <p className="text-green-600 dark:text-green-300 text-xs mt-1">{soilData ? 'District data' : 'Unavailable'}</p>
                     </div>
                     <div className="text-center p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-xl border-2 border-blue-300 dark:border-blue-700">
                       <p className="text-blue-700 dark:text-blue-300 text-xs font-bold">MOISTURE</p>
-                      <p className="text-xl font-bold text-blue-600 dark:text-blue-400 mt-1">65%</p>
-                      <p className="text-blue-600 dark:text-blue-300 text-xs mt-1">Good</p>
+                      <p className="text-xl font-bold text-blue-600 dark:text-blue-400 mt-1">--</p>
+                      <p className="text-blue-600 dark:text-blue-300 text-xs mt-1">No sensor data</p>
                     </div>
                     <div className="text-center p-2.5 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl border-2 border-yellow-300 dark:border-yellow-700">
                       <p className="text-yellow-700 dark:text-yellow-300 text-xs font-bold">STATUS</p>
-                      <p className="text-xl font-bold text-yellow-600 dark:text-yellow-400 mt-1">Good</p>
-                      <p className="text-yellow-600 dark:text-yellow-300 text-xs mt-1">Healthy</p>
+                      <p className="text-xl font-bold text-yellow-600 dark:text-yellow-400 mt-1">{soilData ? 'Available' : '--'}</p>
+                      <p className="text-yellow-600 dark:text-yellow-300 text-xs mt-1">{soilData ? 'District data' : 'Unavailable'}</p>
                     </div>
                   </div>
                 </div>
@@ -330,7 +331,7 @@ const DashboardPage = ({ onNavigate }) => {
                   </div>
                   <div className="mt-3 p-2.5 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-l-4 border-purple-500 rounded-lg">
                     <p className="text-purple-900 dark:text-purple-100 font-bold">Smart Recommendation</p>
-                    <p className="text-purple-800 dark:text-purple-200 text-sm mt-2">Your sugarcane shows excellent yield performance (85%). Consider expanding cultivation area for better returns.</p>
+                    <p className="text-purple-800 dark:text-purple-200 text-sm mt-2">{predictionHistory.length ? `Based on your saved recommendations, ${predictionHistory[0].recommended_crop} is your latest suggested crop (${predictionHistory[0].confidence?.toFixed(1)}% confidence).` : 'Make a crop recommendation to see personalized insights here.'}</p>
                   </div>
                 </div>
               </div>

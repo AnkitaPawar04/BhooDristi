@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List
 import requests
@@ -6,8 +6,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import os
 from dotenv import load_dotenv
-import random
-from datetime import datetime, timedelta
+from datetime import datetime
 
 load_dotenv()
 
@@ -157,7 +156,7 @@ def get_open_meteo_weather(
     return {
         "temperature": current["temperature_2m"],
         "humidity": current["relative_humidity_2m"],
-        "rainfall": current["rain"],
+        "rainfall": current.get("precipitation", current.get("rain", 0)),
         "weather_code": current["weather_code"]
     }
 
@@ -404,85 +403,7 @@ async def get_current_weather(
         )
 
 
-    # -----------------------------------------------------
-    # 3. FINAL MOCK FALLBACK
-    # -----------------------------------------------------
-
-    print("----------------------------------------")
-    print(
-        "Both weather APIs failed."
-    )
-    print(
-        "Using mock weather data."
-    )
-
-    random.seed(
-        int(
-            (latitude + longitude) * 1000
-        )
-    )
-
-    base_temp = (
-        20 +
-        (latitude / 30) * 10
-    )
-
-    temperature = (
-        base_temp +
-        random.uniform(-3, 3)
-    )
-
-    humidity = (
-        50 +
-        random.randint(-15, 25)
-    )
-
-    rainfall = random.choice(
-        [
-            0,
-            0,
-            0,
-            2,
-            5,
-            10,
-            15
-        ]
-    )
-
-    weather_conditions = [
-        "Clear",
-        "Partly Cloudy",
-        "Cloudy",
-        "Light Rain",
-        "Moderate Rain",
-        "Overcast",
-        "Sunny",
-        "Haze"
-    ]
-
-    description = random.choice(
-        weather_conditions
-    )
-
-    return {
-
-        "temperature": round(
-            temperature,
-            1
-        ),
-
-        "humidity": min(
-            100,
-            max(
-                30,
-                humidity
-            )
-        ),
-
-        "rainfall": rainfall,
-
-        "description": description
-    }
+    raise HTTPException(status_code=503, detail="Live weather providers are unavailable")
 
 
 # =========================================================
@@ -665,95 +586,4 @@ async def get_forecast(
         )
 
 
-    # -----------------------------------------------------
-    # 3. FINAL MOCK FORECAST
-    # -----------------------------------------------------
-
-    print("----------------------------------------")
-    print(
-        "Both forecast APIs failed."
-    )
-
-    print(
-        "Using mock forecast data."
-    )
-
-    random.seed(
-        int(
-            (latitude + longitude) * 1000
-        )
-    )
-
-    forecast_days = []
-
-    base_temp = (
-        20 +
-        (latitude / 30) * 10
-    )
-
-    for i in range(5):
-
-        date = (
-            datetime.now()
-            + timedelta(days=i + 1)
-        )
-
-        forecast_days.append({
-
-            "date": date.strftime(
-                "%Y-%m-%d"
-            ),
-
-            "day": date.strftime(
-                "%A"
-            ),
-
-            "temp_max": round(
-                base_temp +
-                random.uniform(2, 8),
-                1
-            ),
-
-            "temp_min": round(
-                base_temp +
-                random.uniform(-3, 2),
-                1
-            ),
-
-            "humidity": min(
-                100,
-                max(
-                    30,
-                    50 +
-                    random.randint(
-                        -15,
-                        25
-                    )
-                )
-            ),
-
-            "rainfall": random.choice(
-                [
-                    0,
-                    0,
-                    0,
-                    2,
-                    5,
-                    10
-                ]
-            ),
-
-            "description": random.choice(
-                [
-                    "Clear",
-                    "Partly Cloudy",
-                    "Cloudy",
-                    "Light Rain",
-                    "Overcast"
-                ]
-            )
-        })
-
-    return {
-        "forecast": forecast_days
-    }
+    raise HTTPException(status_code=503, detail="Live forecast providers are unavailable")

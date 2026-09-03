@@ -72,6 +72,8 @@ export const cropAPI = {
         humidity,
         ph,
         rainfall,
+      }, {
+        timeout: 120000,
       });
 
       return { ok: true, status: resp.status, data: resp.data };
@@ -111,6 +113,9 @@ export const cropAPI = {
   
   getSupportedCrops: () =>
     api.get('/crop/supported-crops'),
+
+  getPredictionHistory: (farmerId) =>
+    api.get(`/crop/history/${farmerId}`),
 };
 
 // Weather APIs

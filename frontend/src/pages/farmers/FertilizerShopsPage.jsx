@@ -262,10 +262,10 @@ const FertilizerShopsPage = ({ onNavigate }) => {
             </div>
 
             <div
-              className="grid grid-cols-1 xl:grid-cols-[1fr_1.15fr] gap-6 mb-6 animate-fadeInUp"
+              className="flex flex-col gap-6 mb-6 animate-fadeInUp"
               style={{ animationDelay: "0.1s" }}
             >
-              <div className="farm-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-4 border-emerald-200 dark:border-emerald-700 overflow-hidden">
+              <div className="farm-card w-full bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-4 border-emerald-200 dark:border-emerald-700 overflow-hidden">
 
                 <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 p-4 text-white">
                   <h2 className="text-2xl font-bold">
@@ -277,30 +277,52 @@ const FertilizerShopsPage = ({ onNavigate }) => {
                   </p>
                 </div>
 
-                <div className="p-5 space-y-5">
+                <div className="p-4 space-y-3">
 
-                  <label className="flex flex-col gap-2">
-                    <span className="font-semibold">
-                      Select District
-                    </span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <label className="flex flex-col gap-2">
+                      <span className="font-semibold">
+                        Select District
+                      </span>
 
-                    <select
-                      value={selectedDistrict}
-                      onChange={(e) =>
-                        handleDistrictChange(e.target.value)
-                      }
-                      className="border rounded-xl p-3"
-                    >
-                      {maharashtraDistricts.map((district) => (
-                        <option
-                          key={district}
-                          value={district}
-                        >
-                          {district}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                      <select
+                        value={selectedDistrict}
+                        onChange={(e) =>
+                          handleDistrictChange(e.target.value)
+                        }
+                        className="border rounded-xl p-3"
+                      >
+                        {maharashtraDistricts.map((district) => (
+                          <option
+                            key={district}
+                            value={district}
+                          >
+                            {district}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label className="flex flex-col gap-2">
+                      <span className="font-semibold">
+                        Search Radius
+                      </span>
+
+                      <select
+                        value={radiusKm}
+                        onChange={(e) =>
+                          setRadiusKm(Number(e.target.value))
+                        }
+                        className="border rounded-xl p-3"
+                      >
+                        <option value={5}>5 km</option>
+                        <option value={10}>10 km</option>
+                        <option value={20}>20 km</option>
+                        <option value={30}>30 km</option>
+                        <option value={50}>50 km</option>
+                      </select>
+                    </label>
+                  </div>
 
                   <button
                     onClick={getLocation}
@@ -318,28 +340,6 @@ const FertilizerShopsPage = ({ onNavigate }) => {
                     </div>
                   )}
 
-                  <label className="flex flex-col gap-2">
-
-                    <span className="font-semibold">
-                      Search Radius
-                    </span>
-
-                    <select
-                      value={radiusKm}
-                      onChange={(e) =>
-                        setRadiusKm(Number(e.target.value))
-                      }
-                      className="border rounded-xl p-3"
-                    >
-                      <option value={5}>5 km</option>
-                      <option value={10}>10 km</option>
-                      <option value={20}>20 km</option>
-                      <option value={30}>30 km</option>
-                      <option value={50}>50 km</option>
-                    </select>
-
-                  </label>
-
                   <div className="rounded-xl bg-emerald-50 p-4 border">
 
                     <p className="text-sm font-semibold">
@@ -347,14 +347,8 @@ const FertilizerShopsPage = ({ onNavigate }) => {
                     </p>
 
                     <h3 className="font-bold text-lg mt-1">
-                      {selectedLocation.label}
+                      {selectedDistrict}
                     </h3>
-
-                    <p className="text-sm text-gray-600 mt-2">
-                      {selectedLocation.latitude.toFixed(4)},
-                      {" "}
-                      {selectedLocation.longitude.toFixed(4)}
-                    </p>
 
                     <p className="text-xs mt-2 uppercase">
 
@@ -376,11 +370,12 @@ const FertilizerShopsPage = ({ onNavigate }) => {
                     <MaharashtraMap
                       selectedLocation={selectedLocation}
                       markers={mapMarkers}
-                      className="w-full h-[360px]"
+                      className="w-full h-[280px]"
 
                       onLocationSelect={(lat, lon) => {
 
                         setLocationMode("map");
+                        setSelectedDistrict(findClosestDistrictCenter(lat, lon));
 
                         setSelectedLocation({
                           latitude: lat,
@@ -395,7 +390,7 @@ const FertilizerShopsPage = ({ onNavigate }) => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                    <div className="bg-emerald-50 rounded-xl border p-4">
+                    <div className="bg-emerald-50 rounded-xl border p-3">
 
                       <p className="text-sm">
                         Shops Found
@@ -409,7 +404,7 @@ const FertilizerShopsPage = ({ onNavigate }) => {
 
                     </div>
 
-                    <div className="bg-blue-50 rounded-xl border p-4">
+                    <div className="bg-blue-50 rounded-xl border p-3">
 
                       <p className="text-sm">
                         Radius
@@ -428,7 +423,7 @@ const FertilizerShopsPage = ({ onNavigate }) => {
                 </div>
 
               </div>
-                            <div className="farm-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-4 border-blue-200 dark:border-blue-700 overflow-hidden">
+                            <div className="farm-card w-full bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-4 border-blue-200 dark:border-blue-700 overflow-hidden">
 
                 <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-4 text-white">
                   <h2 className="text-2xl font-bold">

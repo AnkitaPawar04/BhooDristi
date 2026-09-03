@@ -64,6 +64,13 @@ const CropRecommendationPage = ({ onNavigate }) => {
       const weatherData = weatherResponse?.data || weatherResponse;
 
       if (weatherData) {
+        const rainfallValue =
+          weatherData.rainfall !== undefined
+            ? Number(weatherData.rainfall)
+            : weatherData.precipitation !== undefined
+              ? Number(weatherData.precipitation)
+              : 0;
+
         setSoilParams((prev) => ({
           ...prev,
           temperature:
@@ -74,10 +81,7 @@ const CropRecommendationPage = ({ onNavigate }) => {
             weatherData.humidity !== undefined
               ? Number(weatherData.humidity)
               : prev.humidity,
-          rainfall:
-            weatherData.rainfall !== undefined
-              ? Number(weatherData.rainfall)
-              : prev.rainfall,
+          rainfall: rainfallValue,
         }));
       }
     } catch (weatherError) {
@@ -674,254 +678,82 @@ const CropRecommendationPage = ({ onNavigate }) => {
                   </p>
 
                   <h3 className="text-3xl font-bold mt-2">
-                    Most Suitable Crop
+                    {recommendation.recommended_crop && recommendation.recommended_crop.toLowerCase().includes('no reliable')
+                      ? 'No Reliable Recommendation'
+                      : 'Most Suitable Crop'}
                   </h3>
 
                   <p className="text-green-100 text-lg mt-1">
-                    Based on your soil conditions and location
+                    {recommendation.recommended_crop && recommendation.recommended_crop.toLowerCase().includes('no reliable')
+                      ? 'The model does not have a confident crop match for this district and season.'
+                      : 'Based on your soil conditions and location'}
                   </p>
 
                 </div>
 
                 <div className="p-8">
 
-                  {/* Main Recommendation */}
-                  <div className="mb-8 p-8 bg-gradient-to-r from-green-500 to-green-600 dark:from-green-600 dark:to-green-700 rounded-3xl text-white shadow-lg">
-
-                    <div className="flex items-start justify-between mb-6">
-
-                      <div>
-
-                        <p className="text-green-100 text-sm font-bold mb-2">
-                          BEST CHOICE FOR YOU
-                        </p>
-
-                        <p className="text-5xl font-bold">
-                          {getCropTranslation(
-                            recommendation.recommended_crop,
-                            language
-                          )}
-                        </p>
-
-                        <p className="text-green-100 text-lg mt-3">
-                          Peak Planting Window
-                        </p>
-
+                  {recommendation.recommended_crop && recommendation.recommended_crop.toLowerCase().includes('no reliable') ? (
+                    <div className="bg-yellow-50 border-l-4 border-yellow-500 rounded-xl p-6 text-yellow-800 text-lg font-semibold">
+                      No reliable crop recommendation is available for this location yet. Please try another district or adjust the season.
+                    </div>
+                  ) : (
+                    <>
+                      <div className="mb-8 p-8 bg-gradient-to-r from-green-500 to-green-600 dark:from-green-600 dark:to-green-700 rounded-3xl text-white shadow-lg">
+                        <div className="flex items-start justify-between mb-6">
+                          <div>
+                            <p className="text-green-100 text-sm font-bold mb-2">BEST CHOICE FOR YOU</p>
+                            <p className="text-5xl font-bold">
+                              {getCropTranslation(recommendation.recommended_crop, language)}
+                            </p>
+                            <p className="text-green-100 text-lg mt-3">Peak Planting Window</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-6xl font-bold">{displayConfidence}%</p>
+                            <p className="text-green-100 text-sm">Match</p>
+                          </div>
+                        </div>
+                        <div className="h-2 bg-white/30 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-white rounded-full transition-all"
+                            style={{ width: `${displayConfidence}%` }}
+                          />
+                        </div>
                       </div>
 
-                      <div className="text-right">
-
-                        <p className="text-6xl font-bold">
-                          {displayConfidence}%
-                        </p>
-
-                        <p className="text-green-100 text-sm">
-                          Match
-                        </p>
-
-                      </div>
-
-                    </div>
-
-                    <div className="h-2 bg-white/30 rounded-full overflow-hidden">
-
-                      <div
-                        className="h-full bg-white rounded-full transition-all"
-                        style={{
-                          width: `${displayConfidence}%`,
-                        }}
-                      />
-
-                    </div>
-
-                  </div>
-
-                  {/* Alternative Crops */}
-                  {recommendation.top_crops &&
-                    recommendation.top_crops.length > 0 && (
-                      <div>
-
-                        <h4 className="font-bold text-xl text-gray-900 dark:text-white mb-4">
-                          Other Good Options
-                        </h4>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                          {recommendation.top_crops
-                            .slice(0, 4)
-                            .map((crop, idx) => {
-
-                              const confidence =
-                                typeof crop === 'string'
-                                  ? 85 - idx * 5
-                                  : crop.confidence !==
-                                    undefined
-                                  ? Number(
-                                      crop.confidence
-                                    )
-                                  : 85 - idx * 5;
-
-                              const safeConfidence =
-                                Math.max(
-                                  0,
-                                  Math.min(
-                                    100,
-                                    confidence > 1
-                                      ? confidence
-                                      : confidence * 100
-                                  )
-                                );
+                      {recommendation.top_crops && recommendation.top_crops.length > 0 && (
+                        <div>
+                          <h4 className="font-bold text-xl text-gray-900 dark:text-white mb-4">Top 5 Crop Recommendations</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                            {recommendation.top_crops.map((crop, idx) => {
+                              const name = typeof crop === 'string' ? crop : crop.crop || crop.name || JSON.stringify(crop);
+                              const conf = typeof crop === 'object' && (crop.confidence || crop.confidence === 0) ? Number(crop.confidence) : null;
+                              const displayConf = conf == null ? null : conf > 1 ? conf : Math.round(conf * 100);
 
                               return (
-                                <div
-                                  key={idx}
-                                  className="p-6 rounded-2xl bg-gray-50 dark:bg-gray-700 border-l-4 border-green-600"
-                                >
-
-                                  <div className="flex items-start justify-between mb-3">
-
-                                    <div>
-
-                                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
-
-                                        {getCropTranslation(
-                                          typeof crop ===
-                                            'string'
-                                            ? crop
-                                            : crop.crop ||
-                                              crop,
-                                          language
-                                        )}
-
-                                      </p>
-
-                                    </div>
-
-                                    <p className="text-xl font-bold text-green-600 dark:text-green-400">
-
-                                      {safeConfidence.toFixed(
-                                        0
-                                      )}
-                                      %
-
+                                <div key={idx} className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-700 border-l-4 border-green-600">
+                                  <p className="text-xs font-bold uppercase tracking-wide text-green-700 dark:text-green-300 mb-2">Rank #{idx + 1}</p>
+                                  <p className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                                    {getCropTranslation(name, language)}
+                                  </p>
+                                  {displayConf != null && (
+                                    <p className="text-sm font-semibold text-green-600 dark:text-green-400">
+                                      {displayConf}% match
                                     </p>
-
-                                  </div>
-
-                                  <div className="h-2 bg-gray-300 dark:bg-gray-600 rounded-full overflow-hidden">
-
-                                    <div
-                                      className="h-full bg-green-600 dark:bg-green-500 rounded-full transition-all"
-                                      style={{
-                                        width: `${safeConfidence}%`,
-                                      }}
-                                    />
-
-                                  </div>
-
+                                  )}
                                 </div>
                               );
                             })}
-
+                          </div>
                         </div>
-
-                      </div>
-                    )}
+                      )}
+                    </>
+                  )}
 
                 </div>
 
               </section>
             )}
-
-            {/* Additional Crop Options */}
-            {recommendation?.top_crops &&
-              recommendation.top_crops.length > 4 && (
-                <section className="farm-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-4 border-green-200 dark:border-green-700 mb-10 animate-fadeInUp overflow-hidden transition-shadow duration-300">
-
-                  <div className="bg-gradient-to-r from-green-500 to-green-600 p-6 text-white">
-
-                    <h3 className="text-3xl font-bold">
-                      🌾 More Crop Options
-                    </h3>
-
-                    <p className="text-green-100 mt-2 text-lg">
-                      Additional crops returned by the model
-                    </p>
-
-                  </div>
-
-                  <div className="p-8">
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-
-                      {recommendation.top_crops
-                        .slice(4)
-                        .map((crop, idx) => {
-
-                          const name =
-                            typeof crop === 'string'
-                              ? crop
-                              : crop.crop ||
-                                crop.name ||
-                                JSON.stringify(crop);
-
-                          const conf =
-                            typeof crop === 'object' &&
-                            (crop.confidence ||
-                              crop.confidence === 0)
-                              ? Number(
-                                  crop.confidence
-                                )
-                              : null;
-
-                          const displayConf =
-                            conf == null
-                              ? null
-                              : conf > 1
-                              ? conf
-                              : Math.round(
-                                  conf * 100
-                                );
-
-                          return (
-                            <div
-                              key={idx}
-                              className="bg-gradient-to-br from-green-50 dark:from-gray-700 to-white dark:to-gray-800 rounded-2xl p-6 border-l-4 border-green-600"
-                            >
-
-                              <p className="text-lg font-bold text-gray-900 dark:text-white mb-3">
-
-                                {getCropTranslation(
-                                  name,
-                                  language
-                                )}
-
-                              </p>
-
-                              {displayConf != null && (
-                                <p className="text-sm text-gray-700 dark:text-gray-300">
-
-                                  <span className="font-semibold">
-                                    Confidence:
-                                  </span>{' '}
-
-                                  <span className="font-bold text-green-600 dark:text-green-400">
-                                    {displayConf}%
-                                  </span>
-
-                                </p>
-                              )}
-
-                            </div>
-                          );
-                        })}
-
-                    </div>
-
-                  </div>
-
-                </section>
-              )}
 
           </div>
 
