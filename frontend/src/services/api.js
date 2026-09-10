@@ -169,4 +169,10 @@ export const adminAPI = {
     api.get('/crop/supported-crops'),
 };
 
+// Market APIs (the backend proxies data.gov.in so the API key stays server-side)
+export const marketAPI = {
+  getPrices: (params) => api.get('/market/prices', { params }),
+  getCommodities: () => api.get('/market/commodities'),
+};
+
 export default api;

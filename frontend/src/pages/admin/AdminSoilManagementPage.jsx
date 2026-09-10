@@ -20,6 +20,7 @@ const AdminSoilManagementPage = () => {
   const [soilData, setSoilData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '', visible: false });
+  const [lastLoadedAt, setLastLoadedAt] = useState(null);
 
   // Fetch district crops and soil insights
   const fetchDistrictInsights = async (district) => {
@@ -34,6 +35,7 @@ const AdminSoilManagementPage = () => {
       const soilResponse = await soilAPI.getSoilData(district);
       console.log('Soil response for', district, ':', soilResponse.data);
       setSoilData(soilResponse.data);
+      setLastLoadedAt(new Date());
     } catch (error) {
       console.error('Error fetching district insights:', error);
       setMessage({ 
@@ -53,6 +55,14 @@ const AdminSoilManagementPage = () => {
   const handleDistrictChange = (district) => {
     setSelectedDistrict(district);
   };
+
+  const validationChecks = soilData ? [
+    ['Nitrogen', Number(soilData.nitrogen) >= 0 && Number(soilData.nitrogen) <= 200],
+    ['Phosphorus', Number(soilData.phosphorus) >= 0 && Number(soilData.phosphorus) <= 200],
+    ['Potassium', Number(soilData.potassium) >= 0 && Number(soilData.potassium) <= 300],
+    ['pH', Number(soilData.ph) >= 3.5 && Number(soilData.ph) <= 9.9],
+  ] : [];
+  const validRecordCount = validationChecks.filter(([, valid]) => valid).length;
 
   const getKeyInsights = () => {
     if (!soilData) return { strength: 'No data', health: 'No data' };
@@ -200,6 +210,43 @@ const AdminSoilManagementPage = () => {
                     </div>
                   )}
 
+                  {soilData && (
+                    <div className="bg-white rounded-lg shadow-lg p-6 border border-amber-200">
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                        <div>
+                          <h2 className="text-xl font-bold text-gray-800">Data Quality & Provenance</h2>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Source: {soilData.source === 'district_demo_estimate' ? 'District demo estimate' : soilData.source || 'Unknown'}
+                          </p>
+                        </div>
+                        <span className={`px-3 py-2 rounded-full text-sm font-semibold ${soilData.is_verified ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
+                          {soilData.is_verified ? 'Verified record' : 'Demo record - pending verification'}
+                        </span>
+                      </div>
+                      <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                        <div className="rounded border border-gray-200 p-3">
+                          <p className="text-gray-500">Range checks</p>
+                          <p className="font-bold text-gray-800">{validRecordCount}/{validationChecks.length} passed</p>
+                        </div>
+                        <div className="rounded border border-gray-200 p-3">
+                          <p className="text-gray-500">Record status</p>
+                          <p className="font-bold text-gray-800">{validRecordCount === validationChecks.length ? 'Complete' : 'Needs review'}</p>
+                        </div>
+                        <div className="rounded border border-gray-200 p-3">
+                          <p className="text-gray-500">Loaded</p>
+                          <p className="font-bold text-gray-800">{lastLoadedAt ? lastLoadedAt.toLocaleTimeString() : 'Unknown'}</p>
+                        </div>
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {validationChecks.map(([label, valid]) => (
+                          <span key={label} className={`px-2 py-1 rounded text-xs font-semibold ${valid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                            {label}: {valid ? 'Valid' : 'Invalid'}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Crop Recommendations */}
                   {districtCrops ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -207,9 +254,9 @@ const AdminSoilManagementPage = () => {
                       <div className="bg-white rounded-lg shadow-lg p-6 border-t-4 border-green-600">
                         <h3 className="text-xl font-bold text-gray-800 mb-4">Kharif Season (June-September)</h3>
                                                 <h3 className="text-xl font-bold text-gray-800 mb-4">Kharif Season (June-September)</h3>
-                        {districtCrops.kharif && districtCrops.kharif.top_crops && districtCrops.kharif.top_crops.length > 0 ? (
+                        {districtCrops.kharif_crops && districtCrops.kharif_crops.length > 0 ? (
                           <div className="space-y-3">
-                            {districtCrops.kharif.top_crops.map((crop, idx) => (
+                            {districtCrops.kharif_crops.map((crop, idx) => (
                               <div key={idx} className="bg-green-50 rounded-lg p-3 border-l-4 border-green-500">
                                 <div className="flex items-center gap-2">
                                   <span className="text-2xl">{idx === 0 ? '⭐' : '✓'}</span>
@@ -232,9 +279,9 @@ const AdminSoilManagementPage = () => {
                                                 <h3 className="text-xl font-bold text-gray-800 mb-4">Rabi Season (October-March)</h3>
                                                     <p className="text-gray-600 text-center">Crop recommendations loading...</p>
                                               <h3 className="text-xl font-bold text-gray-800 mb-4">Soil Status - {selectedDistrict}</h3>
-                        {districtCrops.rabi && districtCrops.rabi.top_crops && districtCrops.rabi.top_crops.length > 0 ? (
+                        {districtCrops.rabi_crops && districtCrops.rabi_crops.length > 0 ? (
                           <div className="space-y-3">
-                            {districtCrops.rabi.top_crops.map((crop, idx) => (
+                            {districtCrops.rabi_crops.map((crop, idx) => (
                               <div key={idx} className="bg-blue-50 rounded-lg p-3 border-l-4 border-blue-500">
                                 <div className="flex items-center gap-2">
                                   <span className="text-2xl">{idx === 0 ? '⭐' : '✓'}</span>
@@ -297,8 +344,8 @@ const AdminSoilManagementPage = () => {
 
                   {/* Best Crop Recommendation - Only show if we have valid data from model */}
                   {districtCrops && (() => {
-                    const bestKharifCrop = districtCrops.kharif?.top_crops?.[0];
-                    const bestRabiCrop = districtCrops.rabi?.top_crops?.[0];
+                    const bestKharifCrop = districtCrops.kharif_crops?.[0];
+                    const bestRabiCrop = districtCrops.rabi_crops?.[0];
                     const bestCrop = bestKharifCrop || bestRabiCrop;
                     
                     // Only render if we have actual crop data from model
@@ -337,14 +384,14 @@ const AdminSoilManagementPage = () => {
                             <p className="text-sm font-semibold text-gray-700 mb-3">Alternative Crops (If Current Conditions Change):</p>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                               {/* Show other Kharif crops */}
-                              {districtCrops.kharif?.top_crops?.slice(1, 3).map((crop, idx) => (
+                              {districtCrops.kharif_crops?.slice(1, 3).map((crop, idx) => (
                                 <div key={`kharif-${idx}`} className="bg-green-50 rounded-lg p-3 border-l-4 border-green-500">
                                   <p className="text-xs text-gray-600 font-semibold">Kharif Alternative {idx + 1}</p>
                                   <p className="text-lg font-bold text-gray-800 capitalize mt-1">{crop}</p>
                                 </div>
                               ))}
                               {/* Show other Rabi crops */}
-                              {districtCrops.rabi?.top_crops?.slice(1, 3).map((crop, idx) => (
+                              {districtCrops.rabi_crops?.slice(1, 3).map((crop, idx) => (
                                 <div key={`rabi-${idx}`} className="bg-blue-50 rounded-lg p-3 border-l-4 border-blue-500">
                                   <p className="text-xs text-gray-600 font-semibold">Rabi Alternative {idx + 1}</p>
                                   <p className="text-lg font-bold text-gray-800 capitalize mt-1">{crop}</p>

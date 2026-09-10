@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional, Union
+import json
 from ..database.config import get_db
 from ..models.farmer import Farmer
 from ..utils.auth import hash_password, verify_password, create_access_token
@@ -43,6 +44,7 @@ class FarmerProfileResponse(BaseModel):
     soil_type: Optional[str]
     latitude: Optional[float]
     longitude: Optional[float]
+    usual_crops: list[str] = []
 
 class UpdateProfileRequest(BaseModel):
     phone_number: Optional[str] = None
@@ -55,6 +57,19 @@ class UpdateProfileRequest(BaseModel):
     soil_type: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    usual_crops: Optional[Union[str, list[str]]] = None
+
+
+def parse_usual_crops(value):
+    if not value:
+        return []
+    if isinstance(value, list):
+        return value
+    try:
+        parsed = json.loads(value)
+        return parsed if isinstance(parsed, list) else []
+    except (TypeError, json.JSONDecodeError):
+        return []
 
 class OTPResponse(BaseModel):
     message: str
@@ -234,7 +249,8 @@ async def get_farmer_profile(farmer_id: int, db: Session = Depends(get_db)):
         farm_size=farmer.farm_size,
         soil_type=farmer.soil_type,
         latitude=farmer.latitude,
-        longitude=farmer.longitude
+        longitude=farmer.longitude,
+        usual_crops=parse_usual_crops(farmer.usual_crops)
     )
 
 @router.put("/profile/{farmer_id}")
@@ -267,6 +283,11 @@ async def update_farmer_profile(farmer_id: int, request: UpdateProfileRequest, d
             farmer.latitude = request.latitude
         if request.longitude is not None:
             farmer.longitude = request.longitude
+        if request.usual_crops is not None:
+            crops = request.usual_crops
+            if isinstance(crops, str):
+                crops = parse_usual_crops(crops)
+            farmer.usual_crops = json.dumps(crops)
         
         # Update name if first_name or last_name changed
         if request.first_name is not None or request.last_name is not None:
@@ -289,7 +310,8 @@ async def update_farmer_profile(farmer_id: int, request: UpdateProfileRequest, d
                 farm_size=farmer.farm_size,
                 soil_type=farmer.soil_type,
                 latitude=farmer.latitude,
-                longitude=farmer.longitude
+                longitude=farmer.longitude,
+                usual_crops=parse_usual_crops(farmer.usual_crops)
             )
         }
     except HTTPException:

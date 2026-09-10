@@ -12,6 +12,8 @@ async def get_soil_by_district(district: str, db: Session = Depends(get_db)):
     
     return {
         "district": district,
+        "source": "district_demo_estimate",
+        "is_verified": False,
         "nitrogen": soil_data.get("nitrogen", 0),
         "phosphorus": soil_data.get("phosphorus", 0),
         "potassium": soil_data.get("potassium", 0),

@@ -20,6 +20,7 @@ class Farmer(Base):
     is_verified = Column(Boolean, default=False)
     farm_size = Column(String, nullable=True)  # e.g., "5 acres"
     soil_type = Column(String, nullable=True)  # e.g., "Black Soil"
+    usual_crops = Column(Text, nullable=True)  # JSON list of crops the farmer commonly grows
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     

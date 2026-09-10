@@ -13,9 +13,12 @@ import SoilManagementPage from './pages/farmers/SoilManagementPage';
 import WeatherPage from './pages/farmers/WeatherPage';
 import ProfilePage from './pages/farmers/ProfilePage';
 import SettingsPage from './pages/farmers/SettingsPage';
+import FarmPlannerPage from './pages/farmers/FarmPlannerPage';
+import MarketInformationPage from './pages/farmers/MarketInformationPage';
 import AdminLoginPage from './pages/admin/AdminLoginPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminFarmerManagementPage from './pages/admin/AdminFarmerManagementPage';
+import AdminPredictionMonitoringPage from './pages/admin/AdminPredictionMonitoringPage';
 import AdminCropManagementPage from './pages/admin/AdminCropManagementPage';
 import AdminSoilManagementPage from './pages/admin/AdminSoilManagementPage';
 import AdminWeatherAlertsPage from './pages/admin/AdminWeatherAlertsPage';
@@ -220,6 +223,22 @@ function BackgroundWrappedApp({ handleNavigate }) {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/farm-planner"
+        element={
+          <ProtectedRoute>
+            <FarmPlannerPage onNavigate={handleNavigate} />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/market"
+        element={
+          <ProtectedRoute>
+            <MarketInformationPage onNavigate={handleNavigate} />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Admin Routes */}
       <Route
@@ -235,6 +254,14 @@ function BackgroundWrappedApp({ handleNavigate }) {
         element={
           <AdminRoute>
             <AdminFarmerManagementPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/predictions"
+        element={
+          <AdminRoute>
+            <AdminPredictionMonitoringPage />
           </AdminRoute>
         }
       />

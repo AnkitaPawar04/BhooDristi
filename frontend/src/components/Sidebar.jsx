@@ -20,8 +20,11 @@ import {
   FiAlertCircle,
   FiBell,
   FiBarChart2,
+  FiClipboard,
   FiFileText,
   FiMessageCircle,
+  FiCalendar,
+  FiDollarSign,
   FiChevronLeft,
   FiChevronRight
 } from 'react-icons/fi';
@@ -53,8 +56,10 @@ const Sidebar = ({ userName, currentPage, onNavigate }) => {
     { id: 'irrigation', label: getTranslation(language, 'irrigationPrediction'), path: '/irrigation', icon: FiDroplet },
     { id: 'fertilizer', label: getTranslation(language, 'fertilizerShops') || 'Nearby Fertilizer Shops', path: '/fertilizer', icon: FiMapPin },
     { id: 'soil', label: getTranslation(language, 'soilManagement'), path: '/soil', icon: FiFilter },
-    { id: 'weather', label: getTranslation(language, 'weatherInformation'), path: '/weather', icon: FiSun },
-    { id: 'Schemes', label: 'Government Schemes', path: '/Schemes', icon: FiHome },
+    { id: 'Schemes', label: getTranslation(language, 'governmentSchemes'), path: '/Schemes', icon: FiHome },
+    { id: 'planner', label: getTranslation(language, 'farmPlanner'), path: '/farm-planner', icon: FiCalendar },
+    { id: 'market', label: getTranslation(language, 'marketInformationPage'), path: '/market', icon: FiDollarSign },
+     { id: 'weather', label: getTranslation(language, 'weatherInformation'), path: '/weather', icon: FiSun },
     { id: 'profile', label: getTranslation(language, 'profile'), path: '/profile', icon: FiUser },
     { id: 'settings', label: getTranslation(language, 'settings'), path: '/settings', icon: FiSettings },
     
@@ -63,6 +68,7 @@ const Sidebar = ({ userName, currentPage, onNavigate }) => {
   const adminMenuItems = [
     { id: 'dashboard', label: getTranslation(language, 'dashboard'), path: '/admin/dashboard', icon: FiBarChart2 },
     { id: 'farmers', label: getTranslation(language, 'farmerManagement'), path: '/admin/farmers', icon: FiUsers },
+    { id: 'predictions', label: getTranslation(language, 'predictionMonitoring'), path: '/admin/predictions', icon: FiClipboard },
     { id: 'crops', label: getTranslation(language, 'cropManagement'), path: '/admin/crops', icon: FiTrendingUp },
     { id: 'soil', label: getTranslation(language, 'soilManagement'), path: '/admin/soil', icon: FiFilter },
     { id: 'weather', label: getTranslation(language, 'weatherAlerts'), path: '/admin/weather', icon: FiAlertCircle },

@@ -27,6 +27,7 @@ const ProfilePage = ({ onNavigate }) => {
     confirm: false
   });
   const [message, setMessage] = useState({ type: '', text: '', visible: false });
+  const usualCropOptions = ['Rice', 'Maize', 'Cotton', 'Sugarcane', 'Wheat', 'Chickpea', 'Soybean', 'Groundnut', 'Pigeonpea', 'Jowar'];
 
   // Fetch farmer profile on mount
   useEffect(() => {
@@ -107,7 +108,10 @@ const ProfilePage = ({ onNavigate }) => {
       }
 
       console.log('Updating profile for farmer:', farmerId, 'Data:', editData);
-      const response = await authAPI.updateFarmerProfile(farmerId, editData);
+      const response = await authAPI.updateFarmerProfile(farmerId, {
+        ...editData,
+        usual_crops: editData.usual_crops || [],
+      });
       console.log('Update response:', response);
       
       // Handle both direct farmer object and nested farmer object
@@ -132,6 +136,14 @@ const ProfilePage = ({ onNavigate }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setEditData({ ...editData, [name]: value });
+  };
+
+  const toggleUsualCrop = (crop) => {
+    const currentCrops = editData?.usual_crops || [];
+    const usualCrops = currentCrops.includes(crop)
+      ? currentCrops.filter((item) => item !== crop)
+      : [...currentCrops, crop];
+    setEditData({ ...editData, usual_crops: usualCrops });
   };
 
   const handlePasswordChange = (e) => {
@@ -372,6 +384,31 @@ const ProfilePage = ({ onNavigate }) => {
                       ) : (
                         <p className="text-lg text-gray-800 dark:text-gray-100">{farmer?.soil_type || 'Not specified'}</p>
                       )}
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                        Crops you usually grow
+                      </label>
+                      {isEditing ? (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                          {usualCropOptions.map((crop) => (
+                            <label key={crop} className="flex items-center gap-2 rounded border border-green-200 px-3 py-2 text-sm text-gray-700">
+                              <input
+                                type="checkbox"
+                                checked={(editData?.usual_crops || []).includes(crop)}
+                                onChange={() => toggleUsualCrop(crop)}
+                              />
+                              {crop}
+                            </label>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-lg text-gray-800 dark:text-gray-100">
+                          {farmer?.usual_crops?.length ? farmer.usual_crops.join(', ') : 'Not specified'}
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-500 mt-2">These crops will be avoided when a suitable rotation alternative is available.</p>
                     </div>
                   </div>
 

@@ -699,6 +699,13 @@ const CropRecommendationPage = ({ onNavigate }) => {
                     </div>
                   ) : (
                     <>
+                      <div className={`mb-6 rounded-xl border-l-4 p-4 text-sm ${recommendation.rotation_applied ? 'border-emerald-500 bg-emerald-50 text-emerald-900' : 'border-blue-500 bg-blue-50 text-blue-900'}`}>
+                        <p className="font-bold">Crop rotation guidance</p>
+                        <p className="mt-1">{recommendation.rotation_message || 'Recommendation is based on current soil, weather, season, and location data.'}</p>
+                        {recommendation.usual_crops?.length > 0 && (
+                          <p className="mt-1 text-xs">Usual crops on profile: {recommendation.usual_crops.join(', ')}</p>
+                        )}
+                      </div>
                       <div className="mb-8 p-8 bg-gradient-to-r from-green-500 to-green-600 dark:from-green-600 dark:to-green-700 rounded-3xl text-white shadow-lg">
                         <div className="flex items-start justify-between mb-6">
                           <div>

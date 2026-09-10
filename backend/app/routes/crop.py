@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
 from ..database.config import get_db
-from ..models.farmer import Prediction
+from ..models.farmer import Farmer, Prediction
 from ..utils.location import get_district_from_coordinates
 from ..utils.land_cover import check_land_cover, LandCoverProviderError
 from ..utils.soil_database import get_soil_data
@@ -94,6 +94,9 @@ class CropRecommendationResponse(BaseModel):
 
     model_recommendation: Optional[str] = None
     model_recommendation_in_district: bool = False
+    usual_crops: list[str] = []
+    rotation_applied: bool = False
+    rotation_message: str = ""
 
 
 # ============================================================
@@ -770,6 +773,18 @@ async def predict_crop(
             detail="Unable to validate land cover."
         )
 
+    farmer = db.query(Farmer).filter(Farmer.id == request.farmer_id).first()
+    usual_crops = set()
+    if farmer and farmer.usual_crops:
+        try:
+            usual_crops = {
+                normalize_crop_name(crop)
+                for crop in json.loads(farmer.usual_crops)
+                if crop
+            }
+        except (TypeError, json.JSONDecodeError):
+            logger.warning("Invalid usual_crops profile data for farmer %s", request.farmer_id)
+
     if not land_cover["allowed"]:
 
         raise HTTPException(
@@ -1369,6 +1384,14 @@ async def predict_crop(
                 district_model_matches
             )
 
+    rotation_candidates = [
+        candidate for candidate in final_candidates
+        if normalize_crop_name(candidate["crop"]) not in usual_crops
+    ]
+    rotation_applied = bool(usual_crops and rotation_candidates)
+    if rotation_applied:
+        final_candidates = rotation_candidates
+
     # ========================================================
     # 18. FINAL RECOMMENDATION
     # ========================================================
@@ -1596,6 +1619,13 @@ async def predict_crop(
 
         "model_recommendation_in_district":
             model_recommendation_in_district,
+        "usual_crops": list(usual_crops),
+        "rotation_applied": rotation_applied,
+        "rotation_message": (
+            "This recommendation avoids crops marked as usually grown by the farmer."
+            if rotation_applied
+            else "No crop rotation preference was applied."
+        ),
     }
 
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar';
 import { useApp } from '../../contexts/AppContext';
 import { getTranslation, getDistrictTranslation } from '../../utils/i18n';
-import { soilAPI } from '../../services/api';
+import { soilAPI, cropAPI } from '../../services/api';
 import soilBgVideo from './videos/dashboard.mp4';
 
 const MAHARASHTRA_DISTRICTS = [
@@ -20,6 +20,7 @@ const SoilManagementPage = ({ onNavigate }) => {
   const [soilData, setSoilData] = useState({});
   const [message, setMessage] = useState({ type: '', text: '', visible: false });
   const [loading, setLoading] = useState(false);
+  const [cropInsights, setCropInsights] = useState(null);
   const fetchRequestId = React.useRef(0); // Track latest request
 
   // Get user's default district
@@ -40,13 +41,20 @@ const SoilManagementPage = ({ onNavigate }) => {
     const currentRequestId = ++fetchRequestId.current;
     
     try {
-      const response = await soilAPI.getSoilData(district);
+      const [response, cropResponse] = await Promise.all([
+        soilAPI.getSoilData(district),
+        cropAPI.getDistrictCrops(district),
+      ]);
       
       // Only update state if this is the latest request
       if (currentRequestId === fetchRequestId.current) {
         setSoilData(prev => ({
           ...prev,
           [district]: response.data
+        }));
+        setCropInsights(prev => ({
+          ...prev,
+          [district]: cropResponse.data,
         }));
         setLoading(false);
       }
@@ -69,6 +77,8 @@ const SoilManagementPage = ({ onNavigate }) => {
   const handleDistrictChange = (district) => {
     setSelectedDistrict(district);
   };
+
+  const currentCropInsights = cropInsights?.[selectedDistrict];
 
   const getSoilHealthStatus = (nutrient, value) => {
     const optimalRanges = {
@@ -152,6 +162,10 @@ const SoilManagementPage = ({ onNavigate }) => {
                 </div>
                 <div className="p-8">
 
+                <div className="mb-6 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                  <strong>Data source:</strong> Current values are district-level demo estimates. They will be replaced with verified ESA or laboratory data when available.
+                </div>
+
                 {loading ? (
                   <div className="flex justify-center items-center py-8">
                     <div className="text-gray-500">Loading soil data...</div>
@@ -231,6 +245,37 @@ const SoilManagementPage = ({ onNavigate }) => {
                     </div>
                   </div>
                 )}
+                </div>
+              </div>
+
+              {/* Crop guidance from current soil profile */}
+              <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-0 border-4 border-emerald-200 overflow-hidden">
+                <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 p-6 text-white">
+                  <h3 className="text-2xl font-bold">Crops suited to this soil</h3>
+                  <p className="text-emerald-100 mt-1 text-sm">Model suggestions based on the current district profile</p>
+                </div>
+                <div className="p-6">
+                  {currentCropInsights ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="rounded-xl border border-green-200 bg-green-50 p-4">
+                        <p className="text-sm font-semibold text-green-800">Kharif</p>
+                        <p className="mt-2 text-lg font-bold text-green-900">
+                          {(currentCropInsights.kharif_crops || []).join(', ') || 'No suggestion available'}
+                        </p>
+                      </div>
+                      <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
+                        <p className="text-sm font-semibold text-blue-800">Rabi</p>
+                        <p className="mt-2 text-lg font-bold text-blue-900">
+                          {(currentCropInsights.rabi_crops || []).join(', ') || 'No suggestion available'}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-gray-600">Select a district to calculate crop suggestions.</p>
+                  )}
+                  <p className="mt-4 text-xs text-gray-500">
+                    These are suitability suggestions, not guaranteed yields. Verify the final choice with local agronomy advice.
+                  </p>
                 </div>
               </div>
 
