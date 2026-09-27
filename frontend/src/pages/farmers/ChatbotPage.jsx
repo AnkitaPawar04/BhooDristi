@@ -2,23 +2,215 @@ import React, { useEffect, useRef, useState } from "react";
 import Sidebar from "../../components/Sidebar";
 import { FiSend, FiMessageCircle, FiUser, FiLoader, FiMic, FiMicOff, FiImage } from "react-icons/fi";
 import chatbotBgVideo from "./videos/dashboard.mp4";
+import authStorage from "../../services/authStorage";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
+// Styles for the markdown the bot returns (bold, lists, tables).
+const markdownComponents = {
+  p: (props) => <p className="mb-2 last:mb-0" {...props} />,
+  strong: (props) => <strong className="font-semibold" {...props} />,
+  ul: (props) => <ul className="mb-2 ml-5 list-disc space-y-1" {...props} />,
+  ol: (props) => <ol className="mb-2 ml-5 list-decimal space-y-1" {...props} />,
+  h1: (props) => <h3 className="mb-2 text-base font-semibold" {...props} />,
+  h2: (props) => <h3 className="mb-2 text-base font-semibold" {...props} />,
+  h3: (props) => <h3 className="mb-2 text-base font-semibold" {...props} />,
+  hr: () => <hr className="my-3 border-emerald-200" />,
+  table: (props) => (
+    <div className="my-2 overflow-x-auto">
+      <table className="min-w-full border-collapse text-sm" {...props} />
+    </div>
+  ),
+  th: (props) => (
+    <th className="border border-emerald-200 bg-emerald-50 px-2 py-1 text-left font-semibold" {...props} />
+  ),
+  td: (props) => <td className="border border-emerald-200 px-2 py-1 align-top" {...props} />,
+};
 
 const API_URL = "http://localhost:8000/chatbot/chat";
 const IMAGE_API_URL = "http://localhost:8000/chatbot/image";
 const TRANSCRIBE_API_URL = "http://localhost:8000/chatbot/transcribe";
+const HISTORY_API_URL = "http://localhost:8000/chatbot/history";
+const STREAM_API_URL = "http://localhost:8000/chatbot/chat/stream";
+const FEEDBACK_API_URL = "http://localhost:8000/chatbot/feedback";
+
+// Quick questions shown on an empty chat, in the app's language.
+const QUICK_QUESTIONS = {
+  en: [
+    "What should I sow this season?",
+    "Will it rain this week?",
+    "How much water does my crop need?",
+    "What are today's market prices?",
+    "Which government schemes can I get?",
+  ],
+  hi: [
+    "इस मौसम में क्या बोऊं?",
+    "क्या इस हफ्ते बारिश होगी?",
+    "मेरी फसल को कितना पानी चाहिए?",
+    "आज मंडी में क्या भाव है?",
+    "मुझे कौन सी सरकारी योजनाएं मिल सकती हैं?",
+  ],
+  mr: [
+    "या हंगामात काय पेरावे?",
+    "या आठवड्यात पाऊस पडेल का?",
+    "माझ्या पिकाला किती पाणी लागेल?",
+    "आज बाजारभाव काय आहे?",
+    "मला कोणत्या सरकारी योजना मिळू शकतात?",
+  ],
+};
+
+const SPEECH_LANG = { en: "en-IN", hi: "hi-IN", mr: "mr-IN" };
+
+const getAppLanguage = () => {
+  const lang = localStorage.getItem("language");
+  return ["en", "hi", "mr"].includes(lang) ? lang : "en";
+};
+
+// Plain text for text-to-speech (drop Markdown symbols and emoji).
+const toSpeechText = (text) =>
+  text
+    .replace(/[#*_`>|]/g, " ")
+    .replace(/-{3,}/g, " ")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
+const LOCAL_HISTORY_KEY = "chatbot_history";
+
+const GREETING = {
+  id: 1,
+  sender: "bot",
+  text: "Namaste! 👋 I am your Farmer Assistant. How can I help you today?",
+};
 
 const ChatbotPage = ({ onNavigate, compact = false, onClose }) => {
   // ============================================================
   // CHAT
   // ============================================================
 
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      sender: "bot",
-      text: "Namaste! 👋 I am your Farmer Assistant. How can I help you today?",
-    },
-  ]);
+  const [messages, setMessages] = useState([GREETING]);
+
+  const farmerId = Number(authStorage.getFarmerId()) || null;
+  const historyLoadedRef = useRef(false);
+  const handleSendRef = useRef(null);
+  const [speakingId, setSpeakingId] = useState(null);
+
+  // ============================================================
+  // LISTEN (text-to-speech in the browser)
+  // ============================================================
+
+  const handleSpeak = (message) => {
+    if (!window.speechSynthesis) {
+      alert("Your browser does not support reading answers aloud.");
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+
+    if (speakingId === message.id) {
+      setSpeakingId(null);
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(toSpeechText(message.text));
+    // Devanagari text is read in the app language (Hindi/Marathi), else English.
+    const hasDevanagari = /[\u0900-\u097F]/.test(message.text);
+    const lang = getAppLanguage();
+    utterance.lang = hasDevanagari
+      ? SPEECH_LANG[lang === "en" ? "hi" : lang]
+      : "en-IN";
+    const voice = window.speechSynthesis
+      .getVoices()
+      .find((v) => v.lang === utterance.lang);
+    if (voice) utterance.voice = voice;
+    utterance.onend = () => setSpeakingId(null);
+    utterance.onerror = () => setSpeakingId(null);
+
+    setSpeakingId(message.id);
+    window.speechSynthesis.speak(utterance);
+  };
+
+  useEffect(() => () => window.speechSynthesis?.cancel(), []);
+
+  // ============================================================
+  // FEEDBACK (thumbs up / down)
+  // ============================================================
+
+  const handleFeedback = async (message, rating) => {
+    if (!message.dbId) return;
+
+    setMessages((previous) =>
+      previous.map((m) =>
+        m.id === message.id ? { ...m, feedback: rating } : m
+      )
+    );
+
+    try {
+      await fetch(FEEDBACK_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message_id: message.dbId, rating }),
+      });
+    } catch (error) {
+      console.error("Feedback error:", error);
+    }
+  };
+
+  // ============================================================
+  // CHAT HISTORY
+  // Logged-in farmers: stored in the backend database.
+  // Not logged in: kept in this browser's localStorage.
+  // ============================================================
+
+  useEffect(() => {
+    const loadHistory = async () => {
+      try {
+        if (farmerId) {
+          const response = await fetch(`${HISTORY_API_URL}/${farmerId}`);
+          if (response.ok) {
+            const rows = await response.json();
+            setMessages([
+              GREETING,
+              ...rows.map((row) => ({
+                id: `h-${row.id}`,
+                dbId: row.id,
+                feedback: row.feedback,
+                sender: row.role === "user" ? "user" : "bot",
+                text: row.content,
+              })),
+            ]);
+          }
+        } else {
+          const saved = JSON.parse(
+            localStorage.getItem(LOCAL_HISTORY_KEY) || "[]"
+          );
+          if (saved.length) {
+            setMessages([GREETING, ...saved]);
+          }
+        }
+      } catch (error) {
+        console.error("Could not load chat history:", error);
+      } finally {
+        historyLoadedRef.current = true;
+      }
+    };
+
+    loadHistory();
+  }, [farmerId]);
+
+  useEffect(() => {
+    if (farmerId || !historyLoadedRef.current) {
+      return;
+    }
+
+    // Keep only finished text messages (no typing placeholders or image previews).
+    const toSave = messages
+      .filter((message) => message.id !== 1 && !message.typing && message.text)
+      .slice(-100)
+      .map(({ id, sender, text }) => ({ id, sender, text }));
+
+    localStorage.setItem(LOCAL_HISTORY_KEY, JSON.stringify(toSave));
+  }, [messages, farmerId]);
 
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -128,11 +320,26 @@ const ChatbotPage = ({ onNavigate, compact = false, onClose }) => {
       mediaRecorder.onstop = async () => {
         stream.getTracks().forEach((track) => track.stop());
 
+        // Safari records audio/mp4, Chrome/Firefox record audio/webm.
+        // Whisper needs the file extension to match the real format.
+        const mimeType = mediaRecorder.mimeType || "audio/webm";
+        const extension = mimeType.includes("mp4")
+          ? "mp4"
+          : mimeType.includes("ogg")
+          ? "ogg"
+          : "webm";
+
         const audioBlob = new Blob(audioChunksRef.current, {
-          type: "audio/webm",
+          type: mimeType,
         });
 
         setRecording(false);
+
+        if (audioBlob.size === 0) {
+          alert("No audio was recorded. Check that your microphone is allowed and try again.");
+          return;
+        }
+
         setTranscribing(true);
 
         try {
@@ -141,11 +348,17 @@ const ChatbotPage = ({ onNavigate, compact = false, onClose }) => {
           formData.append(
             "file",
             audioBlob,
-            "farmer-question.webm"
+            `farmer-question.${extension}`
           );
 
           const response = await fetch(
-            TRANSCRIBE_API_URL,
+            // Use the app's language (en / hi / mr) so Whisper doesn't
+            // force English or Hindi speech into Marathi.
+            `${TRANSCRIBE_API_URL}?language=${
+              ["en", "hi", "mr"].includes(localStorage.getItem("language"))
+                ? localStorage.getItem("language")
+                : "mr"
+            }`,
             {
               method: "POST",
               body: formData,
@@ -164,12 +377,14 @@ const ChatbotPage = ({ onNavigate, compact = false, onClose }) => {
             throw new Error("No text was returned.");
           }
 
-          setInput(data.text);
+          // Send straight away so voice is one step for the farmer.
+          handleSendRef.current?.(data.text);
         } catch (error) {
           console.error("Transcription error:", error);
 
           alert(
-            "Sorry, I couldn't understand the audio. Please try again."
+            "Sorry, I couldn't understand the audio. " +
+              (error.message || "Please try again.")
           );
         } finally {
           setTranscribing(false);
@@ -239,6 +454,10 @@ const ChatbotPage = ({ onNavigate, compact = false, onClose }) => {
 
       formData.append("file", file);
 
+      if (farmerId) {
+        formData.append("farmer_id", String(farmerId));
+      }
+
       const response = await fetch(
         IMAGE_API_URL,
         {
@@ -265,6 +484,7 @@ const ChatbotPage = ({ onNavigate, compact = false, onClose }) => {
             ? {
                 ...message,
                 text: aiResponse,
+                dbId: data.message_id,
                 typing: false,
               }
             : message
@@ -279,7 +499,8 @@ const ChatbotPage = ({ onNavigate, compact = false, onClose }) => {
             ? {
                 ...message,
                 text:
-                  "Sorry, I couldn't analyze this image right now. Please try again.",
+                  "Sorry, I couldn't analyze this image right now. " +
+                  (error.message || "Please try again."),
                 typing: false,
               }
             : message
@@ -300,10 +521,12 @@ const ChatbotPage = ({ onNavigate, compact = false, onClose }) => {
   // SEND MESSAGE
   // ============================================================
 
-  const handleSend = async () => {
-    const trimmedInput = input.trim();
+  const handleSend = async (textOverride) => {
+    const trimmedInput = (
+      typeof textOverride === "string" ? textOverride : input
+    ).trim();
 
-    if (!trimmedInput || loading || transcribing) {
+    if (!trimmedInput || loading) {
       return;
     }
 
@@ -323,6 +546,7 @@ const ChatbotPage = ({ onNavigate, compact = false, onClose }) => {
           !message.typing &&
           message.text
       )
+      .slice(-10)
       .map((message) => ({
         role:
           message.sender === "user"
@@ -331,86 +555,103 @@ const ChatbotPage = ({ onNavigate, compact = false, onClose }) => {
         content: message.text,
       }));
 
+    const typingId = Date.now() + 1;
+
     setMessages((previous) => [
       ...previous,
       userMessage,
+      {
+        id: typingId,
+        sender: "bot",
+        text: "",
+        typing: true,
+      },
     ]);
 
     setInput("");
     setLoading(true);
 
-    const typingId = Date.now() + 1;
-
-    setMessages((previous) => [
-      ...previous,
-      {
-        id: typingId,
-        sender: "bot",
-        text: "Thinking...",
-        typing: true,
-      },
-    ]);
-
-    try {
-      const response = await fetch(
-        API_URL,
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-
-          body: JSON.stringify({
-            message: trimmedInput,
-            conversation,
-            latitude: location?.latitude ?? null,
-            longitude: location?.longitude ?? null,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.detail || "Chatbot request failed."
-        );
-      }
-
+    const updateBot = (changes) =>
       setMessages((previous) =>
         previous.map((message) =>
           message.id === typingId
-            ? {
-                ...message,
-                text:
-                  data.response ||
-                  "Sorry, I didn't get a response.",
-                typing: false,
-              }
+            ? { ...message, ...changes }
             : message
         )
       );
+
+    try {
+      // Streaming: the answer appears while it is being written.
+      const response = await fetch(STREAM_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: trimmedInput,
+          conversation,
+          latitude: location?.latitude ?? null,
+          longitude: location?.longitude ?? null,
+          district: authStorage.getUser()?.district ?? null,
+          farmer_id: farmerId,
+        }),
+      });
+
+      if (!response.ok || !response.body) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.detail || "Chatbot request failed.");
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let streamed = "";
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop();
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          const event = JSON.parse(line);
+
+          if (event.error) {
+            throw new Error(event.error);
+          }
+
+          if (event.delta) {
+            streamed += event.delta;
+            updateBot({ text: streamed, typing: false });
+          }
+
+          if (event.done) {
+            updateBot({
+              text: event.response || streamed,
+              dbId: event.message_id,
+              typing: false,
+            });
+          }
+        }
+      }
     } catch (error) {
       console.error("Chatbot error:", error);
 
-      setMessages((previous) =>
-        previous.map((message) =>
-          message.id === typingId
-            ? {
-                ...message,
-                text:
-                  "Sorry, I couldn't process your request right now. Please try again.",
-                typing: false,
-              }
-            : message
-        )
-      );
+      updateBot({
+        text:
+          "Sorry, I couldn't process your request right now. " +
+          (error.message || "Please try again."),
+        typing: false,
+      });
     } finally {
       setLoading(false);
     }
   };
+
+  handleSendRef.current = handleSend;
 
   // ============================================================
   // ENTER KEY
@@ -500,9 +741,60 @@ const ChatbotPage = ({ onNavigate, compact = false, onClose }) => {
               </div>
             ) : (
               message.text && (
-                <div className="whitespace-pre-line">
-                  {message.text}
-                </div>
+                isUser ? (
+                  <div className="whitespace-pre-line">
+                    {message.text}
+                  </div>
+                ) : (
+                  <div className="break-words">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={markdownComponents}
+                    >
+                      {message.text}
+                    </ReactMarkdown>
+
+                    {message.id !== 1 && (
+                      <div className="mt-2 flex items-center gap-1 text-gray-400">
+                        <button
+                          type="button"
+                          onClick={() => handleSpeak(message)}
+                          title={speakingId === message.id ? "Stop" : "Listen"}
+                          className={`rounded-full px-2 py-0.5 text-sm hover:bg-emerald-50 ${
+                            speakingId === message.id ? "text-emerald-600" : ""
+                          }`}
+                        >
+                          {speakingId === message.id ? "⏹️" : "🔊"}
+                        </button>
+
+                        {message.dbId && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => handleFeedback(message, 1)}
+                              title="Helpful"
+                              className={`rounded-full px-2 py-0.5 text-sm hover:bg-emerald-50 ${
+                                message.feedback === 1 ? "bg-emerald-100" : "opacity-60"
+                              }`}
+                            >
+                              👍
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleFeedback(message, -1)}
+                              title="Not helpful"
+                              className={`rounded-full px-2 py-0.5 text-sm hover:bg-red-50 ${
+                                message.feedback === -1 ? "bg-red-100" : "opacity-60"
+                              }`}
+                            >
+                              👎
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
               )
             )}
           </div>
@@ -540,6 +832,22 @@ const ChatbotPage = ({ onNavigate, compact = false, onClose }) => {
           <div className="flex-1 overflow-y-auto bg-slate-50 px-3 py-3">
             <div className="space-y-4">
               {messages.map((message) => renderMessage(message))}
+
+              {messages.length <= 1 && !loading && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {QUICK_QUESTIONS[getAppLanguage()].map((question) => (
+                    <button
+                      key={question}
+                      type="button"
+                      onClick={() => handleSend(question)}
+                      className="rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs text-emerald-700 shadow-sm hover:bg-emerald-50"
+                    >
+                      {question}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <div ref={messagesEndRef} />
             </div>
           </div>
@@ -548,7 +856,11 @@ const ChatbotPage = ({ onNavigate, compact = false, onClose }) => {
             <div className="mb-2 flex items-center gap-2">
               <button
                 type="button"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                className={
+                  recording
+                    ? "flex h-9 w-9 animate-pulse items-center justify-center rounded-full border border-red-300 bg-red-500 text-white"
+                    : "flex h-9 w-9 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                }
                 onClick={handleMicClick}
                 title={recording ? "Stop recording" : "Voice input"}
               >
@@ -572,8 +884,16 @@ const ChatbotPage = ({ onNavigate, compact = false, onClose }) => {
                 onChange={handleImageSelect}
               />
 
+              {recording && (
+                <span className="text-xs font-medium text-red-600">
+                  🎙️ Listening... tap the mic again to stop
+                </span>
+              )}
+
               {transcribing && (
-                <span className="text-xs text-emerald-700">Listening...</span>
+                <span className="text-xs text-emerald-700">
+                  Converting your voice to text...
+                </span>
               )}
             </div>
 
@@ -589,7 +909,7 @@ const ChatbotPage = ({ onNavigate, compact = false, onClose }) => {
 
               <button
                 type="button"
-                onClick={handleSend}
+                onClick={() => handleSend()}
                 disabled={loading || transcribing || !input.trim()}
                 className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-sm transition disabled:cursor-not-allowed disabled:bg-emerald-300"
                 aria-label="Send message"
@@ -834,6 +1154,21 @@ const ChatbotPage = ({ onNavigate, compact = false, onClose }) => {
 
                 {messages.map(renderMessage)}
 
+                {messages.length <= 1 && !loading && (
+                  <div className="flex flex-wrap gap-2">
+                    {QUICK_QUESTIONS[getAppLanguage()].map((question) => (
+                      <button
+                        key={question}
+                        type="button"
+                        onClick={() => handleSend(question)}
+                        className="rounded-full border border-emerald-200 bg-white px-4 py-2 text-sm text-emerald-700 shadow-sm hover:bg-emerald-50"
+                      >
+                        {question}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
                 <div ref={messagesEndRef} />
 
               </div>
@@ -1000,7 +1335,7 @@ const ChatbotPage = ({ onNavigate, compact = false, onClose }) => {
 
                   <button
                     type="button"
-                    onClick={handleSend}
+                    onClick={() => handleSend()}
                     disabled={
                       !input.trim() ||
                       loading ||
