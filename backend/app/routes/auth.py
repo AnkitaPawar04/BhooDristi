@@ -45,6 +45,10 @@ class FarmerProfileResponse(BaseModel):
     latitude: Optional[float]
     longitude: Optional[float]
     usual_crops: list[str] = []
+    soil_nitrogen: Optional[float] = None
+    soil_phosphorus: Optional[float] = None
+    soil_potassium: Optional[float] = None
+    soil_ph: Optional[float] = None
 
 class UpdateProfileRequest(BaseModel):
     phone_number: Optional[str] = None
@@ -58,6 +62,10 @@ class UpdateProfileRequest(BaseModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     usual_crops: Optional[Union[str, list[str]]] = None
+    soil_nitrogen: Optional[float] = None
+    soil_phosphorus: Optional[float] = None
+    soil_potassium: Optional[float] = None
+    soil_ph: Optional[float] = None
 
 
 def parse_usual_crops(value):
@@ -250,7 +258,11 @@ async def get_farmer_profile(farmer_id: int, db: Session = Depends(get_db)):
         soil_type=farmer.soil_type,
         latitude=farmer.latitude,
         longitude=farmer.longitude,
-        usual_crops=parse_usual_crops(farmer.usual_crops)
+        usual_crops=parse_usual_crops(farmer.usual_crops),
+        soil_nitrogen=farmer.soil_nitrogen,
+        soil_phosphorus=farmer.soil_phosphorus,
+        soil_potassium=farmer.soil_potassium,
+        soil_ph=farmer.soil_ph
     )
 
 @router.put("/profile/{farmer_id}")
@@ -289,12 +301,22 @@ async def update_farmer_profile(farmer_id: int, request: UpdateProfileRequest, d
                 crops = parse_usual_crops(crops)
             farmer.usual_crops = json.dumps(crops)
         
+        # Soil Health Card values
+        for field in ("soil_nitrogen", "soil_phosphorus", "soil_potassium", "soil_ph"):
+            value = getattr(request, field)
+            if value is not None:
+                setattr(farmer, field, value)
+
         # Update name if first_name or last_name changed
         if request.first_name is not None or request.last_name is not None:
             farmer.name = f"{request.first_name or farmer.first_name or ''} {request.last_name or farmer.last_name or ''}".strip()
         
         db.commit()
         db.refresh(farmer)
+
+        # The chatbot caches farm data; refresh it with the new profile.
+        from ..utils.chat_context import clear_context_cache
+        clear_context_cache(farmer_id)
         
         return {
             "message": "Profile updated successfully",
@@ -311,7 +333,11 @@ async def update_farmer_profile(farmer_id: int, request: UpdateProfileRequest, d
                 soil_type=farmer.soil_type,
                 latitude=farmer.latitude,
                 longitude=farmer.longitude,
-                usual_crops=parse_usual_crops(farmer.usual_crops)
+                usual_crops=parse_usual_crops(farmer.usual_crops),
+                soil_nitrogen=farmer.soil_nitrogen,
+                soil_phosphorus=farmer.soil_phosphorus,
+                soil_potassium=farmer.soil_potassium,
+                soil_ph=farmer.soil_ph
             )
         }
     except HTTPException:
