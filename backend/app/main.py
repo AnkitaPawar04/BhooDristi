@@ -15,9 +15,25 @@ print("Earth Engine Project:", os.getenv("EE_PROJECT"))
 Base.metadata.create_all(bind=engine)
 
 # Keep the development SQLite database compatible with newly added profile fields.
-if "usual_crops" not in {column["name"] for column in inspect(engine).get_columns("farmers")}:
-    with engine.begin() as connection:
-        connection.execute(text("ALTER TABLE farmers ADD COLUMN usual_crops TEXT"))
+_new_columns = {
+    "farmers": {
+        "usual_crops": "TEXT",
+        "soil_nitrogen": "FLOAT",
+        "soil_phosphorus": "FLOAT",
+        "soil_potassium": "FLOAT",
+        "soil_ph": "FLOAT",
+    },
+    "chat_history": {
+        "feedback": "INTEGER",
+    },
+}
+
+for _table, _columns in _new_columns.items():
+    _existing = {column["name"] for column in inspect(engine).get_columns(_table)}
+    for _name, _type in _columns.items():
+        if _name not in _existing:
+            with engine.begin() as connection:
+                connection.execute(text(f"ALTER TABLE {_table} ADD COLUMN {_name} {_type}"))
 
 # Initialize FastAPI app
 app = FastAPI(

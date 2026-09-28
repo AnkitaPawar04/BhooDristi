@@ -72,7 +72,10 @@ function ChatbotFloatingWidget() {
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isAuthRoute = location.pathname !== '/login' && location.pathname !== '/admin/login';
 
-  if (!isAuthRoute || isAdminRoute) return null;
+  // The full chatbot page has its own chat, so hide the floating one there.
+  const isChatbotRoute = location.pathname === '/chatbot';
+
+  if (!isAuthRoute || isAdminRoute || isChatbotRoute) return null;
 
   return (
     <>

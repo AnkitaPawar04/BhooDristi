@@ -21,6 +21,11 @@ class Farmer(Base):
     farm_size = Column(String, nullable=True)  # e.g., "5 acres"
     soil_type = Column(String, nullable=True)  # e.g., "Black Soil"
     usual_crops = Column(Text, nullable=True)  # JSON list of crops the farmer commonly grows
+    # Soil Health Card values entered by the farmer (optional)
+    soil_nitrogen = Column(Float, nullable=True)
+    soil_phosphorus = Column(Float, nullable=True)
+    soil_potassium = Column(Float, nullable=True)
+    soil_ph = Column(Float, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
@@ -87,3 +92,16 @@ class IrrigationPrediction(Base):
     
     # Relationship
     farmer = relationship("Farmer", back_populates="irrigation_predictions")
+
+
+class ChatHistory(Base):
+    """One chatbot message (farmer question or bot answer)."""
+
+    __tablename__ = "chat_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+    farmer_id = Column(Integer, ForeignKey("farmers.id"), nullable=False, index=True)
+    role = Column(String(20), nullable=False)  # "user" or "assistant"
+    content = Column(Text, nullable=False)
+    feedback = Column(Integer, nullable=True)  # 1 = helpful, -1 = not helpful
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
