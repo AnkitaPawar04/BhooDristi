@@ -426,7 +426,7 @@ const translations = {
   },
   hi: {
     // App Name
-    appName: 'एग्रोसहयद्री',
+    appName: 'BhooDrishti',
     
     // Sidebar
     adminPanel: 'व्यवस्थापक पैनल',
@@ -823,7 +823,7 @@ const translations = {
   },
   mr: {
     // App Name
-    appName: 'ॲग्रोसह्याद्री',
+    appName: 'BhooDrishti',
     
     // Sidebar
     adminPanel: 'प्रशासक पैनल',

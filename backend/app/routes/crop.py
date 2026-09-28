@@ -86,6 +86,8 @@ class CropRecommendationResponse(BaseModel):
     recommended_crop: str
     confidence: float
     top_crops: list
+    alternative_crops: list = []
+    common_crops: list = []
     district: str
     season: str
 
@@ -1276,113 +1278,52 @@ async def predict_crop(
             )
 
     # ========================================================
-    # 16. DISTRICT FILTER
-    # ========================================================
-
-    final_candidates = []
-
-    if district_data_available:
-
-        district_crop_set = {
-
-            normalize_crop_name(
-                crop
-            )
-
-            for crop in district_crops
-        }
-
-        for candidate in seasonal_candidates:
-
-            candidate_normalized = (
-                normalize_crop_name(
-                    candidate["crop"]
-                )
-            )
-
-            if (
-                candidate_normalized
-                in district_crop_set
-            ):
-
-                final_candidates.append(
-                    candidate
-                )
-
-    else:
-
-        # District not present in Maharashtra dataset.
-        #
-        # In this case use season-filtered ML predictions.
-        final_candidates = (
-            seasonal_candidates.copy()
-        )
-
-    # ========================================================
-    # 17. FALLBACK: DISTRICT MATCH WITHOUT SEASON
+    # 16. KEEP ALTERNATIVE CROP CANDIDATES
     # ========================================================
     #
-    # This is only used when district data exists but there
-    # are no district + season matches.
-    #
-    # We prefer a district crop over an unrelated generic
-    # crop.
-    #
+    # District crops describe what is commonly grown; they are
+    # not a whitelist. Keeping only district matches would make
+    # it impossible to discover a suitable alternative crop.
+    # The model's soil and weather scores decide suitability,
+    # while the district list remains available in the response
+    # so the client can identify common versus alternative crops.
 
-    if (
-        district_data_available
-        and not final_candidates
-    ):
+    district_crop_set = {
+        normalize_crop_name(crop)
+        for crop in district_crops
+        if crop
+    }
 
-        logger.warning(
-            "No model-supported seasonal crop "
-            "matched district crop list for %s.",
-            district
-        )
+    alternative_candidates = [
+        candidate
+        for candidate in seasonal_candidates
+        if normalize_crop_name(candidate["crop"]) not in district_crop_set
+    ]
 
-        district_crop_set = {
+    # Prefer suitable crops that are not normally listed for this
+    # district. Fall back to common crops only when no alternative
+    # from the trained model matches the season.
+    final_candidates = (
+        alternative_candidates
+        if alternative_candidates
+        else seasonal_candidates.copy()
+    )
 
-            normalize_crop_name(
-                crop
-            )
-
-            for crop in district_crops
-        }
-
-        district_model_matches = []
-
-        for candidate in model_candidates:
-
-            candidate_normalized = (
-                normalize_crop_name(
-                    candidate["crop"]
-                )
-            )
-
-            if (
-                candidate_normalized
-                in district_crop_set
-            ):
-
-                district_model_matches.append(
-                    candidate
-                )
-
-        if district_model_matches:
-
-            logger.info(
-                "Found %d district crop "
-                "matches without season filter "
-                "for %s.",
-                len(
-                    district_model_matches
-                ),
-                district
-            )
-
-            final_candidates = (
-                district_model_matches
-            )
+    rotation_model_candidates = [
+        candidate
+        for candidate in seasonal_candidates
+        if normalize_crop_name(candidate["crop"]) not in usual_crops
+    ]
+    scored_alternative_crops = [
+        candidate
+        for candidate in rotation_model_candidates
+        if normalize_crop_name(candidate["crop"]) not in district_crop_set
+    ][:3]
+    scored_common_crops = [
+        candidate
+        for candidate in rotation_model_candidates
+        if normalize_crop_name(candidate["crop"]) in district_crop_set
+    ][:3]
 
     rotation_candidates = [
         candidate for candidate in final_candidates
@@ -1399,8 +1340,8 @@ async def predict_crop(
     ranked_final_candidates = rank_top_crop_candidates(
         final_candidates,
         season=season,
-        district_crops=district_crops,
-        district_data_available=district_data_available,
+        district_crops=None,
+        district_data_available=False,
         max_results=5,
     )
 
@@ -1438,8 +1379,8 @@ async def predict_crop(
             ranked_model_candidates = rank_top_crop_candidates(
                 model_candidates,
                 season=season,
-                district_crops=district_crops,
-                district_data_available=district_data_available,
+                district_crops=None,
+                district_data_available=False,
                 max_results=5,
             )
 
@@ -1491,6 +1432,25 @@ async def predict_crop(
         })
         if len(top_crops) >= 5:
             break
+
+    alternative_crops = [
+        {
+            "crop": candidate["crop"],
+            "confidence": round(float(candidate["confidence"]), 2),
+            "category": "alternative",
+            "score_basis": "soil_weather_model_match",
+        }
+        for candidate in scored_alternative_crops
+    ]
+    common_crops = [
+        {
+            "crop": candidate["crop"],
+            "confidence": round(float(candidate["confidence"]), 2),
+            "category": "common",
+            "score_basis": "soil_weather_model_match",
+        }
+        for candidate in scored_common_crops
+    ]
 
     # ========================================================
     # 20. CHECK RAW MODEL RECOMMENDATION
@@ -1601,6 +1561,12 @@ async def predict_crop(
 
         "top_crops":
             top_crops,
+
+        "alternative_crops":
+            alternative_crops,
+
+        "common_crops":
+            common_crops,
 
         "district":
             district,

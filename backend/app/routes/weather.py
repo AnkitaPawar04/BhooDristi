@@ -5,12 +5,16 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import os
+import time
 from dotenv import load_dotenv
 from datetime import datetime
 
 load_dotenv()
 
 router = APIRouter(prefix="/weather", tags=["weather"])
+
+_WEATHER_CACHE_TTL_SECONDS = 5 * 60
+_weather_cache = {}
 
 
 # =========================================================
@@ -257,6 +261,12 @@ async def get_current_weather(
     longitude: float
 ):
 
+    cache_key = (round(latitude, 3), round(longitude, 3))
+    cached = _weather_cache.get(cache_key)
+    now = time.monotonic()
+    if cached and now - cached[0] < _WEATHER_CACHE_TTL_SECONDS:
+        return cached[1].copy()
+
     # -----------------------------------------------------
     # 1. TRY OPENWEATHERMAP
     # -----------------------------------------------------
@@ -322,7 +332,8 @@ async def get_current_weather(
                     weather_result
                 )
 
-                return weather_result
+                _weather_cache[cache_key] = (now, weather_result)
+                return weather_result.copy()
 
             else:
 
@@ -393,7 +404,8 @@ async def get_current_weather(
             weather_result
         )
 
-        return weather_result
+        _weather_cache[cache_key] = (now, weather_result)
+        return weather_result.copy()
 
     except Exception as e:
 

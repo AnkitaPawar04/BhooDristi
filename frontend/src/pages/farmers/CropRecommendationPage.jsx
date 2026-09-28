@@ -754,6 +754,28 @@ const CropRecommendationPage = ({ onNavigate }) => {
                           </div>
                         </div>
                       )}
+
+                      {(recommendation.alternative_crops?.length > 0 || recommendation.common_crops?.length > 0) && (
+                        <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                          {[
+                            { key: 'alternative_crops', title: 'Suitable Alternative Crops', border: 'border-amber-500', color: 'text-amber-700', note: 'Not listed as commonly grown in this district' },
+                            { key: 'common_crops', title: 'Suitable Common Crops', border: 'border-blue-500', color: 'text-blue-700', note: 'Already listed among district crops' },
+                          ].map((group) => (
+                            <div key={group.key} className={`p-5 rounded-2xl bg-gray-50 dark:bg-gray-700 border-l-4 ${group.border}`}>
+                              <h4 className={`font-bold text-lg ${group.color}`}>{group.title}</h4>
+                              <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 mb-4">{group.note}. Percentage is soil and weather suitability, not guaranteed profit.</p>
+                              <div className="space-y-3">
+                                {(recommendation[group.key] || []).map((crop, idx) => (
+                                  <div key={`${crop.crop}-${idx}`} className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-xl px-4 py-3">
+                                    <span className="font-semibold text-gray-900 dark:text-white">{getCropTranslation(crop.crop, language)}</span>
+                                    <span className={`font-bold ${group.color}`}>{Number(crop.confidence).toFixed(2)}%</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </>
                   )}
 

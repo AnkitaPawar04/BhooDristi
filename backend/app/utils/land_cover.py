@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import logging
 import os
+import time
 from dataclasses import dataclass
 from functools import lru_cache
 from typing import Any, Dict, Mapping, Optional, Protocol
@@ -17,6 +18,9 @@ from typing import Any, Dict, Mapping, Optional, Protocol
 import requests
 
 logger = logging.getLogger(__name__)
+
+_LAND_COVER_CACHE_TTL_SECONDS = 24 * 60 * 60
+_land_cover_cache: Dict[tuple, tuple[float, Dict[str, Any]]] = {}
 
 
 ESA_WORLD_COVER_CLASSES: Dict[int, str] = {
@@ -442,6 +446,12 @@ def check_land_cover(
     class and whether crop recommendation should proceed.
     """
 
+    cache_key = (round(latitude, 3), round(longitude, 3))
+    cached = _land_cover_cache.get(cache_key)
+    now = time.monotonic()
+    if cached and now - cached[0] < _LAND_COVER_CACHE_TTL_SECONDS:
+        return cached[1].copy()
+
     provider = _get_provider()
 
     result = provider.check(
@@ -472,8 +482,10 @@ def check_land_cover(
         "allowed" if allowed else "rejected",
     )
 
-    return {
+    result = {
         "allowed": allowed,
         "land_cover_class": land_cover_class,
         "class_id": class_id,
     }
+    _land_cover_cache[cache_key] = (now, result)
+    return result.copy()

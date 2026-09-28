@@ -16,7 +16,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import accuracy_score, classification_report, precision_score, recall_score, f1_score
 
 # Set up paths
 DATASETS_PATH = Path(__file__).parent / "datasets" / "AgroData"
@@ -111,7 +111,6 @@ print(f"✓ Test set: {X_test.shape}")
 # ============================================================================
 print("\n[STEP 6] Training Multiple Models...")
 print("-" * 70)
-
 models = {
     "Decision Tree": DecisionTreeClassifier(max_depth=10, random_state=42),
     "Random Forest": RandomForestClassifier(n_estimators=200, max_depth=15, random_state=42),
@@ -121,6 +120,7 @@ models = {
 }
 
 results = {}
+performance_results = []
 trained_models = {}
 
 for name, model in models.items():
@@ -128,22 +128,37 @@ for name, model in models.items():
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
     acc = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred, average="weighted", zero_division=0)
+    recall = recall_score(y_test, y_pred, average="weighted", zero_division=0)
+    f1 = f1_score(y_test, y_pred, average="weighted", zero_division=0)
     results[name] = acc
+    performance_results.append({
+        "Model": name,
+        "Accuracy": acc,
+        "Precision": precision,
+        "Recall": recall,
+        "F1-Score": f1,
+    })
     trained_models[name] = model
-    print(f"✓ Accuracy: {acc:.4f}")
+    print(f"✓ Accuracy: {acc:.4f} | Precision: {precision:.4f} | Recall: {recall:.4f} | F1: {f1:.4f}")
 
 # ============================================================================
 # STEP 7: Model Comparison
 # ============================================================================
 print("\n" + "=" * 70)
-print("MODEL COMPARISON (Test Accuracy)")
+print("MODEL PERFORMANCE COMPARISON (Test Set)")
 print("=" * 70)
 
-results_df = pd.DataFrame(results.items(), columns=["Model", "Accuracy"]).sort_values(by="Accuracy", ascending=False)
-print(results_df.to_string(index=False))
+performance_df = pd.DataFrame(performance_results).sort_values(by="Accuracy", ascending=False)
+print(performance_df.to_string(index=False, formatters={
+    "Accuracy": "{:.2%}".format,
+    "Precision": "{:.2%}".format,
+    "Recall": "{:.2%}".format,
+    "F1-Score": "{:.2%}".format,
+}))
 
-best_model_name = results_df.iloc[0]["Model"]
-best_accuracy = results_df.iloc[0]["Accuracy"]
+best_model_name = performance_df.iloc[0]["Model"]
+best_accuracy = performance_df.iloc[0]["Accuracy"]
 
 print(f"\n✓ Best Model: {best_model_name} (Accuracy: {best_accuracy:.4f})")
 
@@ -173,11 +188,24 @@ final_model = GradientBoostingClassifier(
     random_state=42
 )
 
-final_model.fit(X_scaled, y_encoded)
-print("✓ Final Gradient Boosting model trained on full dataset")
+final_model.fit(X_train, y_train)
+print("✓ Final Gradient Boosting model trained on training split for evaluation")
 
 y_pred_final = final_model.predict(X_test)
-print(f"\nFinal Model Test Accuracy: {accuracy_score(y_test, y_pred_final):.4f}")
+final_accuracy = accuracy_score(y_test, y_pred_final)
+final_precision = precision_score(y_test, y_pred_final, average="weighted", zero_division=0)
+final_recall = recall_score(y_test, y_pred_final, average="weighted", zero_division=0)
+final_f1 = f1_score(y_test, y_pred_final, average="weighted", zero_division=0)
+
+print("\nMACHINE LEARNING MODEL PERFORMANCE")
+print("Metric                Value")
+print(f"Accuracy              {final_accuracy * 100:.2f}%")
+print(f"Precision             {final_precision * 100:.2f}%")
+print(f"Recall                {final_recall * 100:.2f}%")
+print(f"F1-Score              {final_f1 * 100:.2f}%")
+
+final_model.fit(X_scaled, y_encoded)
+print("✓ Final Gradient Boosting model retrained on full dataset for production")
 
 # ============================================================================
 # STEP 10: Save All Components
@@ -221,7 +249,10 @@ for name, model in trained_models.items():
 metadata = {
     "features": feature_columns,
     "classes": list(label_encoder.classes_),
-    "accuracy": accuracy_score(y_test, y_pred_final),
+    "accuracy": final_accuracy,
+    "precision_weighted": final_precision,
+    "recall_weighted": final_recall,
+    "f1_weighted": final_f1,
     "model_type": "GradientBoostingClassifier",
     "n_classes": len(label_encoder.classes_),
 }
@@ -244,7 +275,10 @@ for file in sorted(MODELS_PATH.glob("*.pkl")):
     print(f"  • {file.name:<40s} ({file_size:>6.1f} KB)")
 
 print(f"\nBest Model: Gradient Boosting")
-print(f"  • Test Accuracy: {accuracy_score(y_test, y_pred_final):.4f}")
+print(f"  • Test Accuracy: {final_accuracy:.4f}")
+print(f"  • Test Precision (weighted): {final_precision:.4f}")
+print(f"  • Test Recall (weighted): {final_recall:.4f}")
+print(f"  • Test F1-Score (weighted): {final_f1:.4f}")
 print(f"  • Number of Crops: {len(label_encoder.classes_)}")
 print(f"  • Training Samples: {X_train.shape[0]}")
 print(f"  • Test Samples: {X_test.shape[0]}")
