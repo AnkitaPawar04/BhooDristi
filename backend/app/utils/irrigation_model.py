@@ -85,7 +85,7 @@ class IrrigationModel:
                 else:
                     self.features = None
                 
-                print("✓ Irrigation models loaded successfully")
+                print("[OK] Irrigation models loaded successfully")
                 print(f"  Model type: {type(self.model).__name__}")
                 print(f"  Encoders: {list(self.encoders.keys())}")
                 print(f"  Target classes: {list(self.target_encoder.classes_)}")
@@ -99,7 +99,7 @@ class IrrigationModel:
                 )
         
         except Exception as e:
-            print(f"✗ Error loading irrigation models: {e}")
+            print(f"[ERROR] Error loading irrigation models: {e}")
             raise
     
     def predict(self, features_dict: Dict) -> Dict:
@@ -206,7 +206,7 @@ class IrrigationModel:
             }
         
         except Exception as e:
-            print(f"✗ Prediction error: {e}")
+            print(f"[ERROR] Prediction error: {e}")
             raise
 
 

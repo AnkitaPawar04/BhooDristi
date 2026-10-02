@@ -66,7 +66,7 @@ class CropRecommendationModel:
             )
 
             print(
-                "✓ Models loaded successfully"
+                "[OK] Models loaded successfully"
             )
 
             print(
@@ -81,7 +81,7 @@ class CropRecommendationModel:
         except FileNotFoundError as e:
 
             print(
-                f"✗ Error loading models: {e}"
+                f"[ERROR] Error loading models: {e}"
             )
 
             print(

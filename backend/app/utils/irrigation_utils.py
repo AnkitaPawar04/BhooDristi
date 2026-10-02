@@ -24,11 +24,16 @@ def validate_irrigation_input(data: Dict[str, Any]) -> Dict[str, Any]:
     
     # Required fields
     required = [
-        'soil_moisture', 'temperature_c', 'humidity', 'rainfall_mm',
-        'crop_type', 'soil_type', 'crop_growth_stage', 'previous_irrigation_mm',
-        'latitude', 'longitude', 'soil_ph', 'organic_carbon', 'electrical_conductivity',
-        'season', 'irrigation_type', 'water_source', 'sunlight_hours',
-        'wind_speed_kmh', 'field_area_hectare', 'mulching_used'
+    'crop_type',
+    'soil_type',
+    'crop_growth_stage',
+    'previous_irrigation_mm',
+    'latitude',
+    'longitude',
+    'irrigation_type',
+    'water_source',
+    'field_area_hectare',
+    'mulching_used'
     ]
     
     for field in required:
@@ -37,19 +42,22 @@ def validate_irrigation_input(data: Dict[str, Any]) -> Dict[str, Any]:
     
     # Range validation for numeric fields
     ranges = {
-        'soil_moisture': (0, 100, 'Soil moisture must be 0-100%'),
-        'temperature_c': (10, 45, 'Temperature must be 10-45°C'),
-        'humidity': (0, 100, 'Humidity must be 0-100%'),
-        'rainfall_mm': (0, 500, 'Rainfall must be 0-500mm'),
-        'previous_irrigation_mm': (0, 200, 'Previous irrigation must be 0-200mm'),
-        'latitude': (-90, 90, 'Invalid latitude'),
-        'longitude': (-180, 180, 'Invalid longitude'),
-        'soil_ph': (4.5, 8.5, 'Soil pH must be 4.5-8.5'),
-        'organic_carbon': (0.1, 3, 'Organic carbon must be 0.1-3%'),
-        'electrical_conductivity': (0.1, 2, 'EC must be 0.1-2 dS/m'),
-        'sunlight_hours': (0, 14, 'Sunlight hours must be 0-14'),
-        'wind_speed_kmh': (0, 30, 'Wind speed must be 0-30 km/h'),
-        'field_area_hectare': (0.1, 10, 'Field area must be 0.1-10 hectares'),
+    'previous_irrigation_mm': (
+        0, 200,
+        'Previous irrigation must be 0-200mm'
+    ),
+    'latitude': (
+        -90, 90,
+        'Invalid latitude'
+    ),
+    'longitude': (
+        -180, 180,
+        'Invalid longitude'
+    ),
+    'field_area_hectare': (
+        0.1, 1000,
+        'Field area must be 0.1-1000 hectares'
+    ),
     }
     
     for field, (min_val, max_val, message) in ranges.items():
@@ -90,13 +98,8 @@ def validate_irrigation_input(data: Dict[str, Any]) -> Dict[str, Any]:
             f"Valid options: {', '.join(valid_stages)}"
         )
     
-    # Season validation
-    valid_seasons = ['Kharif', 'Rabi', 'Zaid']
-    if data['season'] not in valid_seasons:
-        raise ValueError(
-            f"Invalid season '{data['season']}'. "
-            f"Valid options: {', '.join(valid_seasons)}"
-        )
+    
+    
     
     # Irrigation type validation
     valid_irrigation_types = ['Canal', 'Drip', 'Rainfed', 'Sprinkler']
@@ -129,6 +132,7 @@ def map_prediction_to_recommendation(
     prediction: str,
     soil_moisture: float,
     rainfall_mm: float,
+    forecast_rainfall_mm: float,
     crop_type: str,
     crop_growth_stage: str
 ) -> Dict[str, str]:
@@ -138,7 +142,8 @@ def map_prediction_to_recommendation(
     Args:
         prediction: 'Low', 'Medium', or 'High'
         soil_moisture: Current soil moisture percentage
-        rainfall_mm: Recent rainfall in mm
+        rainfall_mm: Current rainfall observation in mm
+        forecast_rainfall_mm: Expected rainfall over the upcoming days in mm
         crop_type: Type of crop
         crop_growth_stage: Current growth stage
     
@@ -166,11 +171,18 @@ def map_prediction_to_recommendation(
     elif soil_moisture < 30:
         adjustment_factor = 1.5  # Low moisture = more water
     
-    # Adjust for recent rainfall
-    if rainfall_mm > 100:
-        adjustment_factor *= 0.6  # Heavy rain = less irrigation
-    elif rainfall_mm > 50:
-        adjustment_factor *= 0.8  # Moderate rain = reduce
+    # Adjust based on current and forecast rainfall
+    # DECISION LAYER: These thresholds are heuristics applied AFTER ML prediction.
+    # They are NOT part of the ML model training data.
+    # Rationale: Expected rainfall reduces irrigation needs over the next few days.
+    # Thresholds (50mm, 100mm) represent moderate and significant rainfall events
+    # that would substantially reduce crop water deficit over 2-3 days.
+    total_expected_rainfall = rainfall_mm + forecast_rainfall_mm
+
+    if total_expected_rainfall > 100:
+        adjustment_factor *= 0.6  # Significant rainfall expected: reduce irrigation 40%
+    elif total_expected_rainfall > 50:
+        adjustment_factor *= 0.8  # Moderate rainfall expected: reduce irrigation 20%
     
     adjusted_water = (
         int(base_water[0] * adjustment_factor),
@@ -194,6 +206,7 @@ def generate_irrigation_advice(
     prediction: str,
     soil_moisture: float,
     rainfall_mm: float,
+    forecast_rainfall_mm: float,
     crop_type: str,
     crop_growth_stage: str,
     temperature_c: float = 25,
@@ -205,7 +218,8 @@ def generate_irrigation_advice(
     Args:
         prediction: Model prediction (Low/Medium/High)
         soil_moisture: Current soil moisture %
-        rainfall_mm: Recent rainfall mm
+        rainfall_mm: Current rainfall observation in mm
+        forecast_rainfall_mm: Expected rainfall over the upcoming days in mm
         crop_type: Type of crop
         crop_growth_stage: Current growth stage
         temperature_c: Temperature in Celsius
@@ -250,25 +264,37 @@ def generate_irrigation_advice(
             f"Keep soil consistently moist but ensure good drainage to prevent waterlogging."
         )
     
-    # Rainfall consideration
+    # Current rainfall observation
     if rainfall_mm > 150:
         advice_parts.append(
-            f"Heavy rainfall ({rainfall_mm}mm) detected recently. "
+            f"Heavy current rainfall ({rainfall_mm}mm) detected. "
             f"Monitor soil drainage and check for waterlogging. Hold irrigation if soil is saturated."
         )
     elif rainfall_mm > 75:
         advice_parts.append(
-            f"Moderate rainfall ({rainfall_mm}mm) received. "
+            f"Moderate current rainfall ({rainfall_mm}mm) observed. "
             f"This will help reduce irrigation needs. Monitor and adjust irrigation frequency."
         )
     elif rainfall_mm > 25:
         advice_parts.append(
-            f"Light rainfall ({rainfall_mm}mm) recorded. "
+            f"Light current rainfall ({rainfall_mm}mm) observed. "
             f"This provides some moisture but may not be sufficient for full irrigation needs."
         )
     else:
         advice_parts.append(
-            f"No recent rainfall recorded. Ensure timely irrigation to prevent water stress."
+            f"No current rainfall observed. Ensure timely irrigation to prevent water stress."
+        )
+
+    # Upcoming forecast rainfall is separate from the current observation.
+    if forecast_rainfall_mm > 50:
+        advice_parts.append(
+            f"Significant rainfall ({forecast_rainfall_mm}mm) is expected over the upcoming days. "
+            f"Consider reducing or delaying irrigation and monitor soil moisture."
+        )
+    elif forecast_rainfall_mm > 25:
+        advice_parts.append(
+            f"Rainfall ({forecast_rainfall_mm}mm) is expected over the upcoming days. "
+            f"Recheck soil moisture before irrigating and adjust the schedule if needed."
         )
     
     # Temperature consideration

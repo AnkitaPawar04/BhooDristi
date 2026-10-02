@@ -135,6 +135,8 @@ export const soilAPI = {
 
 // Irrigation APIs
 export const irrigationAPI = {
+  getLocationData: (requestData) =>
+    api.post('/irrigation/location-data', requestData, { timeout: 120000 }),
   predictIrrigation: (requestData) =>
     api.post('/irrigation/predict', requestData),
   

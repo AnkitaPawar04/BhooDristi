@@ -295,6 +295,7 @@ def _get_earth_engine_client():
 
     try:
         import ee
+        from .earth_engine import initialize_earth_engine
 
     except ImportError as exc:
         raise LandCoverProviderError(
@@ -302,23 +303,13 @@ def _get_earth_engine_client():
             "Add it to requirements and install dependencies."
         ) from exc
 
-    project_id = os.getenv(
-        "EE_PROJECT",
-        "",
-    ).strip()
-
     try:
         # Initialize using local OAuth credentials created by running
         # `earthengine authenticate` in the backend environment.
         #
         # Do not attempt to authenticate programmatically here.
-
-        if project_id:
-            ee.Initialize(
-                project=project_id
-            )
-        else:
-            ee.Initialize()
+        initialize_earth_engine()
+        return ee
 
     except Exception as exc:
 
