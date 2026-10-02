@@ -5,11 +5,13 @@ import {
   Marker,
   Popup,
   useMapEvents,
+  useMap,
   GeoJSON,
+  Polygon,
 } from 'react-leaflet';
 import L from 'leaflet';
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
-import { point } from '@turf/helpers';
+import { area as turfArea, point, polygon as turfPolygon } from '@turf/turf';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default marker icons
@@ -110,9 +112,11 @@ const MapClickHandler = ({
   onInvalidClick,
   maharashtraFeature,
   districts,
+  drawing,
 }) => {
   useMapEvents({
     click(e) {
+      if (drawing) return;
       const latitude = e.latlng.lat;
       const longitude = e.latlng.lng;
 
@@ -150,10 +154,74 @@ const MapClickHandler = ({
   return null;
 };
 
+const BoundaryDrawer = ({ polygon, onPolygonChange, onDrawingChange }) => {
+  const [vertices, setVertices] = useState(() => polygon?.coordinates?.[0]?.slice(0, -1) || []);
+  const [drawing, setDrawing] = useState(false);
+
+  useEffect(() => {
+    setVertices(polygon?.coordinates?.[0]?.slice(0, -1) || []);
+  }, [polygon]);
+
+  useEffect(() => {
+    onDrawingChange?.(drawing);
+  }, [drawing, onDrawingChange]);
+
+  useMapEvents({
+    click(event) {
+      if (!drawing) return;
+      setVertices((current) => [...current, [event.latlng.lng, event.latlng.lat]]);
+    },
+  });
+
+  const finish = () => {
+    if (vertices.length < 3) return;
+    const closed = [...vertices, vertices[0]];
+    const nextPolygon = { type: 'Polygon', coordinates: [closed] };
+    onPolygonChange(nextPolygon, turfArea(turfPolygon([closed])) / 10000);
+    setDrawing(false);
+  };
+
+  const clear = () => {
+    setVertices([]);
+    setDrawing(true);
+    onPolygonChange(null, null);
+  };
+
+  return (
+    <>
+      {vertices.length >= 3 && <Polygon positions={vertices.map(([lng, lat]) => [lat, lng])} pathOptions={{ color: '#2563eb' }} />}
+      <div className="leaflet-bottom leaflet-left" style={{ zIndex: 1000 }}>
+        <div className="leaflet-control bg-white rounded shadow p-2 m-2 space-x-2">
+          {!drawing && <button type="button" className="px-2 py-1 text-xs bg-blue-600 text-white rounded" onClick={() => setDrawing(true)}>{polygon ? 'Edit boundary' : 'Draw boundary'}</button>}
+          {drawing && <button type="button" className="px-2 py-1 text-xs bg-green-600 text-white rounded disabled:bg-gray-400" disabled={vertices.length < 3} onClick={finish}>Finish</button>}
+          <button type="button" className="px-2 py-1 text-xs bg-red-600 text-white rounded" onClick={clear}>Clear</button>
+          {drawing && <span className="text-xs text-gray-600">Click at least 3 corners</span>}
+        </div>
+      </div>
+    </>
+  );
+};
+
+const SelectedLocationViewport = ({ selectedLocation }) => {
+  const map = useMap();
+  const latitude = selectedLocation?.latitude;
+  const longitude = selectedLocation?.longitude;
+
+  useEffect(() => {
+    if (latitude == null || longitude == null) return;
+    map.flyTo([latitude, longitude], 12, { animate: true, duration: 1.2 });
+  }, [map, latitude, longitude]);
+
+  return null;
+};
+
 const MaharashtraMap = ({
   onLocationSelect,
   selectedLocation,
   markers = [],
+  enablePolygonDrawing = false,
+  polygon = null,
+  onPolygonChange,
   className =
     'w-full h-96 rounded-lg overflow-hidden border-2 border-gray-300',
 }) => {
@@ -161,6 +229,8 @@ const MaharashtraMap = ({
   const [districts, setDistricts] = useState(null);
   const [mapMessage, setMapMessage] = useState('');
   const [districtLoading, setDistrictLoading] = useState(true);
+  const [drawingBoundary, setDrawingBoundary] = useState(false);
+  const isDrawingBoundary = enablePolygonDrawing && drawingBoundary;
 
   /*
    * Load Maharashtra state boundary.
@@ -291,6 +361,8 @@ const MaharashtraMap = ({
         zoom={ZOOM_LEVEL}
         style={{ height: '100%', width: '100%' }}
       >
+        <SelectedLocationViewport selectedLocation={selectedLocation} />
+
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution="&copy; OpenStreetMap contributors"
@@ -332,7 +404,16 @@ const MaharashtraMap = ({
           onInvalidClick={handleInvalidLocation}
           maharashtraFeature={maharashtraFeature}
           districts={districts}
+          drawing={isDrawingBoundary}
         />
+
+        {enablePolygonDrawing && (
+          <BoundaryDrawer
+            polygon={polygon}
+            onPolygonChange={onPolygonChange}
+            onDrawingChange={setDrawingBoundary}
+          />
+        )}
 
         {/* Selected location */}
         {selectedLocation && (

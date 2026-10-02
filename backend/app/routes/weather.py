@@ -140,7 +140,9 @@ def get_open_meteo_weather(
         "relative_humidity_2m,"
         "precipitation,"
         "rain,"
+        "wind_speed_10m,"
         "weather_code"
+        "&hourly=precipitation&past_days=7"
         "&timezone=auto"
     )
 
@@ -157,13 +159,18 @@ def get_open_meteo_weather(
 
     current = data["current"]
 
-    return {
-        "temperature": current["temperature_2m"],
-        "humidity": current["relative_humidity_2m"],
-        "rainfall": current.get("precipitation", current.get("rain", 0)),
-        "weather_code": current["weather_code"]
-    }
+    hourly_rainfall = data.get("hourly", {}).get("precipitation", [])
+    recent_rainfall = round(sum(value or 0 for value in hourly_rainfall), 1)
 
+    return {
+    "temperature": current["temperature_2m"],
+    "humidity": current["relative_humidity_2m"],
+    "rainfall": current.get("precipitation", current.get("rain", 0)),
+    "rainfall_recent": recent_rainfall,
+    "rainfall_period": "previous 7 days (hourly precipitation sum)",
+    "wind_speed_kmh": current["wind_speed_10m"],
+    "weather_code": current["weather_code"]
+}
 
 # =========================================================
 # OPEN-METEO FORECAST
