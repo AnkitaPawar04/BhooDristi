@@ -35,7 +35,7 @@ const AdminSettingsPage = ({ onNavigate }) => {
             <h1 className="page-title">
               {getTranslation(language, 'settings')}
             </h1>
-            <p className="page-subtitle">Manage admin preferences and system settings</p>
+            <p className="page-subtitle">{getTranslation(language, 'manageAccountPreferencesSecurity')}</p>
             <div className="page-divider"></div>
           </div>
 
@@ -141,7 +141,7 @@ const AdminSettingsPage = ({ onNavigate }) => {
                             themeOption === 'dark' ? 'text-gray-300' :
                             'text-gray-600'
                           }`}>
-                            Preview
+                            {getTranslation(language, 'preview')}
                           </p>
                         </div>
                       </div>
@@ -150,7 +150,7 @@ const AdminSettingsPage = ({ onNavigate }) => {
                 </div>
                 <div className="p-4 bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-lg">
                   <p className="text-sm text-green-800 dark:text-green-200">
-                    Your theme preference is saved and will be applied across all sessions
+                    {getTranslation(language, 'themeSaved')}
                   </p>
                 </div>
               </div>
@@ -197,7 +197,7 @@ const AdminSettingsPage = ({ onNavigate }) => {
                   {getTranslation(language, 'twoFactorAuth')}
                 </h2>
                 <p className="text-gray-600 dark:text-gray-300 mb-6">
-                  Enhance your admin account security with two-factor authentication
+                  {getTranslation(language, 'enhanceAdminSecurity')}
                 </p>
                 <button className="px-6 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition btn-hover">
                   {getTranslation(language, 'enable')}
@@ -214,13 +214,13 @@ const AdminSettingsPage = ({ onNavigate }) => {
                   {getTranslation(language, 'dataUsage')}
                 </h2>
                 <p className="text-gray-600 mb-4 dark:text-gray-300">
-                  We use your data to:
+                  {getTranslation(language, 'weUseYourData')}
                 </p>
                 <ul className="list-disc list-inside space-y-2 text-gray-600 dark:text-gray-300">
-                  <li>Manage farmer accounts and activities</li>
-                  <li>Monitor system performance and health</li>
-                  <li>Send important platform updates</li>
-                  <li>Ensure platform security and availability</li>
+                  <li>{getTranslation(language, 'manageFarmerAccounts')}</li>
+                  <li>{getTranslation(language, 'monitorSystemHealth')}</li>
+                  <li>{getTranslation(language, 'sendPlatformUpdates')}</li>
+                  <li>{getTranslation(language, 'ensurePlatformSecurity')}</li>
                 </ul>
               </div>
             </div>

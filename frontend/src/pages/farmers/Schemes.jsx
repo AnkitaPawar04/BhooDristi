@@ -271,7 +271,7 @@ const Schemes = ({ onNavigate }) => {
 									</p>
 								</div>
 
-								<div className="p-5 space-y-5">
+								<div className="p-5 space-y-5 text-gray-800 dark:text-gray-100">
 									<label className="flex flex-col gap-2">
 										<span className="font-semibold">Search Schemes</span>
 
@@ -280,7 +280,7 @@ const Schemes = ({ onNavigate }) => {
 											value={searchQuery}
 											onChange={(event) => setSearchQuery(event.target.value)}
 											placeholder="Search by scheme name, category, description, or beneficiary"
-											className="border rounded-xl p-3 w-full focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
+											  className="border rounded-xl p-3 w-full bg-white text-gray-900 dark:bg-gray-700 dark:border-gray-500 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
 										/>
 									</label>
 
@@ -290,7 +290,7 @@ const Schemes = ({ onNavigate }) => {
 										<select
 											value={governmentFilter}
 											onChange={(event) => setGovernmentFilter(event.target.value)}
-											className="border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
+											  className="border rounded-xl p-3 bg-white text-gray-900 dark:bg-gray-700 dark:border-gray-500 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
 										>
 											{GOVERNMENT_OPTIONS.map((option) => (
 												<option key={option.value} value={option.value}>
@@ -306,7 +306,7 @@ const Schemes = ({ onNavigate }) => {
 										<select
 											value={categoryFilter}
 											onChange={(event) => setCategoryFilter(event.target.value)}
-											className="border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
+											  className="border rounded-xl p-3 bg-white text-gray-900 dark:bg-gray-700 dark:border-gray-500 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
 										>
 											{CATEGORY_OPTIONS.map((option) => (
 												<option key={option.value} value={option.value}>
@@ -317,7 +317,7 @@ const Schemes = ({ onNavigate }) => {
 									</label>
 
 									<div className="grid grid-cols-2 gap-4">
-										<div className="bg-emerald-50 rounded-xl border p-4">
+										<div className="bg-emerald-50 dark:bg-emerald-900/30 rounded-xl border border-emerald-200 dark:border-emerald-700 p-4 text-emerald-900 dark:text-emerald-100">
 											<p className="text-sm">Total Schemes</p>
 
 											<h2 className="text-3xl font-bold text-emerald-700">
@@ -325,7 +325,7 @@ const Schemes = ({ onNavigate }) => {
 											</h2>
 										</div>
 
-										<div className="bg-blue-50 rounded-xl border p-4">
+										<div className="bg-blue-50 dark:bg-blue-900/30 rounded-xl border border-blue-200 dark:border-blue-700 p-4 text-blue-900 dark:text-blue-100">
 											<p className="text-sm">Filtered Schemes</p>
 
 											<h2 className="text-3xl font-bold text-blue-700">
@@ -334,7 +334,7 @@ const Schemes = ({ onNavigate }) => {
 										</div>
 									</div>
 
-									<div className="rounded-xl bg-emerald-50 p-4 border">
+									<div className="rounded-xl bg-emerald-50 dark:bg-emerald-900/30 p-4 border border-emerald-200 dark:border-emerald-700 text-emerald-900 dark:text-emerald-100">
 										<p className="text-sm font-semibold">Current Page</p>
 
 										<h3 className="font-bold text-lg mt-1">
@@ -357,7 +357,7 @@ const Schemes = ({ onNavigate }) => {
 									</p>
 								</div>
 
-								<div className="p-5 space-y-5 max-h-[760px] overflow-y-auto">
+								<div className="p-5 space-y-5 max-h-[760px] overflow-y-auto text-gray-800 dark:text-gray-100">
 									{loading ? (
 										<div className="space-y-4">
 											{Array.from({ length: 2 }).map((_, index) => (
@@ -378,10 +378,10 @@ const Schemes = ({ onNavigate }) => {
 												{paginatedSchemes.map((scheme) => (
 													<div
 														key={scheme.scheme_id}
-														className="w-full rounded-xl bg-white border shadow-md hover:shadow-lg transition-all duration-300 p-5"
+														className="w-full rounded-xl bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 shadow-md hover:shadow-lg transition-all duration-300 p-5"
 													>
 														<div className="flex items-start justify-between gap-3">
-															<h3 className="text-lg font-bold text-gray-900 leading-snug flex-1">
+															<h3 className="text-lg font-bold text-gray-900 dark:text-white leading-snug flex-1">
 																{scheme.scheme_name}
 															</h3>
 
@@ -404,7 +404,7 @@ const Schemes = ({ onNavigate }) => {
 															</span>
 														</div>
 
-														<div className="mt-4 space-y-3 text-sm text-gray-700">
+														<div className="mt-4 space-y-3 text-sm text-gray-700 dark:text-gray-200">
 															<p className="leading-6">
 																<strong>Department:</strong> {scheme.department}
 															</p>
@@ -414,7 +414,7 @@ const Schemes = ({ onNavigate }) => {
 															</p>
 
 															<p
-																className="text-gray-600 leading-6"
+																className="text-gray-600 dark:text-gray-300 leading-6"
 																style={{
 																	display: "-webkit-box",
 																	WebkitLineClamp: 3,
@@ -429,7 +429,7 @@ const Schemes = ({ onNavigate }) => {
 														<div className="mt-5 flex flex-col sm:flex-row gap-3">
 															<button
 																onClick={() => setSelectedScheme(scheme)}
-																className="flex-1 border rounded-xl py-2 hover:bg-gray-100 font-semibold transition-colors"
+																className="flex-1 border border-gray-300 dark:border-gray-500 rounded-xl py-2 hover:bg-gray-100 dark:hover:bg-gray-600 font-semibold transition-colors"
 															>
 																View Details
 															</button>
@@ -450,7 +450,7 @@ const Schemes = ({ onNavigate }) => {
 												<button
 													onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
 													disabled={currentPage === 1}
-													className="border rounded-xl px-5 py-2 hover:bg-gray-100 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+													className="border border-gray-300 dark:border-gray-500 rounded-xl px-5 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
 												>
 													← Previous
 												</button>
@@ -468,7 +468,7 @@ const Schemes = ({ onNavigate }) => {
 																className={`h-10 w-10 rounded-xl border font-semibold transition-colors ${
 																	currentPage === pageNumber
 																		? "bg-emerald-600 text-white border-emerald-600"
-																		: "hover:bg-gray-100 border-gray-200"
+																		: "hover:bg-gray-100 dark:hover:bg-gray-600 border-gray-200 dark:border-gray-500"
 																}`}
 															>
 																{pageNumber}
@@ -480,7 +480,7 @@ const Schemes = ({ onNavigate }) => {
 												<button
 													onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
 													disabled={currentPage === totalPages}
-													className="border rounded-xl px-5 py-2 hover:bg-gray-100 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+													className="border border-gray-300 dark:border-gray-500 rounded-xl px-5 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
 												>
 													Next →
 												</button>
@@ -496,7 +496,7 @@ const Schemes = ({ onNavigate }) => {
 
 			{selectedScheme && (
 				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-					<div className="w-full max-w-4xl max-h-[90vh] overflow-auto rounded-2xl bg-white shadow-2xl border-4 border-emerald-200">
+					<div className="w-full max-w-4xl max-h-[90vh] overflow-auto rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-2xl border-4 border-emerald-200 dark:border-emerald-700">
 						<div className="bg-gradient-to-r from-emerald-500 to-emerald-600 p-4 text-white flex items-start justify-between gap-4">
 							<div>
 								<h2 className="text-2xl font-bold">{selectedScheme.scheme_name}</h2>
@@ -514,28 +514,28 @@ const Schemes = ({ onNavigate }) => {
 
 						<div className="p-6 space-y-5">
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-								<div className="rounded-xl bg-emerald-50 p-4 border">
+								<div className="rounded-xl bg-emerald-50 dark:bg-emerald-900/30 p-4 border border-emerald-200 dark:border-emerald-700">
 									<p className="text-sm text-emerald-700">Category</p>
 									<p className="font-semibold mt-1">{getCategoryLabel(selectedScheme.category)}</p>
 								</div>
 
-								<div className="rounded-xl bg-blue-50 p-4 border">
+								<div className="rounded-xl bg-blue-50 dark:bg-blue-900/30 p-4 border border-blue-200 dark:border-blue-700">
 									<p className="text-sm text-blue-700">Government</p>
 									<p className="font-semibold mt-1">{selectedScheme.government}</p>
 								</div>
 
-								<div className="rounded-xl bg-yellow-50 p-4 border">
+								<div className="rounded-xl bg-yellow-50 dark:bg-yellow-900/30 p-4 border border-yellow-200 dark:border-yellow-700">
 									<p className="text-sm text-yellow-700">Department</p>
 									<p className="font-semibold mt-1">{selectedScheme.department}</p>
 								</div>
 
-								<div className="rounded-xl bg-gray-50 p-4 border">
+								<div className="rounded-xl bg-gray-50 dark:bg-gray-700 p-4 border border-gray-200 dark:border-gray-600">
 									<p className="text-sm text-gray-700">Status</p>
 									<p className="font-semibold mt-1">{selectedScheme.status}</p>
 								</div>
 							</div>
 
-							<div className="space-y-4 text-gray-700">
+							<div className="space-y-4 text-gray-700 dark:text-gray-200">
 								<p>
 									<strong>Description:</strong> {selectedScheme.description}
 								</p>

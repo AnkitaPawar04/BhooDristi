@@ -717,7 +717,7 @@ const CropRecommendationPage = ({ onNavigate }) => {
                           </div>
                           <div className="text-right">
                             <p className="text-6xl font-bold">{displayConfidence}%</p>
-                            <p className="text-green-100 text-sm">Match</p>
+                            <p className="text-green-100 text-sm">Suitability</p>
                           </div>
                         </div>
                         <div className="h-2 bg-white/30 rounded-full overflow-hidden">
@@ -745,7 +745,7 @@ const CropRecommendationPage = ({ onNavigate }) => {
                                   </p>
                                   {displayConf != null && (
                                     <p className="text-sm font-semibold text-green-600 dark:text-green-400">
-                                      {displayConf}% match
+                                      {displayConf}% suitability
                                     </p>
                                   )}
                                 </div>
@@ -763,7 +763,7 @@ const CropRecommendationPage = ({ onNavigate }) => {
                           ].map((group) => (
                             <div key={group.key} className={`p-5 rounded-2xl bg-gray-50 dark:bg-gray-700 border-l-4 ${group.border}`}>
                               <h4 className={`font-bold text-lg ${group.color}`}>{group.title}</h4>
-                              <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 mb-4">{group.note}. Percentage is soil and weather suitability, not guaranteed profit.</p>
+                              <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 mb-4">{group.note}. Score combines soil, weather, season, and district suitability; it is not guaranteed profit.</p>
                               <div className="space-y-3">
                                 {(recommendation[group.key] || []).map((crop, idx) => (
                                   <div key={`${crop.crop}-${idx}`} className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-xl px-4 py-3">

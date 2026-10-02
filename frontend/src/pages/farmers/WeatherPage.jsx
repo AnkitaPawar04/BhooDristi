@@ -101,8 +101,8 @@ const WeatherPage = ({ onNavigate }) => {
         <div className="p-8 relative z-10">
           {/* Top Navigation */}
           <div className="page-header animate-fadeInUp">
-            <h1 className="page-title">Atmospheric Insight</h1>
-            <p className="page-subtitle">Real-time weather monitoring for Sahyadri Valley, Maharashtra</p>
+            <h1 className="page-title">{getTranslation(language, 'weatherInformation')}</h1>
+            <p className="page-subtitle">{getTranslation(language, 'realTimeWeatherLocation')}</p>
             <div className="page-divider"></div>
           </div>
 
@@ -111,8 +111,8 @@ const WeatherPage = ({ onNavigate }) => {
           {/* Current Weather Card */}
           <div className="farm-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-4 border-blue-200 dark:border-blue-700 overflow-hidden transition-shadow duration-300">
             <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 text-white">
-              <h2 className="text-3xl font-bold flex items-center gap-3">Current Condition</h2>
-              <p className="text-blue-100 mt-2 text-lg">Real-time atmospheric data for your location</p>
+              <h2 className="text-3xl font-bold flex items-center gap-3">{getTranslation(language, 'currentCondition')}</h2>
+              <p className="text-blue-100 mt-2 text-lg">{getTranslation(language, 'realTimeAtmosphericData')}</p>
             </div>
             
             <div className="p-8">
@@ -123,7 +123,7 @@ const WeatherPage = ({ onNavigate }) => {
                     disabled={locationLoading}
                     className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-xl mb-6 transition disabled:opacity-50 shadow-lg text-lg"
                   >
-                    {locationLoading ? 'Detecting Location...' : 'Refresh Current Location'}
+                    {locationLoading ? getTranslation(language, 'gettingLocation') : getTranslation(language, 'refreshCurrentLocation')}
                   </button>
                 </div>
               </div>
@@ -136,23 +136,23 @@ const WeatherPage = ({ onNavigate }) => {
 
               {weather ? (
                 <div className="bg-gradient-to-br from-blue-50 dark:from-gray-700 to-white dark:to-gray-800 rounded-2xl p-8 text-center border-2 border-blue-100 dark:border-blue-600">
-                  <p className="text-blue-700 dark:text-blue-300 text-sm mb-2 font-bold">CURRENT CONDITIONS</p>
+                  <p className="text-blue-700 dark:text-blue-300 text-sm mb-2 font-bold">{getTranslation(language, 'currentConditions')}</p>
                   <p className="text-6xl font-bold text-gray-900 dark:text-white">{weather.temperature}°C</p>
                   <p className="text-xl text-gray-700 dark:text-gray-300 font-semibold mt-4">{weather.description}</p>
                   
                   {/* Weather Details Grid */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
                     <div className="bg-blue-100 dark:bg-blue-900/30 rounded-xl p-4 border-l-4 border-blue-600">
-                      <p className="text-blue-700 dark:text-blue-300 text-sm font-semibold">Humidity</p>
+                      <p className="text-blue-700 dark:text-blue-300 text-sm font-semibold">{getTranslation(language, 'humidity')}</p>
                       <p className="text-3xl font-bold text-blue-800 dark:text-blue-200 mt-2">{weather.humidity}%</p>
                     </div>
                     <div className="bg-cyan-100 dark:bg-cyan-900/30 rounded-xl p-4 border-l-4 border-cyan-600">
-                      <p className="text-cyan-700 dark:text-cyan-300 text-sm font-semibold">Rainfall</p>
+                      <p className="text-cyan-700 dark:text-cyan-300 text-sm font-semibold">{getTranslation(language, 'rainfall')}</p>
                       <p className="text-3xl font-bold text-cyan-800 dark:text-cyan-200 mt-2">{weather.rainfall}mm</p>
                     </div>
                     {district && (
                       <div className="bg-indigo-100 dark:bg-indigo-900/30 rounded-xl p-4 border-l-4 border-indigo-600">
-                        <p className="text-indigo-700 dark:text-indigo-300 text-sm font-semibold">Location</p>
+                        <p className="text-indigo-700 dark:text-indigo-300 text-sm font-semibold">{getTranslation(language, 'location')}</p>
                         <p className="text-3xl font-bold text-indigo-800 dark:text-indigo-200 mt-2">{getDistrictTranslation(district, language)}</p>
                       </div>
                     )}

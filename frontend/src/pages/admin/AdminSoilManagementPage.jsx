@@ -26,13 +26,14 @@ const AdminSoilManagementPage = () => {
   const fetchDistrictInsights = async (district) => {
     setLoading(true);
     try {
-      // Get crop recommendations for Kharif and Rabi
-      const cropsResponse = await cropAPI.getDistrictCrops(district);
+      // Fetch both independent data sources in parallel.
+      const [cropsResponse, soilResponse] = await Promise.all([
+        cropAPI.getDistrictCrops(district),
+        soilAPI.getSoilData(district),
+      ]);
       console.log('Crops response for', district, ':', cropsResponse.data);
       setDistrictCrops(cropsResponse.data);
 
-      // Get soil data
-      const soilResponse = await soilAPI.getSoilData(district);
       console.log('Soil response for', district, ':', soilResponse.data);
       setSoilData(soilResponse.data);
       setLastLoadedAt(new Date());

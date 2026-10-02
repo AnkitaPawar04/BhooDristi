@@ -22,6 +22,36 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loginMethod] = useState('otp');
+  const [otp, setOtp] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpDestination, setOtpDestination] = useState('');
+
+  const handleSendLoginOTP = async () => {
+    setError('');
+    if (selectedRole === 'admin') {
+      setError('Admin login uses email and password.');
+      return;
+    }
+    if (!email.trim()) {
+      setError('Enter your email address or 10-digit mobile number.');
+      return;
+    }
+    setLoading(true);
+    try {
+      if (!password) {
+        setError('Enter your password before requesting an OTP.');
+        return;
+      }
+      const response = await authAPI.sendLoginOTP(email.trim(), password);
+      setOtpDestination(response.data?.delivery || email.trim());
+      setOtpSent(true);
+    } catch (requestError) {
+      setError(requestError.response?.data?.detail || 'Could not send OTP. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleEmailSignup = async (e) => {
     e.preventDefault();
@@ -123,6 +153,25 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
+      if (selectedRole === 'farmer' && loginMethod === 'otp') {
+        if (!email.trim() || !otp.trim()) {
+          setError('Enter your email/mobile number and OTP.');
+          setLoading(false);
+          return;
+        }
+        try {
+          const response = await authAPI.verifyLoginOTP(email.trim(), password, otp.trim());
+          authStorage.setToken(response.data.access_token);
+          if (response.data.farmer_id) authStorage.setFarmerId(response.data.farmer_id);
+          authStorage.setUser({ identifier: email.trim(), role: 'farmer' });
+          localStorage.removeItem('is_admin');
+          navigate('/dashboard');
+        } catch (requestError) {
+          setError(requestError.response?.data?.detail || 'Invalid password or OTP. Request a new OTP and try again.');
+        }
+        return;
+      }
+
       if (!email || !password) {
         setError(getTranslation(language, 'enterEmailPassword'));
         setLoading(false);
@@ -317,13 +366,13 @@ const LoginPage = () => {
 
                     <div className="mb-6">
                     <label className="block text-gray-700 text-sm font-bold mb-2">
-                      Email Address
+                      {loginMethod === 'otp' && selectedRole === 'farmer' ? 'Email or Mobile Number' : 'Email Address'}
                     </label>
                     <input
-                      type="email"
+                      type={loginMethod === 'otp' && selectedRole === 'farmer' ? 'text' : 'email'}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="example@email.com"
+                      placeholder={loginMethod === 'otp' && selectedRole === 'farmer' ? 'example@email.com or 9876543210' : 'example@email.com'}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
                       required
                     />
@@ -351,6 +400,14 @@ const LoginPage = () => {
                     </div>
                   </div>
 
+                  {loginMethod === 'otp' && selectedRole === 'farmer' && (
+                    <div className="mb-6">
+                      <button type="button" onClick={handleSendLoginOTP} disabled={loading} className="w-full rounded-lg border-2 border-green-600 px-4 py-3 font-bold text-green-700 transition hover:bg-green-50 disabled:opacity-50">{otpSent ? 'Resend OTP' : 'Send OTP'}</button>
+                      {otpSent && <p className="mt-2 text-center text-sm font-semibold text-green-700">OTP sent to {otpDestination}</p>}
+                      {otpSent && <input type="text" inputMode="numeric" maxLength="6" value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="Enter 6-digit OTP" className="mt-3 w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500" required />}
+                    </div>
+                  )}
+
                   <div className="text-right mb-6">
                     <a href="#forgot" className="text-green-600 hover:text-green-700 text-sm font-semibold">
                       Forgot password?
@@ -359,8 +416,8 @@ const LoginPage = () => {
 
                   <button
                     type="submit"
-                    disabled={loading}
-                    className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-3 px-4 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md mb-4"
+                    disabled={loading || (selectedRole === 'farmer' && loginMethod === 'otp' && (!otpSent || otp.trim().length !== 6))}
+                    className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-3 px-4 rounded-lg transition disabled:from-gray-300 disabled:to-gray-400 disabled:opacity-70 disabled:cursor-not-allowed shadow-md mb-4"
                   >
                     {loading ? (
                       <>
@@ -368,7 +425,7 @@ const LoginPage = () => {
                         Logging in...
                       </>
                     ) : (
-                      'Login'
+                      loginMethod === 'otp' && selectedRole === 'farmer' ? 'Verify OTP & Login' : 'Login'
                     )}
                   </button>
                   </>

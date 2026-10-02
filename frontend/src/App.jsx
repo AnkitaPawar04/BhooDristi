@@ -17,6 +17,8 @@ import FarmPlannerPage from './pages/farmers/FarmPlannerPage';
 import MarketInformationPage from './pages/farmers/MarketInformationPage';
 import AdminLoginPage from './pages/admin/AdminLoginPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import AdminAnalyticsPage from './pages/admin/AdminAnalyticsPage';
+import AdminReportsPage from './pages/admin/AdminReportsPage';
 import AdminFarmerManagementPage from './pages/admin/AdminFarmerManagementPage';
 import AdminPredictionMonitoringPage from './pages/admin/AdminPredictionMonitoringPage';
 import AdminCropManagementPage from './pages/admin/AdminCropManagementPage';
@@ -249,6 +251,22 @@ function BackgroundWrappedApp({ handleNavigate }) {
         element={
           <AdminRoute>
             <AdminDashboardPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/analytics"
+        element={
+          <AdminRoute>
+            <AdminAnalyticsPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/reports"
+        element={
+          <AdminRoute>
+            <AdminReportsPage />
           </AdminRoute>
         }
       />

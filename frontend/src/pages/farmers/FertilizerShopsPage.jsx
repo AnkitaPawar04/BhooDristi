@@ -277,7 +277,7 @@ const FertilizerShopsPage = ({ onNavigate }) => {
                   </p>
                 </div>
 
-                <div className="p-4 space-y-3">
+                <div className="p-4 space-y-3 text-gray-800 dark:text-gray-100">
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <label className="flex flex-col gap-2">
@@ -290,7 +290,7 @@ const FertilizerShopsPage = ({ onNavigate }) => {
                         onChange={(e) =>
                           handleDistrictChange(e.target.value)
                         }
-                        className="border rounded-xl p-3"
+                        className="border rounded-xl p-3 bg-white text-gray-900 dark:bg-gray-700 dark:border-gray-500 dark:text-white"
                       >
                         {maharashtraDistricts.map((district) => (
                           <option
@@ -313,7 +313,7 @@ const FertilizerShopsPage = ({ onNavigate }) => {
                         onChange={(e) =>
                           setRadiusKm(Number(e.target.value))
                         }
-                        className="border rounded-xl p-3"
+                        className="border rounded-xl p-3 bg-white text-gray-900 dark:bg-gray-700 dark:border-gray-500 dark:text-white"
                       >
                         <option value={5}>5 km</option>
                         <option value={10}>10 km</option>
@@ -340,7 +340,7 @@ const FertilizerShopsPage = ({ onNavigate }) => {
                     </div>
                   )}
 
-                  <div className="rounded-xl bg-emerald-50 p-4 border">
+                  <div className="rounded-xl bg-emerald-50 dark:bg-emerald-900/30 p-4 border border-emerald-200 dark:border-emerald-700 text-emerald-900 dark:text-emerald-100">
 
                     <p className="text-sm font-semibold">
                       Selected Location
@@ -390,7 +390,7 @@ const FertilizerShopsPage = ({ onNavigate }) => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                    <div className="bg-emerald-50 rounded-xl border p-3">
+                    <div className="bg-emerald-50 dark:bg-emerald-900/30 rounded-xl border border-emerald-200 dark:border-emerald-700 p-3 text-emerald-900 dark:text-emerald-100">
 
                       <p className="text-sm">
                         Shops Found
@@ -404,7 +404,7 @@ const FertilizerShopsPage = ({ onNavigate }) => {
 
                     </div>
 
-                    <div className="bg-blue-50 rounded-xl border p-3">
+                    <div className="bg-blue-50 dark:bg-blue-900/30 rounded-xl border border-blue-200 dark:border-blue-700 p-3 text-blue-900 dark:text-blue-100">
 
                       <p className="text-sm">
                         Radius
@@ -435,7 +435,7 @@ const FertilizerShopsPage = ({ onNavigate }) => {
                   </p>
                 </div>
 
-                <div className="p-5 space-y-4 max-h-[760px] overflow-y-auto">
+                <div className="p-5 space-y-4 max-h-[760px] overflow-y-auto text-gray-800 dark:text-gray-100">
 
                   {shopsWithDistance.length === 0 ? (
 
@@ -494,8 +494,8 @@ const FertilizerShopsPage = ({ onNavigate }) => {
                         key={shop.id}
                         className={`rounded-2xl border-2 p-5 transition-all duration-300 cursor-pointer ${
                           selectedShopId === shop.id
-                            ? "border-emerald-500 bg-emerald-50"
-                            : "border-gray-200 hover:border-emerald-300"
+                            ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/30"
+                            : "border-gray-200 dark:border-gray-600 bg-white/70 dark:bg-gray-700/70 hover:border-emerald-300"
                         }`}
                       >
 
@@ -503,11 +503,11 @@ const FertilizerShopsPage = ({ onNavigate }) => {
 
                           <div>
 
-                            <h3 className="text-lg font-bold text-gray-900">
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                               {shop.name}
                             </h3>
 
-                            <p className="text-sm text-gray-600 mt-1">
+                            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                               {shop.address || "Address not available"}
                             </p>
 
@@ -519,7 +519,7 @@ const FertilizerShopsPage = ({ onNavigate }) => {
                               {shop.distance.toFixed(1)} km
                             </p>
 
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
                               from selected location
                             </p>
 
@@ -555,7 +555,7 @@ const FertilizerShopsPage = ({ onNavigate }) => {
                               <strong>Phone:</strong>
                             </p>
 
-                            <p className="text-gray-700">
+                            <p className="text-gray-700 dark:text-gray-200">
                               {shop.phone || "Not Available"}
                             </p>
 
@@ -567,7 +567,7 @@ const FertilizerShopsPage = ({ onNavigate }) => {
                               <strong>Opening Hours:</strong>
                             </p>
 
-                            <p className="text-gray-700">
+                            <p className="text-gray-700 dark:text-gray-200">
                               {shop.openingHours || "Not Available"}
                             </p>
 
@@ -579,7 +579,7 @@ const FertilizerShopsPage = ({ onNavigate }) => {
 
                           <button
                             onClick={() => handleShopSelect(shop)}
-                            className="flex-1 border rounded-xl py-2 hover:bg-gray-100 font-semibold"
+                            className="flex-1 border border-gray-300 dark:border-gray-500 rounded-xl py-2 hover:bg-gray-100 dark:hover:bg-gray-600 font-semibold"
                           >
                             View Details
                           </button>

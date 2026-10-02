@@ -67,6 +67,8 @@ const Sidebar = ({ userName, currentPage, onNavigate }) => {
 
   const adminMenuItems = [
     { id: 'dashboard', label: getTranslation(language, 'dashboard'), path: '/admin/dashboard', icon: FiBarChart2 },
+    { id: 'analytics', label: getTranslation(language, 'adminAnalytics'), path: '/admin/analytics', icon: FiBarChart2 },
+    { id: 'reports', label: getTranslation(language, 'adminReports'), path: '/admin/reports', icon: FiFileText },
     { id: 'farmers', label: getTranslation(language, 'farmerManagement'), path: '/admin/farmers', icon: FiUsers },
     { id: 'predictions', label: getTranslation(language, 'predictionMonitoring'), path: '/admin/predictions', icon: FiClipboard },
     { id: 'crops', label: getTranslation(language, 'cropManagement'), path: '/admin/crops', icon: FiTrendingUp },
@@ -102,7 +104,7 @@ const Sidebar = ({ userName, currentPage, onNavigate }) => {
           <div className="sidebar-header-row">
             <div className="sidebar-header-text">
               <h1 className="text-2xl font-bold text-white">{getTranslation(language, 'appName')}</h1>
-              <p className="text-sm mt-2 text-white font-semibold opacity-100">Smart Farming Platform</p>
+              <p className="text-sm mt-2 text-white font-semibold opacity-100">{getTranslation(language, 'smartFarmingPlatform')}</p>
             </div>
             <button
               type="button"

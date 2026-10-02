@@ -7,6 +7,7 @@ import { weatherAPI, soilAPI, cropAPI, authAPI } from '../../services/api';
 import { TemperatureTrendChart, RainfallChart, SoilNutrientsChart, CropPerformanceChart } from '../../charts/Charts';
 import useGeolocation from '../../hooks/useGeolocation';
 import MaharashtraMap from '../../maps/MaharashtraMap';
+import { DISTRICT_CENTERS } from '../../utils/districts';
 import dashboardBgVideo from './videos/dashboard.mp4';
 // Page-level icons removed per UI change
 
@@ -55,6 +56,23 @@ const DashboardPage = ({ onNavigate }) => {
 
   const farmerId = localStorage.getItem('farmer_id');
 
+  const getNearestDistrict = (coordinates) => {
+    if (!coordinates) return '';
+
+    return Object.entries(DISTRICT_CENTERS).reduce((nearest, [name, center]) => {
+      const distance = Math.hypot(
+        coordinates.latitude - center.latitude,
+        coordinates.longitude - center.longitude
+      );
+      return distance < nearest.distance ? { name, distance } : nearest;
+    }, { name: '', distance: Infinity }).name;
+  };
+
+  useEffect(() => {
+    const nearestDistrict = getNearestDistrict(mapLocation);
+    if (nearestDistrict) setDistrict(nearestDistrict);
+  }, [mapLocation?.latitude, mapLocation?.longitude]);
+
   useEffect(() => {
     if (!farmerId) return;
     Promise.all([
@@ -62,7 +80,6 @@ const DashboardPage = ({ onNavigate }) => {
       cropAPI.getPredictionHistory(farmerId),
     ]).then(([profileResponse, historyResponse]) => {
       const farmerProfile = profileResponse.data;
-      setDistrict(farmerProfile.district || '');
       setPredictionHistory(historyResponse.data.predictions || []);
       if (farmerProfile.district) {
         soilAPI.getSoilData(farmerProfile.district)
@@ -135,7 +152,7 @@ const DashboardPage = ({ onNavigate }) => {
             <div className="farm-card bg-yellow-100 dark:bg-gray-800 rounded-2xl shadow-xl border-4 border-green-200 dark:border-green-700 overflow-hidden transition-shadow duration-300 p-0">
               <div className="bg-gradient-to-r from-green-500 to-green-600 p-4 text-white">
                 <h2 className="text-2xl font-bold flex items-center gap-3">{getTranslation(language, 'yourLocation')}</h2>
-                <p className="text-green-100 mt-1 text-sm">Your Farm Position</p>
+                <p className="text-green-100 mt-1 text-sm">{getTranslation(language, 'yourFarmPosition')}</p>
               </div>
               <div className="p-4">
                 <button
@@ -153,16 +170,16 @@ const DashboardPage = ({ onNavigate }) => {
                 {mapLocation && (
                   <div className="space-y-3 text-gray-700 dark:text-gray-200">
                     <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border-l-4 border-green-500">
-                      <p className="text-xs text-green-700 dark:text-green-300">Latitude</p>
+                      <p className="text-xs text-green-700 dark:text-green-300">{getTranslation(language, 'latitude')}</p>
                       <p className="text-xl font-bold text-green-600 dark:text-green-400">{mapLocation.latitude.toFixed(4)}°</p>
                     </div>
                     <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border-l-4 border-blue-500">
-                      <p className="text-xs text-blue-700 dark:text-blue-300">Longitude</p>
+                      <p className="text-xs text-blue-700 dark:text-blue-300">{getTranslation(language, 'longitude')}</p>
                       <p className="text-xl font-bold text-blue-600 dark:text-blue-400">{mapLocation.longitude.toFixed(4)}°</p>
                     </div>
                     {district && (
                       <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg border-l-4 border-yellow-500">
-                        <p className="text-xs text-yellow-700 dark:text-yellow-300">District</p>
+                        <p className="text-xs text-yellow-700 dark:text-yellow-300">{getTranslation(language, 'district')}</p>
                         <p className="text-lg font-bold text-yellow-600 dark:text-yellow-400">{getDistrictTranslation(district, language)}</p>
                       </div>
                     )}
@@ -173,8 +190,8 @@ const DashboardPage = ({ onNavigate }) => {
 
             <div className="farm-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-4 border-emerald-200 dark:border-emerald-700 overflow-hidden transition-shadow duration-300 p-0" style={{animationDelay: '0.15s'}}>
               <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 p-4 text-white">
-                <h2 className="text-2xl font-bold flex items-center gap-3">Farm Map</h2>
-                <p className="text-emerald-100 mt-1 text-sm">Live view of your farm location</p>
+                <h2 className="text-2xl font-bold flex items-center gap-3">{getTranslation(language, 'farmMap')}</h2>
+                <p className="text-emerald-100 mt-1 text-sm">{getTranslation(language, 'liveFarmLocation')}</p>
               </div>
               <div className="p-4 space-y-3">
                 <MaharashtraMap
@@ -186,7 +203,7 @@ const DashboardPage = ({ onNavigate }) => {
                   className="w-full h-64 rounded-xl overflow-hidden border-2 border-emerald-200 dark:border-emerald-700"
                 />
                 <div className="rounded-xl border border-emerald-200 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-900/20 p-3 text-sm text-emerald-900 dark:text-emerald-100">
-                  Click anywhere on the map to adjust the marker.
+                  {getTranslation(language, 'adjustMapMarker')}
                 </div>
               </div>
             </div>
@@ -201,21 +218,21 @@ const DashboardPage = ({ onNavigate }) => {
               </div>
               <div className="p-3 grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-3">
                 <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border-2 border-orange-300 dark:border-orange-700 text-center flex flex-col justify-center min-h-[220px] lg:min-h-[240px]">
-                  <p className="text-orange-700 dark:text-orange-300 text-xs font-semibold">Temperature</p>
+                  <p className="text-orange-700 dark:text-orange-300 text-xs font-semibold">{getTranslation(language, 'temperature')}</p>
                   <p className="text-3xl font-bold text-orange-600 dark:text-orange-400 mt-3">{weatherDisplay.temperature}°C</p>
                 </div>
                 <div className="grid grid-cols-1 gap-2.5">
                   <div className="bg-blue-50 dark:bg-blue-900/20 p-2.5 rounded-lg border-2 border-blue-300 dark:border-blue-700 text-center flex flex-col justify-center min-h-[68px]">
-                    <p className="text-blue-700 dark:text-blue-300 text-xs font-semibold">Humidity</p>
+                    <p className="text-blue-700 dark:text-blue-300 text-xs font-semibold">{getTranslation(language, 'humidity')}</p>
                     <p className="text-xl font-bold text-blue-600 dark:text-blue-400 mt-1">{weatherDisplay.humidity}%</p>
                   </div>
                   <div className="bg-cyan-50 dark:bg-cyan-900/20 p-2.5 rounded-lg border-2 border-cyan-300 dark:border-cyan-700 text-center flex flex-col justify-center min-h-[68px]">
-                    <p className="text-cyan-700 dark:text-cyan-300 text-xs font-semibold">Rainfall</p>
+                    <p className="text-cyan-700 dark:text-cyan-300 text-xs font-semibold">{getTranslation(language, 'rainfall')}</p>
                     <p className="text-xl font-bold text-cyan-600 dark:text-cyan-400 mt-1">{weatherDisplay.rainfall}mm</p>
                   </div>
                   <div className="bg-green-50 dark:bg-green-900/20 p-2.5 rounded-lg border-2 border-green-300 dark:border-green-700 text-center flex flex-col justify-center min-h-[68px]">
-                    <p className="text-green-700 dark:text-green-300 text-xs font-semibold">Condition</p>
-                    <p className="text-sm font-bold text-green-600 dark:text-green-400 mt-1">{weather ? 'Good' : 'Waiting'}</p>
+                    <p className="text-green-700 dark:text-green-300 text-xs font-semibold">{getTranslation(language, 'condition')}</p>
+                    <p className="text-sm font-bold text-green-600 dark:text-green-400 mt-1">{weather ? getTranslation(language, 'good') : getTranslation(language, 'waiting')}</p>
                   </div>
                 </div>
               </div>
@@ -224,23 +241,23 @@ const DashboardPage = ({ onNavigate }) => {
             <div className="grid grid-cols-1 gap-3">
               <div className="dashboard-stat-card dashboard-stat-card-compact">
                 <div className="stat-card-icon green"></div>
-                <h3 className="stat-card-title">Total Predictions</h3>
+                <h3 className="stat-card-title">{getTranslation(language, 'totalPredictionsLabel')}</h3>
                 <p className="stat-card-value">{predictionHistory.length}</p>
-                <p className="stat-card-desc">Total crop suggestions</p>
+                <p className="stat-card-desc">{getTranslation(language, 'totalCropSuggestions')}</p>
               </div>
 
               <div className="dashboard-stat-card dashboard-stat-card-compact">
                 <div className="stat-card-icon blue"></div>
-                <h3 className="stat-card-title">Last Recommendation</h3>
+                <h3 className="stat-card-title">{getTranslation(language, 'lastRecommendation')}</h3>
                 <p className="stat-card-value">{predictionHistory[0]?.recommended_crop || 'None yet'}</p>
-                <p className="stat-card-desc">Best crop for season</p>
+                <p className="stat-card-desc">{getTranslation(language, 'bestCropForSeason')}</p>
               </div>
 
               <div className="dashboard-stat-card dashboard-stat-card-compact">
                 <div className="stat-card-icon green"></div>
-                <h3 className="stat-card-title">Farm Health</h3>
-                <p className="stat-card-value status-good">{weather ? 'Live' : 'Waiting'}</p>
-                <p className="stat-card-desc">Based on current weather data</p>
+                <h3 className="stat-card-title">{getTranslation(language, 'farmHealth')}</h3>
+                <p className="stat-card-value status-good">{weather ? getTranslation(language, 'live') : getTranslation(language, 'waiting')}</p>
+                <p className="stat-card-desc">{getTranslation(language, 'weatherInformation')}</p>
               </div>
             </div>
           </div>

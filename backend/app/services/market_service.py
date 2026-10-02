@@ -1,6 +1,8 @@
 import logging
+import json
 import os
 import time
+from pathlib import Path
 from typing import Optional
 
 import requests
@@ -10,10 +12,44 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 DATA_GOV_RESOURCE_URL = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070"
+CACHE_PATH = Path(__file__).resolve().parents[2] / "data" / "market_cache.json"
 
 
 class MarketServiceError(Exception):
     """Raised when government market data cannot be retrieved or validated."""
+
+
+def _read_market_cache():
+    try:
+        with CACHE_PATH.open("r", encoding="utf-8") as cache_file:
+            return json.load(cache_file)
+    except (FileNotFoundError, OSError, ValueError):
+        return None
+
+
+def _write_market_cache(payload):
+    try:
+        CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        temporary_path = CACHE_PATH.with_suffix(".tmp")
+        with temporary_path.open("w", encoding="utf-8") as cache_file:
+            json.dump(payload, cache_file)
+        temporary_path.replace(CACHE_PATH)
+    except OSError as error:
+        logger.warning("Could not write market cache: %s", error)
+
+
+def _filter_cached_records(records, crop=None, district=None, market=None, variety=None, grade=None):
+    filters = {
+        "commodity": crop,
+        "district": district,
+        "market": market,
+        "variety": variety,
+        "grade": grade,
+    }
+    return [
+        record for record in records
+        if all(not value or str(record.get(field, "")).lower() == str(value).lower() for field, value in filters.items())
+    ]
 
 
 def _price(value):
@@ -65,6 +101,16 @@ def fetch_market_prices(
         payload = response.json()
     except (requests.RequestException, ValueError) as error:
         logger.warning("Market API request failed for crop=%s district=%s: %s", crop, district, error)
+        cached = _read_market_cache()
+        if cached and isinstance(cached.get("records"), list):
+            records = _filter_cached_records(cached["records"], crop, district, market, variety, grade)
+            return {
+                "records": records[offset:offset + limit],
+                "count": len(records[offset:offset + limit]),
+                "total": len(records),
+                "fetched_at": cached.get("fetched_at"),
+                "stale": True,
+            }
         raise MarketServiceError("Government market data is temporarily unavailable") from error
 
     raw_records = payload.get("records", [])
@@ -90,7 +136,9 @@ def fetch_market_prices(
 
     elapsed_ms = round((time.monotonic() - started) * 1000)
     logger.info("Market API request completed crop=%s district=%s status=%s count=%s duration_ms=%s", crop, district, response.status_code, len(records), elapsed_ms)
-    return {"records": records, "count": len(records), "total": payload.get("total"), "fetched_at": payload.get("updated_date")}
+    result = {"records": records, "count": len(records), "total": payload.get("total"), "fetched_at": payload.get("updated_date"), "stale": False}
+    _write_market_cache(result)
+    return result
 
 
 def fetch_market_commodities(limit: int = 100):
@@ -100,4 +148,4 @@ def fetch_market_commodities(limit: int = 100):
         for record in result["records"]
         if record["commodity"]
     })
-    return {"commodities": commodities, "fetched_at": result["fetched_at"]}
+    return {"commodities": commodities, "fetched_at": result["fetched_at"], "stale": result.get("stale", False)}

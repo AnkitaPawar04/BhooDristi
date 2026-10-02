@@ -22,6 +22,7 @@ const SoilManagementPage = ({ onNavigate }) => {
   const [loading, setLoading] = useState(false);
   const [cropInsights, setCropInsights] = useState(null);
   const fetchRequestId = React.useRef(0); // Track latest request
+  const districtCache = React.useRef(new Map());
 
   // Get user's default district
   const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -35,28 +36,32 @@ const SoilManagementPage = ({ onNavigate }) => {
 
   // Fetch soil data for a district
   const fetchSoilData = async (district) => {
-    setLoading(true);
-    
     // Increment request ID to track this request
     const currentRequestId = ++fetchRequestId.current;
+
+    const cached = districtCache.current.get(district);
+    if (cached) {
+      setSoilData(prev => ({ ...prev, [district]: cached.soil }));
+      setCropInsights(prev => ({ ...prev, [district]: cached.crops }));
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
     
     try {
-      const [response, cropResponse] = await Promise.all([
-        soilAPI.getSoilData(district),
-        cropAPI.getDistrictCrops(district),
-      ]);
-      
-      // Only update state if this is the latest request
+      const soilRequest = soilAPI.getSoilData(district).then((response) => {
+        if (currentRequestId === fetchRequestId.current) {
+          setSoilData(prev => ({ ...prev, [district]: response.data }));
+          setLoading(false);
+        }
+        return response.data;
+      });
+      const cropRequest = cropAPI.getDistrictCrops(district).then((response) => response.data);
+      const [soil, crops] = await Promise.all([soilRequest, cropRequest]);
+      districtCache.current.set(district, { soil, crops });
       if (currentRequestId === fetchRequestId.current) {
-        setSoilData(prev => ({
-          ...prev,
-          [district]: response.data
-        }));
-        setCropInsights(prev => ({
-          ...prev,
-          [district]: cropResponse.data,
-        }));
-        setLoading(false);
+        setCropInsights(prev => ({ ...prev, [district]: crops }));
       }
     } catch (error) {
       // Only show error if this is the latest request
@@ -128,7 +133,7 @@ const SoilManagementPage = ({ onNavigate }) => {
 
           <div className="page-header mb-8 animate-fadeInUp">
             <h1 className="page-title text-white">{getTranslation(language, 'soilManagement') || 'Soil Management'}</h1>
-            <p className="page-subtitle text-white">View soil nutrients for your district and others</p>
+            <p className="page-subtitle text-white">{getTranslation(language, 'soilData')}</p>
             <div className="page-divider"></div>
           </div>
 

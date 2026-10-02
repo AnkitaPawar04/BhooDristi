@@ -10,6 +10,7 @@
 
 html {
   color-scheme: light;
+  overflow-x: hidden;
 }
 
 html.dark {
@@ -23,6 +24,68 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   @apply bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100;
+  overflow-x: hidden;
+}
+
+#root {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+@media print {
+  @page {
+    margin: 12mm;
+  }
+
+  html,
+  body,
+  #root {
+    width: auto;
+    min-height: auto;
+    overflow: visible !important;
+    background: white !important;
+  }
+
+  .reports-page {
+    display: block !important;
+    height: auto !important;
+    min-height: auto !important;
+    background: white !important;
+  }
+
+  .reports-page .sidebar,
+  .report-actions,
+  .chatbot-widget {
+    display: none !important;
+  }
+
+  .reports-page main {
+    width: 100% !important;
+    overflow: visible !important;
+  }
+
+  .reports-page main > div {
+    padding: 0 !important;
+  }
+
+  .reports-page .card {
+    box-shadow: none !important;
+    break-inside: avoid;
+    border-color: #d1d5db !important;
+    color: #111827 !important;
+  }
+
+  .reports-page .report-visual {
+    min-height: 280px;
+  }
+
+  .reports-page .report-table {
+    overflow: visible !important;
+  }
+
+  .reports-page tr {
+    break-inside: avoid;
+  }
 }
 
 body.dark {
@@ -330,6 +393,73 @@ body.dark {
 
 .dark .text-gray-600 {
   @apply dark:text-gray-300;
+}
+
+/* Keep shared cards readable when pages use the base card classes without
+   adding a page-specific dark background utility. */
+.dark .card,
+.dark .farm-card {
+  @apply bg-gray-800 text-gray-100 border-gray-700;
+}
+
+.dark .card .text-gray-800,
+.dark .farm-card .text-gray-800 {
+  @apply text-gray-100;
+}
+
+.dark .card .text-gray-700,
+.dark .farm-card .text-gray-700 {
+  @apply text-gray-200;
+}
+
+.dark .card .text-gray-600,
+.dark .farm-card .text-gray-600 {
+  @apply text-gray-300;
+}
+
+.dark .card .text-gray-500,
+.dark .farm-card .text-gray-500 {
+  @apply text-gray-400;
+}
+
+/* Irrigation uses dedicated card classes rather than .farm-card. */
+.dark .map-card,
+.dark .params-card {
+  background: rgba(31, 41, 55, 0.94);
+  border-color: rgba(75, 85, 99, 0.9);
+  color: #f3f4f6;
+}
+
+.dark .map-card .text-gray-700,
+.dark .params-card .text-gray-700 {
+  color: #e5e7eb;
+}
+
+.dark .map-card .text-gray-600,
+.dark .params-card .text-gray-600 {
+  color: #d1d5db;
+}
+
+.dark .map-card .text-gray-500,
+.dark .params-card .text-gray-500 {
+  color: #9ca3af;
+}
+
+/* Planner and market pages use a translucent white content surface. */
+.dark .farm-page [class~="bg-white/95"] {
+  background: rgba(31, 41, 55, 0.94);
+  border-color: rgba(75, 85, 99, 0.9);
+  color: #f3f4f6;
+}
+
+.dark .farm-page [class~="bg-white/95"] [class~="bg-gray-50"],
+.dark .farm-page [class~="bg-white/95"] [class~="bg-emerald-50"],
+.dark .farm-page [class~="bg-white/95"] [class~="bg-blue-50"],
+.dark .farm-page [class~="bg-white/95"] [class~="bg-green-50"],
+.dark .farm-page [class~="bg-white/95"] [class~="bg-amber-50"],
+.dark .farm-page [class~="bg-white/95"] [class~="bg-orange-50"] {
+  color: #e5e7eb;
+  border-color: rgba(75, 85, 99, 0.9);
 }
 
 /* Enhanced Dark Mode Card Styling */

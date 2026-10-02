@@ -1,6 +1,8 @@
 import pyotp
 import os
 import random
+import smtplib
+from email.message import EmailMessage
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -51,6 +53,37 @@ def send_sms_otp(phone_number: str, otp: str) -> bool:
         print(f"❌ Failed to send SMS to {phone_number}: {str(e)}")
         print(f"   OTP for {phone_number}: {otp}")
         return True  # Return True anyway for demo
+
+
+def send_email_otp(email: str, otp: str) -> bool:
+    """Send an email OTP when SMTP is configured; otherwise keep demo behavior."""
+    smtp_host = os.getenv("SMTP_HOST", "")
+    smtp_port = int(os.getenv("SMTP_PORT", "587"))
+    smtp_username = os.getenv("SMTP_USERNAME", "")
+    # Google displays app passwords in four-character groups; SMTP expects
+    # the same value without spaces.
+    smtp_password = os.getenv("SMTP_PASSWORD", "").replace(" ", "").strip()
+    smtp_from = os.getenv("SMTP_FROM", smtp_username)
+
+    if not smtp_host or not smtp_username or not smtp_password or not smtp_from:
+        print(f"Warning: SMTP not configured. OTP for {email}: {otp}")
+        return True
+
+    try:
+        message = EmailMessage()
+        message["Subject"] = "Your BhooDrishti login OTP"
+        message["From"] = smtp_from
+        message["To"] = email
+        message.set_content(f"Your BhooDrishti login OTP is {otp}. It is valid for 10 minutes.")
+        with smtplib.SMTP(smtp_host, smtp_port, timeout=15) as server:
+            server.starttls()
+            server.login(smtp_username, smtp_password)
+            server.send_message(message)
+        return True
+    except Exception as error:
+        print(f"Failed to send email OTP to {email}: {error}")
+        print(f"OTP for {email}: {otp}")
+        return True
 
 def store_otp(phone_number: str, otp: str):
     """Store OTP with phone number"""

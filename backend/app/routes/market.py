@@ -6,6 +6,11 @@ from ..services.market_service import MarketServiceError, fetch_market_commoditi
 
 router = APIRouter(prefix="/market", tags=["market information"])
 
+FALLBACK_COMMODITIES = [
+    "Rice", "Wheat", "Maize", "Cotton", "Sugarcane", "Soybean",
+    "Groundnut", "Onion", "Potato", "Tomato", "Chickpea", "Jowar",
+]
+
 
 @router.get("/prices")
 async def get_market_prices(
@@ -24,7 +29,8 @@ async def get_market_prices(
 
     return {
         "success": True,
-        "source": "data.gov.in",
+        "source": "cached" if result.get("stale") else "data.gov.in",
+        "stale": result.get("stale", False),
         "last_updated": result["fetched_at"],
         "count": result["count"],
         "total": result["total"],
@@ -37,11 +43,19 @@ async def get_market_commodities():
     try:
         result = fetch_market_commodities()
     except MarketServiceError as error:
-        raise HTTPException(status_code=503, detail=str(error)) from error
+        # Keep crop selection usable while the government endpoint is offline.
+        return {
+            "success": False,
+            "source": "local-fallback",
+            "warning": str(error),
+            "last_updated": None,
+            "commodities": FALLBACK_COMMODITIES,
+        }
 
     return {
         "success": True,
-        "source": "data.gov.in",
+        "source": "cached" if result.get("stale") else "data.gov.in",
+        "stale": result.get("stale", False),
         "last_updated": result["fetched_at"],
         "commodities": result["commodities"],
     }

@@ -46,6 +46,12 @@ export const authAPI = {
       last_name: lastName
     }),
 
+  sendLoginOTP: (identifier, password) =>
+    api.post('/auth/send-login-otp', { identifier, password }),
+
+  verifyLoginOTP: (identifier, password, otp) =>
+    api.post('/auth/verify-login-otp', { identifier, password, otp }),
+
   getFarmerProfile: (farmerId) =>
     api.get(`/auth/profile/${farmerId}`),
 

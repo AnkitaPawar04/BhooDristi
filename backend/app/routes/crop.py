@@ -14,6 +14,7 @@ from .weather import get_current_weather
 
 import json
 import logging
+import math
 import re
 from pathlib import Path
 from typing import Optional
@@ -51,6 +52,10 @@ DISTRICT_CROP_DATASET = (
     / "AgroData"
     / "CropDataset-Enhanced.csv"
 )
+
+# District crop recommendations are deterministic for the same district and
+# model inputs, so avoid running the production model again on every click.
+_district_crop_cache = {}
 
 
 # ============================================================
@@ -677,6 +682,52 @@ def build_district_season_fallback(
     return fallback
 
 
+def score_suitability_candidates(
+    candidates: list,
+    district_crop_set: set,
+) -> list:
+    """Convert raw model probabilities into readable suitability scores.
+
+    Raw probabilities are distributed across every supported crop, so a valid
+    crop can appear as 1% even when it is the best seasonal option. This score
+    preserves model ordering while incorporating district evidence and giving
+    every valid seasonal candidate a meaningful, non-zero comparison score.
+    """
+    if not candidates:
+        return []
+
+    ordered = sorted(
+        candidates,
+        key=lambda candidate: float(candidate.get("confidence", 0) or 0),
+        reverse=True,
+    )
+    transformed = [
+        math.sqrt(max(float(candidate.get("confidence", 0) or 0), 0))
+        for candidate in ordered
+    ]
+    transformed_total = sum(transformed) or 1.0
+    candidate_count = len(ordered)
+    scored = []
+
+    for index, (candidate, transformed_value) in enumerate(zip(ordered, transformed)):
+        normalized = normalize_crop_name(candidate["crop"])
+        model_component = (transformed_value / transformed_total) * 100
+        district_component = 100 if normalized in district_crop_set else 75
+        rank_component = ((candidate_count - index) / candidate_count) * 100
+        suitability = (
+            model_component * 0.65
+            + district_component * 0.20
+            + rank_component * 0.15
+        )
+        scored.append({
+            "crop": candidate["crop"],
+            "confidence": round(max(suitability, 1.0), 2),
+            "raw_model_confidence": round(float(candidate.get("confidence", 0) or 0), 4),
+        })
+
+    return scored
+
+
 # ============================================================
 # WEATHER
 # ============================================================
@@ -1294,6 +1345,11 @@ async def predict_crop(
         if crop
     }
 
+    seasonal_candidates = score_suitability_candidates(
+        seasonal_candidates,
+        district_crop_set,
+    )
+
     alternative_candidates = [
         candidate
         for candidate in seasonal_candidates
@@ -1319,11 +1375,29 @@ async def predict_crop(
         for candidate in rotation_model_candidates
         if normalize_crop_name(candidate["crop"]) not in district_crop_set
     ][:3]
-    scored_common_crops = [
-        candidate
-        for candidate in rotation_model_candidates
-        if normalize_crop_name(candidate["crop"]) in district_crop_set
-    ][:3]
+    model_scores_by_crop = {
+        normalize_crop_name(candidate["crop"]): candidate.get("raw_model_confidence", 0)
+        for candidate in seasonal_candidates
+    }
+    district_common_candidates = []
+    seen_common_crops = set()
+    for crop in district_crops:
+        normalized = normalize_crop_name(crop)
+        if not normalized or normalized in seen_common_crops:
+            continue
+        if season and not is_crop_in_season(normalized, season):
+            continue
+        if normalized in usual_crops:
+            continue
+        seen_common_crops.add(normalized)
+        district_common_candidates.append({
+            "crop": normalized,
+            "confidence": model_scores_by_crop.get(normalized, 0),
+        })
+    scored_common_crops = score_suitability_candidates(
+        district_common_candidates,
+        district_crop_set,
+    )[:3]
 
     rotation_candidates = [
         candidate for candidate in final_candidates
@@ -1629,6 +1703,10 @@ async def get_district_crops(
     district: str
 ):
 
+    cache_key = district.strip().lower()
+    if cache_key in _district_crop_cache:
+        return _district_crop_cache[cache_key]
+
     # ========================================================
     # DISTRICT DATA
     # ========================================================
@@ -1768,7 +1846,7 @@ async def get_district_crops(
     # RESPONSE
     # ========================================================
 
-    return {
+    response = {
 
         "district":
             district,
@@ -1831,3 +1909,5 @@ async def get_prediction_history(farmer_id: int, db: Session = Depends(get_db)):
             for prediction in predictions
         ],
     }
+    _district_crop_cache[cache_key] = response
+    return response

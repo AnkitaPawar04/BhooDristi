@@ -5,6 +5,11 @@ import { getTranslation } from '../../utils/i18n';
 import dashboardBgVideo from './videos/dashboard.mp4';
 import { marketAPI } from '../../services/api';
 
+const FALLBACK_COMMODITIES = [
+  'Rice', 'Wheat', 'Maize', 'Cotton', 'Sugarcane', 'Soybean',
+  'Groundnut', 'Onion', 'Potato', 'Tomato', 'Chickpea', 'Jowar',
+];
+
 const MarketInformationPage = ({ onNavigate }) => {
   const { language } = useApp();
   const t = (key) => getTranslation(language, key);
@@ -14,16 +19,20 @@ const MarketInformationPage = ({ onNavigate }) => {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isStale, setIsStale] = useState(false);
 
   useEffect(() => {
     marketAPI.getCommodities()
       .then(({ data }) => {
-        const available = data.commodities || [];
+        const available = data.commodities?.length ? data.commodities : FALLBACK_COMMODITIES;
         setCommodities(available);
         setSelectedCrop((current) => current || available[0] || '');
       })
       .catch((requestError) => {
-        setError(requestError.response?.data?.detail || 'Market commodities are temporarily unavailable.');
+        const fallback = FALLBACK_COMMODITIES;
+        setCommodities(fallback);
+        setSelectedCrop((current) => current || fallback[0]);
+        setError(requestError.response?.data?.detail || 'Live market prices are temporarily unavailable. Crop selection remains available.');
       });
   }, []);
 
@@ -37,10 +46,16 @@ const MarketInformationPage = ({ onNavigate }) => {
       return undefined;
     }
     marketAPI.getPrices({ crop: selectedCrop, district, limit: 10 })
-      .then(({ data }) => { if (active) setRecords(data.records || []); })
+      .then(({ data }) => {
+        if (active) {
+          setRecords(data.records || []);
+          setIsStale(Boolean(data.stale));
+        }
+      })
       .catch((requestError) => {
         if (active) {
           setRecords([]);
+          setIsStale(false);
           setError(requestError.response?.data?.detail || 'Market data is temporarily unavailable. Please try again later.');
         }
       })
@@ -85,6 +100,7 @@ const MarketInformationPage = ({ onNavigate }) => {
             </div>
 
                 <span className="rounded-full bg-green-100 px-3 py-2 text-xs font-semibold text-green-900">{t('latestGovernmentData')}</span>
+              {isStale && <p className="mt-4 rounded-lg bg-amber-100 p-3 text-sm text-amber-900">Showing the last cached government prices because live market data is temporarily unavailable.</p>}
             {loading && <p className="py-10 text-center text-gray-600">{t('loadingMandiPrices')}</p>}
               {error && <p className="rounded-lg bg-red-50 p-4 text-red-800">{error || t('marketUnavailable')}</p>}
               {!loading && !error && records.length === 0 && <p className="rounded-lg bg-amber-50 p-4 text-amber-900">{t('noMandiRecords')}</p>}

@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import inspect, text
@@ -5,6 +7,7 @@ from dotenv import load_dotenv
 import os
 from .routes import auth, crop, admin, weather, soil, irrigation, fertilizer, chatbot, market
 from .database.config import Base, engine
+from .utils.model_inference import get_model
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv(os.path.join(BASE_DIR, ".env"))
@@ -66,6 +69,12 @@ app.include_router(
     chatbot.router,
     prefix="/chatbot"
 )
+
+
+@app.on_event("startup")
+async def preload_models():
+    """Warm the production crop model without blocking server readiness."""
+    asyncio.create_task(asyncio.to_thread(get_model))
 
 
 @app.get("/")

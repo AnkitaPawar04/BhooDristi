@@ -14,6 +14,7 @@
     "@turf/turf": "^7.4.0",
     "autoprefixer": "^10.4.16",
     "axios": "^1.6.0",
+    "BhooDrishti-frontend": "file:",
     "chart.js": "^4.4.0",
     "firebase": "^10.7.2",
     "leaflet": "^1.9.4",

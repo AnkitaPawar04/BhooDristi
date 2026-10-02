@@ -71,8 +71,8 @@ const SettingsPage = ({ onNavigate }) => {
         <div className="dashboard-content relative z-10">
         <div className="p-8 relative z-10">
           <div className="page-header animate-fadeInUp">
-            <h1 className="page-title">Settings</h1>
-            <p className="page-subtitle">Manage your account preferences and security</p>
+            <h1 className="page-title">{getTranslation(language, 'settings')}</h1>
+            <p className="page-subtitle">{getTranslation(language, 'manageAccountPreferencesSecurity')}</p>
             <div className="page-divider"></div>
           </div>
 
@@ -82,7 +82,7 @@ const SettingsPage = ({ onNavigate }) => {
               onClick={() => setActiveTab('preferences')}
               className={`pb-3 px-1 font-semibold text-white border-b-2 border-green-600 dark:border-green-400`}
             >
-              Preferences
+              {getTranslation(language, 'preferences')}
             </button>
             <button
               onClick={() => setActiveTab('account')}
@@ -92,7 +92,7 @@ const SettingsPage = ({ onNavigate }) => {
                   : 'text-white hover:text-white'
               }`}
               >
-              Account
+              {getTranslation(language, 'account')}
             </button>
             <button
               onClick={() => setActiveTab('privacy')}
@@ -102,7 +102,7 @@ const SettingsPage = ({ onNavigate }) => {
                   : 'text-white hover:text-white'
               }`}
               >
-              Privacy
+              {getTranslation(language, 'privacy')}
             </button>
           </div>
 
@@ -112,7 +112,7 @@ const SettingsPage = ({ onNavigate }) => {
               {/* Language Settings */}
               <div className="farm-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-4 border-green-200 dark:border-green-700 overflow-hidden hover:shadow-lg transition duration-300">
                 <div className="bg-gradient-to-r from-green-500 to-green-600 p-6 text-white">
-                  <h2 className="text-3xl font-bold flex items-center gap-3">Language & Localization</h2>
+                  <h2 className="text-3xl font-bold flex items-center gap-3">{getTranslation(language, 'languageLocalization')}</h2>
                 </div>
                 <div className="p-8">
                   <div className="space-y-4">
@@ -136,7 +136,7 @@ const SettingsPage = ({ onNavigate }) => {
               {/* Theme Settings */}
               <div className="farm-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-4 border-blue-200 dark:border-blue-700 overflow-hidden hover:shadow-lg transition duration-300">
                 <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 text-white">
-                  <h2 className="text-3xl font-bold flex items-center gap-3">Appearance & Theme</h2>
+                  <h2 className="text-3xl font-bold flex items-center gap-3">{getTranslation(language, 'appearanceTheme')}</h2>
                 </div>
                 <div className="p-8">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -177,7 +177,7 @@ const SettingsPage = ({ onNavigate }) => {
                               themeOption === 'dark' ? 'text-gray-300' :
                               'text-gray-600'
                             }`}>
-                              Preview
+                              {getTranslation(language, 'preview')}
                             </p>
                           </div>
                         </div>

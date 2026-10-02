@@ -11,7 +11,17 @@ from ..utils.otp import generate_otp, store_otp, verify_otp
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
 class SendOTPRequest(BaseModel):
-    phone_number: str
+    phone_number: Optional[str] = None
+    email: Optional[str] = None
+
+class SendLoginOTPRequest(BaseModel):
+    identifier: str
+    password: str
+
+class VerifyLoginOTPRequest(BaseModel):
+    identifier: str
+    password: str
+    otp: str
 
 class VerifyOTPRequest(BaseModel):
     phone_number: str
@@ -81,7 +91,10 @@ def parse_usual_crops(value):
 
 class OTPResponse(BaseModel):
     message: str
-    phone_number: str
+    phone_number: Optional[str] = None
+    email: Optional[str] = None
+    identifier: Optional[str] = None
+    delivery: Optional[str] = None
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -109,8 +122,72 @@ async def send_otp(request: SendOTPRequest, db: Session = Depends(get_db)):
     
     return {
         "message": f"OTP sent successfully to +91{phone_number}",
-        "phone_number": phone_number
+        "phone_number": phone_number,
+        "identifier": phone_number,
     }
+
+@router.post("/send-login-otp", response_model=OTPResponse)
+async def send_login_otp(request: SendLoginOTPRequest):
+    """Send a farmer login OTP to either a phone number or email address."""
+    identifier = request.identifier.strip()
+    is_email = "@" in identifier
+    lookup = identifier.lower() if is_email else identifier.replace("+91", "").replace(" ", "")
+    from ..database.config import SessionLocal
+    db = SessionLocal()
+    try:
+        farmer = db.query(Farmer).filter(
+            Farmer.email == lookup if is_email else Farmer.phone_number == lookup
+        ).first()
+        if not farmer or not farmer.password_hash or not verify_password(request.password, farmer.password_hash):
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+    finally:
+        db.close()
+
+    delivery = lookup
+    if is_email:
+        from ..utils.otp import send_email_otp
+        otp = generate_otp()
+        store_otp(lookup, otp)
+        send_email_otp(identifier, otp)
+        return {"message": f"OTP sent successfully to {identifier}", "email": identifier, "identifier": identifier, "delivery": identifier}
+
+    phone_number = identifier.replace("+91", "").replace(" ", "")
+    if not phone_number.isdigit() or len(phone_number) != 10:
+        raise HTTPException(status_code=400, detail="Enter a valid email address or 10-digit phone number")
+    otp = generate_otp()
+    if farmer.email:
+        delivery = farmer.email.lower()
+        store_otp(phone_number, otp)
+        from ..utils.otp import send_email_otp
+        send_email_otp(delivery, otp)
+        return {"message": f"OTP sent successfully to {delivery}", "email": delivery, "identifier": phone_number, "delivery": delivery}
+
+    store_otp(phone_number, otp)
+    from ..utils.otp import send_sms_otp
+    send_sms_otp(phone_number, otp)
+    return {"message": f"OTP sent successfully to +91{phone_number}", "phone_number": phone_number, "identifier": phone_number, "delivery": f"+91{phone_number}"}
+
+@router.post("/verify-login-otp", response_model=TokenResponse)
+async def verify_login_otp(request: VerifyLoginOTPRequest, db: Session = Depends(get_db)):
+    """Verify a farmer email/phone OTP and issue a normal access token."""
+    identifier = request.identifier.strip()
+    lookup = identifier.lower() if "@" in identifier else identifier.replace("+91", "").replace(" ", "")
+    if not verify_otp(lookup, request.otp):
+        raise HTTPException(status_code=401, detail="Invalid OTP")
+
+    if "@" in lookup:
+        farmer = db.query(Farmer).filter(Farmer.email == lookup).first()
+    else:
+        farmer = db.query(Farmer).filter(Farmer.phone_number == lookup).first()
+
+    if not farmer or not farmer.password_hash or not verify_password(request.password, farmer.password_hash):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    farmer.is_verified = True
+    db.commit()
+
+    access_token = create_access_token(data={"sub": str(farmer.id), "identifier": lookup})
+    return {"access_token": access_token, "token_type": "bearer", "message": "Login successful", "farmer_id": farmer.id}
 
 @router.post("/verify-otp", response_model=TokenResponse)
 async def verify_otp_endpoint(request: VerifyOTPRequest, db: Session = Depends(get_db)):
