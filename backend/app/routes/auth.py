@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, Union
 import json
 from ..database.config import get_db
@@ -69,8 +69,8 @@ class UpdateProfileRequest(BaseModel):
     village: Optional[str] = None
     farm_size: Optional[Union[str, float]] = None  # Accept both string and float
     soil_type: Optional[str] = None
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
+    latitude: Optional[float] = Field(default=None, ge=-90, le=90)
+    longitude: Optional[float] = Field(default=None, ge=-180, le=180)
     usual_crops: Optional[Union[str, list[str]]] = None
     soil_nitrogen: Optional[float] = None
     soil_phosphorus: Optional[float] = None

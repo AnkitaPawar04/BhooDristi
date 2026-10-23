@@ -1,4 +1,5 @@
 import asyncio
+import logging
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,7 +8,11 @@ from dotenv import load_dotenv
 import os
 from .routes import auth, crop, admin, weather, soil, irrigation, fertilizer, chatbot, market
 from .database.config import Base, engine
+from .utils.irrigation_model import get_irrigation_model
 from .utils.model_inference import get_model
+
+
+logger = logging.getLogger(__name__)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv(os.path.join(BASE_DIR, ".env"))
@@ -71,10 +76,25 @@ app.include_router(
 )
 
 
+async def _preload_models():
+    """Warm model caches in the background, serializing cold artifact imports."""
+    for model_name, loader in (
+        ("crop", get_model),
+        ("irrigation", get_irrigation_model),
+    ):
+        try:
+            await asyncio.to_thread(loader)
+        except Exception:
+            logger.exception(
+                "Unable to preload the %s recommendation model; it will retry on first use",
+                model_name,
+            )
+
+
 @app.on_event("startup")
 async def preload_models():
-    """Warm the production crop model without blocking server readiness."""
-    asyncio.create_task(asyncio.to_thread(get_model))
+    """Warm model caches without delaying server readiness."""
+    asyncio.create_task(_preload_models())
 
 
 @app.get("/")

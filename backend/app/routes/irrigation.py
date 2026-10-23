@@ -134,8 +134,8 @@ class IrrigationHistoryResponse(BaseModel):
         from_attributes = True
 @router.get("/soilgrids")
 async def get_soilgrids(
-    latitude: float,
-    longitude: float
+    latitude: float = Query(..., ge=-90, le=90),
+    longitude: float = Query(..., ge=-180, le=180),
 ):
     """
     Test endpoint for retrieving location-based SoilGrids data.

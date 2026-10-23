@@ -1,4 +1,3 @@
-import ee
 import os
 from datetime import datetime
 from .earth_engine import initialize_earth_engine as _initialize_earth_engine
@@ -45,7 +44,7 @@ def get_soil_moisture(
     """
 
     try:
-        initialize_earth_engine()
+        ee = initialize_earth_engine()
 
         sample_geometry = (
             ee.Geometry(geometry) if isinstance(geometry, dict)

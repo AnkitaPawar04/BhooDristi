@@ -1,5 +1,4 @@
 import copy
-import ee
 import hashlib
 import json
 import logging
@@ -193,7 +192,7 @@ def _get_soilgrids_data_uncached(latitude: float, longitude: float, geometry=Non
     """Run the existing SoilGrids calculation without reading/writing cache."""
 
     try:
-        initialize_earth_engine()
+        ee = initialize_earth_engine()
         sample_geometry = (
             ee.Geometry(geometry) if isinstance(geometry, dict)
             else geometry or ee.Geometry.Point([longitude, latitude]).buffer(2000)

@@ -11,6 +11,7 @@ import joblib
 import os
 from pathlib import Path
 from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
@@ -20,7 +21,7 @@ from sklearn.metrics import accuracy_score, classification_report, precision_sco
 
 # Set up paths
 DATASETS_PATH = Path(__file__).parent / "datasets" / "AgroData"
-MODELS_PATH = Path(__file__).parent / "models"
+MODELS_PATH = Path(__file__).parent / "models_retrain"
 
 # Create models directory if it doesn't exist
 MODELS_PATH.mkdir(exist_ok=True)
@@ -73,36 +74,32 @@ target_column = 'label'
 X = crop_df[feature_columns].copy()
 y = crop_df[target_column].copy()
 
-label_encoder = LabelEncoder()
-y_encoded = label_encoder.fit_transform(y)
-
 print(f"✓ Features shape: {X.shape}")
-print(f"✓ Target shape: {y_encoded.shape}")
-print(f"✓ Unique crops: {len(label_encoder.classes_)}")
-print(f"✓ Crops: {list(label_encoder.classes_)}")
+print(f"✓ Target shape: {y.shape}")
 
 print(f"\nFeature Statistics:")
 print(X.describe())
-
-# ============================================================================
-# STEP 4: Feature Scaling
-# ============================================================================
-print("\n[STEP 4] Feature Scaling...")
-
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
-
-print(f"✓ Features scaled using StandardScaler")
 
 # ============================================================================
 # STEP 5: Train/Test Split
 # ============================================================================
 print("\n[STEP 5] Splitting Data (70% train, 30% test)...")
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X_scaled, y_encoded, test_size=0.3, random_state=42, stratify=y_encoded
+X_train_raw, X_test_raw, y_train_labels, y_test_labels = train_test_split(
+    X, y, test_size=0.3, random_state=42, stratify=y
 )
 
+label_encoder = LabelEncoder()
+y_train = label_encoder.fit_transform(y_train_labels)
+y_test = label_encoder.transform(y_test_labels)
+y_encoded = label_encoder.transform(y)
+
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train_raw)
+X_test = scaler.transform(X_test_raw)
+
+print(f"✓ Fitted label encoder on training labels: {len(label_encoder.classes_)} crop classes")
+print("✓ Fitted StandardScaler on training features only")
 print(f"✓ Training set: {X_train.shape}")
 print(f"✓ Test set: {X_test.shape}")
 
@@ -157,6 +154,16 @@ print(performance_df.to_string(index=False, formatters={
     "F1-Score": "{:.2%}".format,
 }))
 
+print(f"\nTABLE II TEST METRICS (n={len(y_test)})")
+print("Model & Accuracy & Weighted precision & Weighted recall & Weighted F1 \\\\")
+for result in performance_results:
+    print(
+        f"{result['Model']} & {result['Accuracy'] * 100:.2f} & "
+        f"{result['Precision'] * 100:.2f} & "
+        f"{result['Recall'] * 100:.2f} & "
+        f"{result['F1-Score'] * 100:.2f} \\\\"
+    )
+
 best_model_name = performance_df.iloc[0]["Model"]
 best_accuracy = performance_df.iloc[0]["Accuracy"]
 
@@ -169,43 +176,17 @@ print("\n[STEP 8] Cross-Validation Scores (5-Fold)...")
 
 cv_results = {}
 for name, model in models.items():
-    scores = cross_val_score(model, X_scaled, y_encoded, cv=5)
+    scores = cross_val_score(
+        make_pipeline(StandardScaler(), model),
+        X,
+        y_encoded,
+        cv=5,
+    )
     cv_results[name] = {
         "mean": scores.mean(),
         "std": scores.std(),
     }
     print(f"  {name:20s}: {scores.mean():.4f} (+/- {scores.std():.4f})")
-
-# ============================================================================
-# STEP 9: Train Final Model
-# ============================================================================
-print("\n[STEP 9] Training Final Model (Gradient Boosting)...")
-
-final_model = GradientBoostingClassifier(
-    n_estimators=200,
-    learning_rate=0.1,
-    max_depth=5,
-    random_state=42
-)
-
-final_model.fit(X_train, y_train)
-print("✓ Final Gradient Boosting model trained on training split for evaluation")
-
-y_pred_final = final_model.predict(X_test)
-final_accuracy = accuracy_score(y_test, y_pred_final)
-final_precision = precision_score(y_test, y_pred_final, average="weighted", zero_division=0)
-final_recall = recall_score(y_test, y_pred_final, average="weighted", zero_division=0)
-final_f1 = f1_score(y_test, y_pred_final, average="weighted", zero_division=0)
-
-print("\nMACHINE LEARNING MODEL PERFORMANCE")
-print("Metric                Value")
-print(f"Accuracy              {final_accuracy * 100:.2f}%")
-print(f"Precision             {final_precision * 100:.2f}%")
-print(f"Recall                {final_recall * 100:.2f}%")
-print(f"F1-Score              {final_f1 * 100:.2f}%")
-
-final_model.fit(X_scaled, y_encoded)
-print("✓ Final Gradient Boosting model retrained on full dataset for production")
 
 # ============================================================================
 # STEP 10: Save All Components
@@ -214,6 +195,11 @@ print("\n[STEP 10] Saving Models and Components as Pickle Files...")
 print("-" * 70)
 
 # Save main model
+final_model = trained_models["Gradient Boosting"]
+final_metrics = next(
+    result for result in performance_results
+    if result["Model"] == "Gradient Boosting"
+)
 main_model_path = MODELS_PATH / "BhooDrishti_gb_model.pkl"
 joblib.dump(final_model, main_model_path)
 print(f"✓ Main model: {main_model_path.name}")
@@ -249,10 +235,10 @@ for name, model in trained_models.items():
 metadata = {
     "features": feature_columns,
     "classes": list(label_encoder.classes_),
-    "accuracy": final_accuracy,
-    "precision_weighted": final_precision,
-    "recall_weighted": final_recall,
-    "f1_weighted": final_f1,
+    "accuracy": final_metrics["Accuracy"],
+    "precision_weighted": final_metrics["Precision"],
+    "recall_weighted": final_metrics["Recall"],
+    "f1_weighted": final_metrics["F1-Score"],
     "model_type": "GradientBoostingClassifier",
     "n_classes": len(label_encoder.classes_),
 }
@@ -274,11 +260,12 @@ for file in sorted(MODELS_PATH.glob("*.pkl")):
     file_size = file.stat().st_size / 1024
     print(f"  • {file.name:<40s} ({file_size:>6.1f} KB)")
 
-print(f"\nBest Model: Gradient Boosting")
-print(f"  • Test Accuracy: {final_accuracy:.4f}")
-print(f"  • Test Precision (weighted): {final_precision:.4f}")
-print(f"  • Test Recall (weighted): {final_recall:.4f}")
-print(f"  • Test F1-Score (weighted): {final_f1:.4f}")
+print(f"\nBest performing model: {best_model_name} (Accuracy: {best_accuracy:.4f})")
+print("Saved main model: Gradient Boosting")
+print(f"  • Test Accuracy: {final_metrics['Accuracy']:.4f}")
+print(f"  • Test Precision (weighted): {final_metrics['Precision']:.4f}")
+print(f"  • Test Recall (weighted): {final_metrics['Recall']:.4f}")
+print(f"  • Test F1-Score (weighted): {final_metrics['F1-Score']:.4f}")
 print(f"  • Number of Crops: {len(label_encoder.classes_)}")
 print(f"  • Training Samples: {X_train.shape[0]}")
 print(f"  • Test Samples: {X_test.shape[0]}")

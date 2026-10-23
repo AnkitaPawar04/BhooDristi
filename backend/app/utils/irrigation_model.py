@@ -6,31 +6,42 @@ Loads pre-trained ML model and provides predictions
 """
 
 import pickle
+import os
 from pathlib import Path
+from threading import Lock
 import numpy as np
 import pandas as pd
 from typing import Dict
 
+from .model_loading import MODEL_LOAD_LOCK
+
+
 class IrrigationModel:
     """Singleton class for irrigation prediction model"""
     _instance = None
+    _instance_lock = Lock()
     
     def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._initialized = False
-        return cls._instance
+        with cls._instance_lock:
+            if cls._instance is None:
+                instance = super().__new__(cls)
+                instance._initialization_lock = Lock()
+                instance._initialized = False
+                cls._instance = instance
+            return cls._instance
     
     def __init__(self):
-        if self._initialized:
-            return
-        
-        self._initialized = True
-        self.model = None
-        self.encoders = None
-        self.target_encoder = None
-        self.features = None  # Initialize features attribute
-        self._load_models()
+        with self._initialization_lock:
+            if self._initialized:
+                return
+
+            self.model = None
+            self.encoders = None
+            self.target_encoder = None
+            self.features = None
+            with MODEL_LOAD_LOCK:
+                self._load_models()
+            self._initialized = True
     
     def _load_models(self):
         """Load pre-trained models from pickle files"""
@@ -39,68 +50,48 @@ class IrrigationModel:
             # This file: backend/app/utils/irrigation_model.py
             # Target: ai/
             current_file = Path(__file__)
-            backend_dir = current_file.parent.parent.parent  # go to backend
-            project_root = backend_dir.parent  # go to BhooDrishti (project root)
-            models_path = project_root / 'ai'
+            backend_dir = current_file.parent.parent.parent
+            project_root = backend_dir.parent
+            default_models_path = project_root / "ai"
+            models_path = Path(
+                os.getenv("IRRIGATION_MODEL_DIR") or default_models_path
+            ).expanduser().resolve()
+            self.model_path = models_path
             
             model_file = models_path / 'irrigation_model.pkl'
             encoders_file = models_path / 'encoders.pkl'
             target_encoder_file = models_path / 'target_encoder.pkl'
             features_file = models_path / 'irrigation_features.pkl'
             
-            # Check if files exist
-            if not model_file.exists():
-                raise FileNotFoundError(
-                    f"Model file not found: {model_file}\n"
-                    f"Please run: python ai/train_irrigation_model.py"
-                )
-            
-            if not encoders_file.exists():
-                raise FileNotFoundError(
-                    f"Encoders file not found: {encoders_file}\n"
-                    f"Please run: python ai/train_irrigation_model.py"
-                )
-            
-            if not target_encoder_file.exists():
-                raise FileNotFoundError(
-                    f"Target encoder file not found: {target_encoder_file}\n"
-                    f"Please run: python ai/train_irrigation_model.py"
-                )
-            
-            # Load with protocol handling for version compatibility
-            try:
-                with open(model_file, 'rb') as f:
-                    self.model = pickle.load(f)
-                
-                with open(encoders_file, 'rb') as f:
-                    self.encoders = pickle.load(f)
-                
-                with open(target_encoder_file, 'rb') as f:
-                    self.target_encoder = pickle.load(f)
-                
-                # Try to load feature names
-                if features_file.exists():
-                    with open(features_file, 'rb') as f:
-                        self.features = pickle.load(f)
-                else:
-                    self.features = None
-                
-                print("[OK] Irrigation models loaded successfully")
-                print(f"  Model type: {type(self.model).__name__}")
-                print(f"  Encoders: {list(self.encoders.keys())}")
-                print(f"  Target classes: {list(self.target_encoder.classes_)}")
-                if self.features:
-                    print(f"  Features: {len(self.features)} features")
-            
-            except (pickle.UnpicklingError, EOFError) as e:
-                raise FileNotFoundError(
-                    f"Failed to load pickle files (possible version mismatch): {e}\n"
-                    f"Solution: Retrain models by running: python ai/train_irrigation_model.py"
-                )
-        
+            self.model = self._load_pickle_artifact(model_file)
+            self.encoders = self._load_pickle_artifact(encoders_file)
+            self.target_encoder = self._load_pickle_artifact(target_encoder_file)
+
+            if features_file.exists():
+                self.features = self._load_pickle_artifact(features_file)
+            else:
+                self.features = None
+
+            print("[OK] Irrigation models loaded successfully")
+            print(f"  Model type: {type(self.model).__name__}")
+            print(f"  Encoders: {list(self.encoders.keys())}")
+            print(f"  Target classes: {list(self.target_encoder.classes_)}")
+            if self.features:
+                print(f"  Features: {len(self.features)} features")
+
         except Exception as e:
             print(f"[ERROR] Error loading irrigation models: {e}")
             raise
+
+    @staticmethod
+    def _load_pickle_artifact(path: Path):
+        try:
+            with path.open("rb") as artifact:
+                return pickle.load(artifact)
+        except Exception as error:
+            raise RuntimeError(
+                f"Unable to load irrigation model artifact '{path}': {error}"
+            ) from error
     
     def predict(self, features_dict: Dict) -> Dict:
         """
@@ -181,23 +172,15 @@ class IrrigationModel:
             # Convert to pandas DataFrame with feature names (required by model)
             features_df = pd.DataFrame([features], columns=feature_names)
             
-            # Make prediction
-            prediction_numeric = int(self.model.predict(features_df)[0])
-            
-            # Calculate confidence
-            confidence = 75.0
-            if hasattr(self.model, 'predict_proba'):
-                try:
-                    probabilities = self.model.predict_proba(features_df)[0]
-                    confidence = float(max(probabilities) * 100)
-                except:
-                    pass
+            probabilities = self.model.predict_proba(features_df)[0]
+            prediction_index = int(np.argmax(probabilities))
+            prediction_numeric = int(self.model.classes_[prediction_index])
+            confidence = float(np.max(probabilities) * 100)
             
             # Decode to class label
-            if prediction_numeric < len(self.target_encoder.classes_):
-                prediction_class = self.target_encoder.inverse_transform([prediction_numeric])[0]
-            else:
-                prediction_class = 'Medium'  # Fallback
+            prediction_class = self.target_encoder.inverse_transform(
+                [prediction_numeric]
+            )[0]
             
             return {
                 'prediction': prediction_class,
@@ -210,12 +193,6 @@ class IrrigationModel:
             raise
 
 
-# Singleton instance
-_irrigation_model = None
-
 def get_irrigation_model() -> IrrigationModel:
     """Get or create singleton irrigation model instance"""
-    global _irrigation_model
-    if _irrigation_model is None:
-        _irrigation_model = IrrigationModel()
-    return _irrigation_model
+    return IrrigationModel()

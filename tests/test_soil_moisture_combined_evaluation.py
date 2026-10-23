@@ -25,8 +25,11 @@ class SoilMoistureCombinedEvaluationTests(unittest.TestCase):
     def call_provider(self, combined_response, geometry=None):
         self.combined_expression.getInfo.return_value = combined_response
         with (
-            patch.object(soil_moisture, "ee", self.earth_engine),
-            patch.object(soil_moisture, "initialize_earth_engine"),
+            patch.object(
+                soil_moisture,
+                "initialize_earth_engine",
+                return_value=self.earth_engine,
+            ),
         ):
             return soil_moisture.get_soil_moisture(
                 18.1,
