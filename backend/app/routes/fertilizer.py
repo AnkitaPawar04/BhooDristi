@@ -11,8 +11,8 @@ API_KEY = os.getenv("GOOGLE_PLACES_API_KEY")
 @router.get("/search")
 def search_fertilizer_shops(
     query: str = Query(...),
-    lat: float | None = None,
-    lng: float | None = None,
+    lat: float | None = Query(default=None, ge=-90, le=90),
+    lng: float | None = Query(default=None, ge=-180, le=180),
 ):
 
     if not API_KEY:

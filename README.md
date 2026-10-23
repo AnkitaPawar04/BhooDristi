@@ -115,8 +115,8 @@ venv\Scripts\activate          # Windows
 # Install dependencies
 pip install -r requirements.txt
 
-# Run server 
-python app/main.py
+# Run server as a package module
+python -m app.main
 # Server runs on http://localhost:8000
 # API docs: http://localhost:8000/docs
 ```
@@ -140,7 +140,7 @@ npm run dev
 **Option A - Separate Terminals:**
 ```bash
 # Terminal 1 - Backend
-cd backend && venv\Scripts\activate && python app/main.py
+cd backend && venv\Scripts\activate && python -m app.main
 
 # Terminal 2 - Frontend
 cd frontend && npm run dev

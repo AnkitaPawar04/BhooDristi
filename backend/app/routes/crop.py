@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from ..database.config import get_db
 from ..models.farmer import Farmer, Prediction
@@ -63,8 +63,8 @@ _district_crop_cache = {}
 # ============================================================
 
 class CropRecommendationRequest(BaseModel):
-    latitude: float
-    longitude: float
+    latitude: float = Field(..., ge=-90, le=90)
+    longitude: float = Field(..., ge=-180, le=180)
     season: str
     farmer_id: int
 

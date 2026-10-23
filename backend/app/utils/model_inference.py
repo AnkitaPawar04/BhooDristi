@@ -4,10 +4,17 @@ Loads trained models and provides prediction interface
 """
 
 import joblib
+import logging
+import os
 from pathlib import Path
 import numpy as np
 import pandas as pd
 from typing import Dict, List
+
+from .model_loading import MODEL_LOAD_LOCK
+
+
+logger = logging.getLogger(__name__)
 
 
 class CropRecommendationModel:
@@ -24,11 +31,10 @@ class CropRecommendationModel:
 
         project_root = backend_dir.parent
 
-        self.model_path = (
-            project_root
-            / "ai"
-            / "models"
-        )
+        default_model_path = project_root / "ai" / "models"
+        self.model_path = Path(
+            os.getenv("CROP_MODEL_DIR") or default_model_path
+        ).expanduser().resolve()
 
         self.model = None
         self.scaler = None
@@ -43,53 +49,31 @@ class CropRecommendationModel:
 
     def load_models(self):
 
-        try:
+        artifacts = (
+            ("agrosahyadri_gb_model.pkl", "model"),
+            ("scaler.pkl", "scaler"),
+            ("label_encoder.pkl", "label_encoder"),
+            ("agrosahyadri_features.pkl", "features"),
+        )
+        loaded_artifacts = {}
 
-            self.model = joblib.load(
-                self.model_path
-                / "agrosahyadri_gb_model.pkl"
-            )
+        for filename, attribute in artifacts:
+            artifact_path = self.model_path / filename
+            try:
+                loaded_artifacts[attribute] = joblib.load(artifact_path)
+            except Exception as error:
+                raise RuntimeError(
+                    f"Unable to load crop model artifact '{artifact_path}': {error}"
+                ) from error
 
-            self.scaler = joblib.load(
-                self.model_path
-                / "scaler.pkl"
-            )
+        self.model = loaded_artifacts["model"]
+        self.scaler = loaded_artifacts["scaler"]
+        self.label_encoder = loaded_artifacts["label_encoder"]
+        self.features = loaded_artifacts["features"]
 
-            self.label_encoder = joblib.load(
-                self.model_path
-                / "label_encoder.pkl"
-            )
-
-            self.features = joblib.load(
-                self.model_path
-                / "agrosahyadri_features.pkl"
-            )
-
-            print(
-                "[OK] Models loaded successfully"
-            )
-
-            print(
-                f"  Features: {self.features}"
-            )
-
-            print(
-                f"  Crops: "
-                f"{list(self.label_encoder.classes_)}"
-            )
-
-        except FileNotFoundError as e:
-
-            print(
-                f"[ERROR] Error loading models: {e}"
-            )
-
-            print(
-                f"  Model path: "
-                f"{self.model_path}"
-            )
-
-            raise
+        print("[OK] Models loaded successfully")
+        print(f"  Features: {self.features}")
+        print(f"  Crops: {list(self.label_encoder.classes_)}")
 
     # ==========================================================
     # PREDICT
@@ -163,12 +147,6 @@ class CropRecommendationModel:
         # 3. PREDICTION
         # ======================================================
 
-        prediction_encoded = (
-            self.model.predict(
-                features_scaled
-            )[0]
-        )
-
         prediction_probs = (
             self.model.predict_proba(
                 features_scaled
@@ -179,12 +157,8 @@ class CropRecommendationModel:
         # 4. DECODE PREDICTION
         # ======================================================
 
-        predicted_crop = (
-            self.label_encoder
-            .inverse_transform(
-                [prediction_encoded]
-            )[0]
-        )
+        class_names = self.label_encoder.inverse_transform(self.model.classes_)
+        predicted_crop = class_names[int(np.argmax(prediction_probs))]
 
         confidence = (
             float(
@@ -199,30 +173,13 @@ class CropRecommendationModel:
         # 5. GET ALL CROP PROBABILITIES
         # ======================================================
 
-        all_crops = []
-
-        for class_index, probability in enumerate(
-            prediction_probs
-        ):
-
-            crop_name = (
-                self.label_encoder
-                .inverse_transform(
-                    [class_index]
-                )[0]
-            )
-
-            all_crops.append({
-
+        all_crops = [
+            {
                 "crop": crop_name,
-
-                "confidence": round(
-                    float(
-                        probability * 100
-                    ),
-                    2
-                )
-            })
+                "confidence": round(float(probability * 100), 2),
+            }
+            for crop_name, probability in zip(class_names, prediction_probs)
+        ]
 
         # ======================================================
         # 6. SORT ALL CROPS
@@ -243,23 +200,7 @@ class CropRecommendationModel:
         # 8. DEBUG
         # ======================================================
 
-        print(
-            "\n"
-            "--------------------------------------------\n"
-            "MODEL CROP PROBABILITIES\n"
-            "--------------------------------------------"
-        )
-
-        for crop in all_crops:
-
-            print(
-                f"  {crop['crop']:15s} "
-                f"{crop['confidence']:7.2f}%"
-            )
-
-        print(
-            "--------------------------------------------\n"
-        )
+        logger.debug("Crop model probabilities: %s", all_crops)
 
         # ======================================================
         # 9. RETURN
@@ -336,9 +277,8 @@ def get_model() -> CropRecommendationModel:
     global _model_instance
 
     if _model_instance is None:
-
-        _model_instance = (
-            CropRecommendationModel()
-        )
+        with MODEL_LOAD_LOCK:
+            if _model_instance is None:
+                _model_instance = CropRecommendationModel()
 
     return _model_instance

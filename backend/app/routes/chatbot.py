@@ -54,8 +54,8 @@ class ChatRequest(BaseModel):
         default_factory=list
     )
 
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
+    latitude: Optional[float] = Field(default=None, ge=-90, le=90)
+    longitude: Optional[float] = Field(default=None, ge=-180, le=180)
     district: Optional[str] = None
     farmer_id: Optional[int] = None
 

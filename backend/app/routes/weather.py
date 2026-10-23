@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Path
 from pydantic import BaseModel
 from typing import List
 import requests
@@ -264,8 +264,8 @@ def get_open_meteo_forecast(
     response_model=WeatherResponse
 )
 async def get_current_weather(
-    latitude: float,
-    longitude: float
+    latitude: float = Path(..., ge=-90, le=90),
+    longitude: float = Path(..., ge=-180, le=180),
 ):
 
     cache_key = (round(latitude, 3), round(longitude, 3))
@@ -434,8 +434,8 @@ async def get_current_weather(
     response_model=ForecastResponse
 )
 async def get_forecast(
-    latitude: float,
-    longitude: float
+    latitude: float = Path(..., ge=-90, le=90),
+    longitude: float = Path(..., ge=-180, le=180),
 ):
 
     # -----------------------------------------------------
